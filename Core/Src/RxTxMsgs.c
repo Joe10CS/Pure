@@ -7,6 +7,7 @@
 
 /* Includes -----------------------------------------------------------*/
 #include "main.h"
+#include "string.h"
 #include "RxTxMsgs.h"
 
 /* Local Definitions --------------------------------------------------*/
@@ -30,7 +31,7 @@ uint8_t txBufferSizes[MAX_TX_QUEUE_SIZE]; // holds the actual message size in ea
 
 sUartMessage gTxMessage;
 
-sCDMCommandDef gCDMCommands[eUARTCommand_num_commands] =
+sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 {
 		{4, {'M','G','U','I'}, 1},  // eUARTCommand_mgui,
 		{4, {'P','O','W','R'}, 1},  // eUARTCommand_powr,

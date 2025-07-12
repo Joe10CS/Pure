@@ -70,5 +70,13 @@ void FadeInLeds(eCarbonationLevel level);
 void FadeInAmbiantLight();
 void AmbiantLightOff();
 
+bool IsGuiControlMode();
+void SolenoidPump(int itOn);
+void SetLedByLastMsg();
+void SetRGBLedByLastMsg();
+void SolenoidPumpPower(int itOn);
+void StartStatusTransmit();
+void StopStatusTransmit();
+
 extern eCarbonationLevel carbonationLevel;
 #endif /* INC_SMINTERFACE_H_ */

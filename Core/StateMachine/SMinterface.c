@@ -42,3 +42,10 @@ void FadeInAmbiantLight() {}
 void FadeOutAmbiantLight() {}
 void AmbiantLightOff() {}
 
+bool IsGuiControlMode() {return false;}
+void SolenoidPump(int itOn) {}
+void SetLedByLastMsg() {}
+void SetRGBLedByLastMsg() {}
+void SolenoidPumpPower(int itOn) {}
+void StartStatusTransmit() {}
+void StopStatusTransmit() {}

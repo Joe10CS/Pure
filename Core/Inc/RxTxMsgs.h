@@ -60,7 +60,7 @@ typedef enum {
 	eUARTCommand_pmpa,
 	eUARTCommand_rrtc,
 	eUARTCommand_rsts,
-	eUARTCommand_rver
+	eUARTCommand_rver,
 
 	eUARTCommand_num_commands,
 	//eUARTCommand_motor_current_beyond_threshold = 55,
@@ -72,8 +72,22 @@ typedef struct {
 	uint8_t len; // size following the $ sign
 	char command[MAX_COMMAND_LEN];
 	uint8_t num_params;
-} sCDMCommandDef;
+} sCommandDef;
 
+typedef struct {
+	uint32_t isOn;
+} sOnOffParams;
+
+typedef struct {
+	uint32_t isOn;
+	uint32_t sensorThreashold; // 0 – ignore water sensor, N – automatically stop on sensor value above N
+} sPumpParams;
+
+typedef struct {
+	uint32_t periodicStatusInterval; // 0 – don't send, N – status send period in milli-seconds
+} sPeriodicStatusParams;
+
+// !@#!@#  CDM stuff below
 typedef struct {
 	uint32_t cycleTime;
 	uint32_t numberOfCycles;;
@@ -100,7 +114,13 @@ typedef struct {
 } sHomeParams;
 
 typedef union {
-    uint32_t list[MAX_NUMBER_OF_PARAMETERS];
+	sOnOffParams onOff;
+	sPumpParams pump;
+	sPeriodicStatusParams periodicStatus;
+
+	// !@#!@#  CDM stuff below
+
+	uint32_t list[MAX_NUMBER_OF_PARAMETERS];
     sCarbParams carbParams;
     sStartParams startParams;
     sInjectSyrupParams injectSytupParams;
@@ -112,8 +132,8 @@ typedef struct {
 	uParams params;
 } sUartMessage;
 /* variables -----------------------------------------------------------------*/
-extern eUARTCommandTypes glb_CDM_command;
-extern sUartMessage glb_CDM_RxMessage;
+extern eUARTCommandTypes glb_last_msg_type;
+extern sUartMessage glb_last_RxMessage;
 /* functions ----------------------------------------------------------------*/
 
 void COMM_UART_StartRx();
