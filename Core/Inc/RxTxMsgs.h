@@ -46,17 +46,24 @@ typedef enum {
 }eUartDoneStatus;
 // commands from PC
 typedef enum {
-	eUARTCommand_rver,
+
+	eUARTCommand_mgui,
+	eUARTCommand_powr,
+	eUARTCommand_sled,
+	eUARTCommand_srgb,
+	eUARTCommand_pump,
 	eUARTCommand_carb,
-	eUARTCommand_prsw,
-	eUARTCommand_strt,
 	eUARTCommand_stop,
-	eUARTCommand_home,
-	eUARTCommand_injc,
-	eUARTCommand_gist,
+	eUARTCommand_tilt,
+	eUARTCommand_wtrs,
+	eUARTCommand_uvla,
+	eUARTCommand_pmpa,
+	eUARTCommand_rrtc,
+	eUARTCommand_rsts,
+	eUARTCommand_rver
 
 	eUARTCommand_num_commands,
-	eUARTCommand_motor_current_beyond_threshold = 55,
+	//eUARTCommand_motor_current_beyond_threshold = 55,
 	eUARTCommand_none = 99,
 }eUARTCommandTypes;
 

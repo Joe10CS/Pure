@@ -32,14 +32,29 @@ sUartMessage gTxMessage;
 
 sCDMCommandDef gCDMCommands[eUARTCommand_num_commands] =
 {
-		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver,
-		{4, {'C','A','R','B'}, 5},  // eUARTCommand_carb,   // if PS counter is implemented change the number of params to  6
-		{4, {'P','R','S','W'}, 0},  // eUARTCommand_prsw,
-		{4, {'S','T','R','T'}, 3},  // eUARTCommand_strt,
+		{4, {'M','G','U','I'}, 1},  // eUARTCommand_mgui,
+		{4, {'P','O','W','R'}, 1},  // eUARTCommand_powr,
+		{4, {'S','L','E','D'}, 2},  // eUARTCommand_sled,
+		{4, {'S','R','G','B'}, 4},  // eUARTCommand_srgb,
+		{4, {'P','U','M','P'}, 2},  // eUARTCommand_pump,
+		{4, {'C','A','R','B'}, 1},  // eUARTCommand_carb,
 		{4, {'S','T','O','P'}, 0},  // eUARTCommand_stop,
-		{4, {'H','O','M','E'}, 2},  // eUARTCommand_home, - syrup injection to home, parameter: % PWM (speed), 0/1 home pin state
-		{4, {'I','N','J','C'}, 2},  // eUARTCommand_injC, - syrup inject, parameter: N signals, % PWM (speed)
-		{4, {'G','I','S','T'}, 0},  // eUARTCommand_gist, - syrup injection status
+		{4, {'T','I','L','T'}, 0},  // eUARTCommand_tilt,
+		{4, {'W','T','R','S'}, 0},  // eUARTCommand_wtrs,
+		{4, {'U','V','L','A'}, 0},  // eUARTCommand_uvla,
+		{4, {'P','M','P','A'}, 0},  // eUARTCommand_pmpa,
+		{4, {'R','R','T','C'}, 0},  // eUARTCommand_rrtc,
+		{4, {'R','S','T','S'}, 1},  // eUARTCommand_rsts,
+		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver
+
+//		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver,
+//		{4, {'C','A','R','B'}, 5},  // eUARTCommand_carb,   // if PS counter is implemented change the number of params to  6
+//		{4, {'P','R','S','W'}, 0},  // eUARTCommand_prsw,
+//		{4, {'S','T','R','T'}, 3},  // eUARTCommand_strt,
+//		{4, {'S','T','O','P'}, 0},  // eUARTCommand_stop,
+//		{4, {'H','O','M','E'}, 2},  // eUARTCommand_home, - syrup injection to home, parameter: % PWM (speed), 0/1 home pin state
+//		{4, {'I','N','J','C'}, 2},  // eUARTCommand_injC, - syrup inject, parameter: N signals, % PWM (speed)
+//		{4, {'G','I','S','T'}, 0},  // eUARTCommand_gist, - syrup injection status
 };
 
 /* Extern Variables ---------------------------------------------------*/
