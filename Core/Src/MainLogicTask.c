@@ -30,6 +30,7 @@ uint32_t gRawMessageLen = 0;
 uint32_t gQueueErrors = 0;
 uint32_t gWaterLevelSensorThreshold = 0; // Hold the threshold (A2D) value of the water sensor for bottle full detection
 uint32_t gPeriodicStatusSendIntervalMilliSconds = 0; // 0 -don't send
+bool gIsGuiControlMode = false;
 
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
 int32_t gTiltX = 0;
@@ -105,7 +106,8 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		echoCommand = false;
 		break;
 	case eUARTCommand_mgui:
-		if (! SMEventQueue_Add((msg->params.onOff.isOn == 1)? SMSodaStreamPure_EventId_EVENT_ENTER_GUI_CONTROLLED_MODE : SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE))
+		gIsGuiControlMode = (msg->params.onOff.isOn == 1);
+		if (! SMEventQueue_Add(gIsGuiControlMode? SMSodaStreamPure_EventId_EVENT_ENTER_GUI_CONTROLLED_MODE : SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE))
 			gQueueErrors++;
 		break;
 	case eUARTCommand_powr:

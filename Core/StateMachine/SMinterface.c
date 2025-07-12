@@ -5,6 +5,7 @@
  *      Author: yossi
  */
 
+#include "main.h"
 #include "SMinterface.h"
 
 eCarbonationLevel carbonationLevel = eCarbLevel_undef;
@@ -42,7 +43,12 @@ void FadeInAmbiantLight() {}
 void FadeOutAmbiantLight() {}
 void AmbiantLightOff() {}
 
-bool IsGuiControlMode() {return false;}
+
+bool IsGuiControlMode()
+{
+	return gIsGuiControlMode;
+}
+
 void SolenoidPump(int itOn) {}
 void SetLedByLastMsg() {}
 void SetRGBLedByLastMsg() {}

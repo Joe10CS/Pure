@@ -55,6 +55,8 @@ void Error_Handler(void);
 void MainLogicInit(void);
 void MainLogicPeriodic(void);
 
+
+extern bool gIsGuiControlMode;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
