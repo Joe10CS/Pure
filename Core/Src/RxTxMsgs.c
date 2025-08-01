@@ -59,7 +59,7 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 };
 
 /* Extern Variables ---------------------------------------------------*/
-extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart2;
 /* Local Methods ------------------------------------------------------*/
 bool CheckAndProcessUartMessage(sUartMessage *newMsg, uint8_t* msgPtr, uint32_t msgSize);
 uint16_t ParamValToString(uint8_t* buffer, uint16_t val);
@@ -71,7 +71,7 @@ uint16_t ParamValToString(uint8_t* buffer, uint16_t val);
  */
 static uint16_t COMM_UART_PeekReadyBytes()
 {
-	uint8_t const * head = RX_BUFFER_PTR + MAX_RX_BUFFER_LEN - __HAL_DMA_GET_COUNTER(huart1.hdmarx);
+	uint8_t const * head = RX_BUFFER_PTR + MAX_RX_BUFFER_LEN - __HAL_DMA_GET_COUNTER(huart2.hdmarx);
 	uint8_t const * tail = rx_tail_ptr;
 
 	if( head>=tail )
@@ -109,7 +109,7 @@ static void COMM_UART_CopyRxBytes(uint8_t *targetBuffer, uint16_t numBytes)
  */
 void COMM_UART_ClearRxBytes()
 {
-	rx_tail_ptr = RX_BUFFER_PTR + MAX_RX_BUFFER_LEN - __HAL_DMA_GET_COUNTER(huart1.hdmarx);
+	rx_tail_ptr = RX_BUFFER_PTR + MAX_RX_BUFFER_LEN - __HAL_DMA_GET_COUNTER(huart2.hdmarx);
 }
 
 /* @brief  Start to receive RX bytes
@@ -119,7 +119,7 @@ void COMM_UART_ClearRxBytes()
 void COMM_UART_StartRx()
 {
 	rx_tail_ptr = RX_BUFFER_PTR;
-	HAL_UART_Receive_DMA(&huart1, RX_BUFFER_PTR, MAX_RX_BUFFER_LEN);
+	HAL_UART_Receive_DMA(&huart2, RX_BUFFER_PTR, MAX_RX_BUFFER_LEN);
 }
 
 /* @brief  Try to read numBytes bytes from UART RX buffer
@@ -278,9 +278,9 @@ bool COMM_UART_QueueTxMessage(uint8_t *msg, uint32_t msgLen)
     memcpy(txBuffer[gTxQueueHead], msg, msgLen);
 
     // Check if DMA is not busy and the queue is empty
-    if ((huart1.hdmatx->State == HAL_DMA_STATE_READY) && (gTxQueueHead == gTxQueueTail)) {
+    if ((huart2.hdmatx->State == HAL_DMA_STATE_READY) && (gTxQueueHead == gTxQueueTail)) {
         // Send message directly
-        HAL_UART_Transmit_DMA(&huart1, txBuffer[gTxQueueHead], msgLen);
+        HAL_UART_Transmit_DMA(&huart2, txBuffer[gTxQueueHead], msgLen);
 
         // Move head to next position
         gTxQueueHead = (gTxQueueHead + 1) % MAX_TX_QUEUE_SIZE;
@@ -310,14 +310,14 @@ void COMM_UART_SendNextTxQueue(void)
     // Check if there are messages pending in the queue
     if (gTxQueueTail != gTxQueueHead) {
         // There is a message in the queue, send it
-        HAL_UART_Transmit_DMA(&huart1, txBuffer[gTxQueueTail], txBufferSizes[gTxQueueTail]);
+        HAL_UART_Transmit_DMA(&huart2, txBuffer[gTxQueueTail], txBufferSizes[gTxQueueTail]);
     }
 }
 
 void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
     // Check if the callback is for the correct UART
-    if (huart == &huart1) {
+    if (huart == &huart2) {
 
         // Move tail to the next message
         gTxQueueTail = (gTxQueueTail + 1) % MAX_TX_QUEUE_SIZE;

@@ -28,6 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32g0xx_hal.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
@@ -60,8 +61,8 @@ extern bool gIsGuiControlMode;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define EN1_CMD_Pin GPIO_PIN_8
-#define EN1_CMD_GPIO_Port GPIOB
+#define LED_EN_Pin GPIO_PIN_9
+#define LED_EN_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

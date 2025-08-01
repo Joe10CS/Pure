@@ -26,7 +26,7 @@ HAL_StatusTypeDef LP5009_Init(I2C_HandleTypeDef *hi2c)
     HAL_StatusTypeDef status;
 
     // Hardware Enable the chip (power up the chip)
-    HAL_GPIO_WritePin(EN1_CMD_GPIO_Port, EN1_CMD_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LED_EN_GPIO_Port, LED_EN_Pin, GPIO_PIN_SET);
 
 	HAL_Delay(1);
 
@@ -185,10 +185,10 @@ extern I2C_HandleTypeDef hi2c2;
 void test_LP5009()
 {
 	 // Hardware disable pin for reset (?)
-	  HAL_GPIO_WritePin(EN1_CMD_GPIO_Port, EN1_CMD_Pin, GPIO_PIN_RESET);
+	  HAL_GPIO_WritePin(LED_EN_GPIO_Port, LED_EN_Pin, GPIO_PIN_RESET);
 		HAL_Delay(20);
 		  // Hardware Enable the chip (power up the chip)
-	  HAL_GPIO_WritePin(EN1_CMD_GPIO_Port, EN1_CMD_Pin, GPIO_PIN_SET);
+	  HAL_GPIO_WritePin(LED_EN_GPIO_Port, LED_EN_Pin, GPIO_PIN_SET);
 
 		HAL_Delay(2);
 
