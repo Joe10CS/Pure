@@ -31,6 +31,9 @@ uint8_t txBufferSizes[MAX_TX_QUEUE_SIZE]; // holds the actual message size in ea
 
 sUartMessage gTxMessage;
 
+#define MAKE_CMD_KEY(a, b) (((uint16_t)(a) << 8) | (b))
+
+// IMPORTANT!! first two character of each command should be unique !!!
 sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 {
 		{4, {'M','G','U','I'}, 1},  // eUARTCommand_mgui,
@@ -47,6 +50,8 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		{4, {'R','R','T','C'}, 0},  // eUARTCommand_rrtc,
 		{4, {'R','S','T','S'}, 1},  // eUARTCommand_rsts,
 		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver
+
+		{4, {'D','B','U','G'}, 2},  // eUARTCommand_dbug
 
 //		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver,
 //		{4, {'C','A','R','B'}, 5},  // eUARTCommand_carb,   // if PS counter is implemented change the number of params to  6
@@ -190,29 +195,37 @@ eUartStatus COMM_UART_CheckNewMessage(sUartMessage *newMsg, uint8_t* rawMsgPtr, 
  */
 bool CheckAndProcessUartMessage(sUartMessage *newMsg, uint8_t* msgPtr, uint32_t msgSize)
 {
+	if (msgSize < 2) { gIllegalCommands++; return false; }
+
+	// The 'key' of the received command
+	uint16_t key = MAKE_CMD_KEY(msgPtr[0], msgPtr[1]);
+
+	// This code assumes that no two commands start with same key
+	// i.e. first two chars are different
 	int cmd_idx = ILLEGAL_VALUE;
-	int idx = ILLEGAL_VALUE;
-	// message should be starting with the first char of the command
-	// Assuming that each command starts with a different character
-	for (int i = 0; (i < eUARTCommand_num_commands) && (cmd_idx == ILLEGAL_VALUE); i++) {
-		if (gCDMCommands[i].command[0] == msgPtr[0]) {
-			cmd_idx = i; // assume OK
-			// found first matching character of command
-			for (int j = 0; j < gCDMCommands[i].len; j++) {
-				if (gCDMCommands[i].command[j] != msgPtr[j]) {
-					cmd_idx = ILLEGAL_VALUE; // mismatch char - not OK...
-					break; // try next command
+	for (int i = 0; i < eUARTCommand_num_commands; i++) {
+		if (MAKE_CMD_KEY(gCDMCommands[i].command[0], gCDMCommands[i].command[1]) == key) {
+			bool match = true;
+			for (int j = 2; j < gCDMCommands[i].len; j++) {
+				if (msgPtr[j] != gCDMCommands[i].command[j]) {
+					match = false;
+					break;
 				}
+			}
+			if (match) {
+				cmd_idx = i;
+				break;
 			}
 		}
 	}
+
 	if (cmd_idx == ILLEGAL_VALUE) {
 		gIllegalCommands++;
 		return false;
 	}
 
 	// at this point, we have a valid command name, check parameters
-	idx = gCDMCommands[cmd_idx].len;
+	int idx = gCDMCommands[cmd_idx].len;
 	if (idx >= msgSize) { gIllegalCommands++; return false; }
 	if (gCDMCommands[cmd_idx].num_params > 0) {
 		// validate the space

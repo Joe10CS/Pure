@@ -61,6 +61,8 @@ extern bool gIsGuiControlMode;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define UV_LED_EN_Pin GPIO_PIN_5
+#define UV_LED_EN_GPIO_Port GPIOB
 #define LED_EN_Pin GPIO_PIN_9
 #define LED_EN_GPIO_Port GPIOB
 

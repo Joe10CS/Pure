@@ -62,6 +62,10 @@ typedef enum {
 	eUARTCommand_rsts,
 	eUARTCommand_rver,
 
+	// DEBUG REMOVE ??
+	eUARTCommand_dbug, // debug messages
+
+
 	eUARTCommand_num_commands,
 	//eUARTCommand_motor_current_beyond_threshold = 55,
 	eUARTCommand_none = 99,

@@ -40,7 +40,7 @@ uint32_t gWaterLevelSensorLastRead = 0; // Hold the last read (A2D) value of the
 uint32_t gUVLedLastReadCurrentMilliAmp = 0;
 uint32_t gPumpLastReadCurrentMilliAmp = 0;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
-
+bool gFirstTime = true;
 // Defines the state of the pin at home position, default is 1 (SET)
 /* Private function prototypes -----------------------------------------------*/
 void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t rawMessageLen);
@@ -62,16 +62,51 @@ void MainLogicInit(void) {
 
 }
 
+bool dbgSMEnabled = true;
+SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
+SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
+
 void MainLogicPeriodic() {
 
 
+	if (gFirstTime)
+	{
+		gFirstTime = false;
+		// Start reading from the UART
+		COMM_UART_StartRx();
+		// on powerup, send the version number
+		glb_last_RxMessage.cmd = eUARTCommand_rver;
+		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
+	}
 	// optional: dispatch DO every tick
 	SMSodaStreamPure_dispatch_event(&mStateMachine, SMSodaStreamPure_EventId_DO);
+	// DEBUG REMOVE
+	if (dbgSMEnabled)
+	{
+		if (dbgCurrentState != mStateMachine.state_id)
+		{
+			sprintf((char *)gRawMsgForEcho, "%d[0]%d\r\n",(int)dbgCurrentState, (int)mStateMachine.state_id);
+			dbgCurrentState = mStateMachine.state_id;
+			COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+		}
+	}
+	// DEBUG REMOVE
 
 	// dispatch queued events from your ring buffer (if any)
 	SMSodaStreamPure_EventId ev;
 	while (SMEventQueue_Take(&ev)) {
 		SMSodaStreamPure_dispatch_event(&mStateMachine, ev);
+		// DEBUG REMOVE
+		if (dbgSMEnabled)
+		{
+			if ((dbgCurrentState != mStateMachine.state_id) || (ev != SMSodaStreamPure_EventId_DO))
+			{
+				sprintf((char *)gRawMsgForEcho, "%d[%d]%d\r\n",(int)dbgCurrentState, (int)ev, (int)mStateMachine.state_id);
+				dbgCurrentState = mStateMachine.state_id;
+				COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+			}
+		}
+		// DEBUG REMOVE
 	}
 
 	// process all pending commands
