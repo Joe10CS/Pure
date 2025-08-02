@@ -79,4 +79,5 @@ void StartStatusTransmit();
 void StopStatusTransmit();
 
 extern eCarbonationLevel carbonationLevel;
+extern SMSodaStreamPure mStateMachine;
 #endif /* INC_SMINTERFACE_H_ */

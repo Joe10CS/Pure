@@ -19,8 +19,24 @@ void StopCarbonation() {}
 void StartUVLEd() {}
 void StopUVLed() {}
 
-void StartWaterPump() {}
-void StopWaterPump() {}
+void StartWaterPump()
+{
+	// TODO consider moving enable ADC from here to amore general place or even do it continuously all the time
+	//      if there are more channels on the ADC1
+	// Enable ADC
+	if (mStateMachine.vars.pumpStopsOnSensor)
+	{
+		StartADCConversion();
+	}
+
+
+	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
+}
+
+void StopWaterPump()
+{
+
+}
 
 void StartWaterFilterLedSequence() {}
 void StartCarbonationLedSequance(eCarbonationLevel level) {}

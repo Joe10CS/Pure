@@ -21,6 +21,11 @@
 /* External variables ---------------------------------------------------------*/
 // TIM1 runs the main logic each 10ms
 extern TIM_HandleTypeDef htim1;
+
+extern int8_t filtered_x;
+extern int8_t filtered_y;
+extern int8_t filtered_z;
+
 /* Private variables ---------------------------------------------------------*/
 SMSodaStreamPure mStateMachine;  // the state machine instance
 eUartStatus glb_new_msg = eUART_NoMessage;
@@ -31,11 +36,9 @@ uint32_t gQueueErrors = 0;
 uint32_t gWaterLevelSensorThreshold = 0; // Hold the threshold (A2D) value of the water sensor for bottle full detection
 uint32_t gPeriodicStatusSendIntervalMilliSconds = 0; // 0 -don't send
 bool gIsGuiControlMode = false;
-
+bool gIsTilted = false;
+bool gAccelerometerIsPresent = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
-int32_t gTiltX = 0;
-int32_t gTiltY = 0;
-int32_t gTiltZ = 0;
 uint32_t gWaterLevelSensorLastRead = 0; // Hold the last read (A2D) value of the water level sensor
 uint32_t gUVLedLastReadCurrentMilliAmp = 0;
 uint32_t gPumpLastReadCurrentMilliAmp = 0;
@@ -44,6 +47,7 @@ bool gFirstTime = true;
 // Defines the state of the pin at home position, default is 1 (SET)
 /* Private function prototypes -----------------------------------------------*/
 void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t rawMessageLen);
+void CheckHWAndGenerateEventsAsNeeded();
 
 /* Private user code ---------------------------------------------------------*/
 /**
@@ -56,6 +60,11 @@ void MainLogicInit(void) {
 	// Initialize the state machine
 	SMSodaStreamPure_ctor(&mStateMachine);
 	SMSodaStreamPure_start(&mStateMachine);
+
+
+	gAccelerometerIsPresent = AccelerometerIsPresent();
+	// Initialize the Accelerometer
+	AccelerometerInit();
 
 	// starts the main logic timer
 	HAL_TIM_Base_Start_IT(&htim1);
@@ -78,6 +87,9 @@ void MainLogicPeriodic() {
 		glb_last_RxMessage.cmd = eUARTCommand_rver;
 		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
 	}
+
+	CheckHWAndGenerateEventsAsNeeded();
+
 	// optional: dispatch DO every tick
 	SMSodaStreamPure_dispatch_event(&mStateMachine, SMSodaStreamPure_EventId_DO);
 	// DEBUG REMOVE
@@ -179,7 +191,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			gQueueErrors++;
 		break;
 	case eUARTCommand_tilt: // Get Info - non state machine related command
-		sprintf((char *)gRawMsgForEcho, "$TILT %d,%d,%d\r\n",(int)gTiltX,(int)gTiltY,(int)gTiltZ);
+		sprintf((char *)gRawMsgForEcho, "$TILT %d,%d,%d\r\n",(int)filtered_x,(int)filtered_y,(int)filtered_z);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		echoCommand = false;
 		break;
@@ -213,5 +225,34 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	if (echoCommand == true)
 	{
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
+	}
+}
+
+
+void CheckHWAndGenerateEventsAsNeeded()
+{
+
+	// check for tilt and set event if needed
+	if (gAccelerometerIsPresent)
+	{
+		if (IsSlanted())
+		{
+			if (! gIsTilted) // just became tilted
+			{
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_TILTDETECTED);
+			}
+			gIsTilted = true;
+
+		}
+		else if (gIsTilted) // if was tilted before and not tilted anymore
+		{
+			gIsTilted = false;
+			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_NOTTILTED);
+		}
+	}
+
+	//if (gWaterLevelIsActive)
+	{
+
 	}
 }

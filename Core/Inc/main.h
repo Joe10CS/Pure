@@ -41,6 +41,8 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
+/* USER CODE BEGIN EC */
+#define ADC_DMA_BUFFER_SIZE   ((uint32_t)  16)
 
 /* USER CODE END EC */
 
@@ -56,11 +58,23 @@ void Error_Handler(void);
 void MainLogicInit(void);
 void MainLogicPeriodic(void);
 
+// Accelerometer
+bool IsSlanted();
+void AccelerometerInit(void);
+bool AccelerometerIsPresent(void);
+
+
 
 extern bool gIsGuiControlMode;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define ACCEL_CS_Pin GPIO_PIN_4
+#define ACCEL_CS_GPIO_Port GPIOA
+#define WATER_LVL_ADC1_IN10_Pin GPIO_PIN_2
+#define WATER_LVL_ADC1_IN10_GPIO_Port GPIOB
+#define WaterPMP_CMD_Pin GPIO_PIN_6
+#define WaterPMP_CMD_GPIO_Port GPIOC
 #define UV_LED_EN_Pin GPIO_PIN_5
 #define UV_LED_EN_GPIO_Port GPIOB
 #define LED_EN_Pin GPIO_PIN_9

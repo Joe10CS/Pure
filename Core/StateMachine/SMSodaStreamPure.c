@@ -64,6 +64,8 @@ static void STATE_GUIMODEWAITCOMMANDS_enter(SMSodaStreamPure* sm);
 
 static void STATE_GUIMODEWAITCOMMANDS_exit(SMSodaStreamPure* sm);
 
+static void STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor(SMSodaStreamPure* sm);
+
 static void STATE_GUIMODEWAITCOMMANDS_event_carboff(SMSodaStreamPure* sm);
 
 static void STATE_GUIMODEWAITCOMMANDS_event_carbon(SMSodaStreamPure* sm);
@@ -139,6 +141,12 @@ static void STATE_STOPSTATUSTRANSMIT_enter(SMSodaStreamPure* sm);
 static void STATE_STOPSTATUSTRANSMIT_exit(SMSodaStreamPure* sm);
 
 static void STATE_STOPSTATUSTRANSMIT_do(SMSodaStreamPure* sm);
+
+static void STATE_STOPWATERPUMP_enter(SMSodaStreamPure* sm);
+
+static void STATE_STOPWATERPUMP_exit(SMSodaStreamPure* sm);
+
+static void STATE_STOPWATERPUMP_do(SMSodaStreamPure* sm);
 
 static void STATE_UVLEDOFF_enter(SMSodaStreamPure* sm);
 
@@ -400,6 +408,7 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_EVENT_STARTSTATUSTRANSMIT: STATE_GUIMODEWAITCOMMANDS_event_startstatustransmit(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_STOPSTATUSTRANSMIT: STATE_GUIMODEWAITCOMMANDS_event_stopstatustransmit(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_STOP: STATE_GUIMODEWAITCOMMANDS_event_stop(sm); break;
+                case SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR: STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
@@ -512,6 +521,20 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
             switch (event_id)
             {
                 case SMSodaStreamPure_EventId_DO: STATE_STOPSTATUSTRANSMIT_do(sm); break;
+                case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
+                case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
+                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
+                case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
+                
+                default: break; // to avoid "unused enumeration value in switch" warning
+            }
+            break;
+        
+        // STATE: State_StopWaterPump
+        case SMSodaStreamPure_StateId_STATE_STOPWATERPUMP:
+            switch (event_id)
+            {
+                case SMSodaStreamPure_EventId_DO: STATE_STOPWATERPUMP_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
@@ -819,6 +842,8 @@ static void exit_up_to_state_handler(SMSodaStreamPure* sm, SMSodaStreamPure_Stat
             case SMSodaStreamPure_StateId_STATE_STOP: STATE_STOP_exit(sm); break;
             
             case SMSodaStreamPure_StateId_STATE_STOPSTATUSTRANSMIT: STATE_STOPSTATUSTRANSMIT_exit(sm); break;
+            
+            case SMSodaStreamPure_StateId_STATE_STOPWATERPUMP: STATE_STOPWATERPUMP_exit(sm); break;
             
             case SMSodaStreamPure_StateId_STATE_UVLEDOFF: STATE_UVLEDOFF_exit(sm); break;
             
@@ -1319,6 +1344,52 @@ static void STATE_GUIMODEWAITCOMMANDS_enter(SMSodaStreamPure* sm)
 static void STATE_GUIMODEWAITCOMMANDS_exit(SMSodaStreamPure* sm)
 {
     sm->state_id = SMSodaStreamPure_StateId_STAT_GUICONTROLMODE;
+}
+
+static void STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor(SMSodaStreamPure* sm)
+{
+    // State_GuiModeWaitCommands behavior
+    // uml: Event_BottleFullSensor TransitionTo(Stat_GUIControlMode.<ChoicePoint>())
+    {
+        // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition).
+        STATE_GUIMODEWAITCOMMANDS_exit(sm);
+        
+        // Step 2: Transition action: ``.
+        
+        // Step 3: Enter/move towards transition target `Stat_GUIControlMode.<ChoicePoint>()`.
+        // Stat_GUIControlMode.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
+        
+        // Stat_GUIControlMode.<ChoicePoint>() behavior
+        // uml: [pumpStopsOnSensor] TransitionTo(State_StopWaterPump)
+        if (sm->vars.pumpStopsOnSensor)
+        {
+            // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `State_StopWaterPump`.
+            STATE_STOPWATERPUMP_enter(sm);
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for Stat_GUIControlMode.<ChoicePoint>()
+        
+        // Stat_GUIControlMode.<ChoicePoint>() behavior
+        // uml: else TransitionTo(State_GuiModeWaitCommands)
+        {
+            // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
+            
+            // Step 2: Transition action: ``.
+            
+            // Step 3: Enter/move towards transition target `State_GuiModeWaitCommands`.
+            STATE_GUIMODEWAITCOMMANDS_enter(sm);
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for Stat_GUIControlMode.<ChoicePoint>()
+    } // end of behavior for State_GuiModeWaitCommands
+    
+    // No ancestor handles this event.
 }
 
 static void STATE_GUIMODEWAITCOMMANDS_event_carboff(SMSodaStreamPure* sm)
@@ -1967,6 +2038,48 @@ static void STATE_STOPSTATUSTRANSMIT_do(SMSodaStreamPure* sm)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// event handlers for state STATE_STOPWATERPUMP
+////////////////////////////////////////////////////////////////////////////////
+
+static void STATE_STOPWATERPUMP_enter(SMSodaStreamPure* sm)
+{
+    sm->state_id = SMSodaStreamPure_StateId_STATE_STOPWATERPUMP;
+    
+    // State_StopWaterPump behavior
+    // uml: enter / { StopWaterPump(); }
+    {
+        // Step 1: execute action `StopWaterPump();`
+        StopWaterPump();
+    } // end of behavior for State_StopWaterPump
+}
+
+static void STATE_STOPWATERPUMP_exit(SMSodaStreamPure* sm)
+{
+    sm->state_id = SMSodaStreamPure_StateId_STAT_GUICONTROLMODE;
+}
+
+static void STATE_STOPWATERPUMP_do(SMSodaStreamPure* sm)
+{
+    // State_StopWaterPump behavior
+    // uml: do TransitionTo(State_GuiModeWaitCommands)
+    {
+        // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition).
+        STATE_STOPWATERPUMP_exit(sm);
+        
+        // Step 2: Transition action: ``.
+        
+        // Step 3: Enter/move towards transition target `State_GuiModeWaitCommands`.
+        STATE_GUIMODEWAITCOMMANDS_enter(sm);
+        
+        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+        return;
+    } // end of behavior for State_StopWaterPump
+    
+    // No ancestor handles this event.
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // event handlers for state STATE_UVLEDOFF
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2101,10 +2214,17 @@ static void STATE_WATERPUMPON_enter(SMSodaStreamPure* sm)
     sm->state_id = SMSodaStreamPure_StateId_STATE_WATERPUMPON;
     
     // State_WaterPumpOn behavior
-    // uml: enter / { StartWaterPump(1); }
+    // uml: enter / { pumpStopsOnSensor = true; }
     {
-        // Step 1: execute action `StartWaterPump(1);`
-        StartWaterPump(1);
+        // Step 1: execute action `pumpStopsOnSensor = true;`
+        sm->vars.pumpStopsOnSensor = true;
+    } // end of behavior for State_WaterPumpOn
+    
+    // State_WaterPumpOn behavior
+    // uml: enter / { StartWaterPump(); }
+    {
+        // Step 1: execute action `StartWaterPump();`
+        StartWaterPump();
     } // end of behavior for State_WaterPumpOn
 }
 
@@ -2143,10 +2263,17 @@ static void STATE_WATERPUMPONNOSENSOR_enter(SMSodaStreamPure* sm)
     sm->state_id = SMSodaStreamPure_StateId_STATE_WATERPUMPONNOSENSOR;
     
     // State_WaterPumpOnNoSensor behavior
-    // uml: enter / { StartWaterPump(0); }
+    // uml: enter / { pumpStopsOnSensor = false; }
     {
-        // Step 1: execute action `StartWaterPump(0);`
-        StartWaterPump(0);
+        // Step 1: execute action `pumpStopsOnSensor = false;`
+        sm->vars.pumpStopsOnSensor = false;
+    } // end of behavior for State_WaterPumpOnNoSensor
+    
+    // State_WaterPumpOnNoSensor behavior
+    // uml: enter / { StartWaterPump(); }
+    {
+        // Step 1: execute action `StartWaterPump();`
+        StartWaterPump();
     } // end of behavior for State_WaterPumpOnNoSensor
 }
 
@@ -2535,10 +2662,17 @@ static void STATE_FILTERING_enter(SMSodaStreamPure* sm)
     } // end of behavior for State_Filtering
     
     // State_Filtering behavior
-    // uml: enter / { StartWaterPump(1); }
+    // uml: enter / { pumpStopsOnSensor = true; }
     {
-        // Step 1: execute action `StartWaterPump(1);`
-        StartWaterPump(1);
+        // Step 1: execute action `pumpStopsOnSensor = true;`
+        sm->vars.pumpStopsOnSensor = true;
+    } // end of behavior for State_Filtering
+    
+    // State_Filtering behavior
+    // uml: enter / { StartWaterPump(); }
+    {
+        // Step 1: execute action `StartWaterPump();`
+        StartWaterPump();
     } // end of behavior for State_Filtering
     
     // State_Filtering behavior
@@ -2642,6 +2776,13 @@ static void STATE_FILTERING_event_waterpumpingtimeout(SMSodaStreamPure* sm)
 static void STATE_FILTERINGCARBONATIONAWAIT_enter(SMSodaStreamPure* sm)
 {
     sm->state_id = SMSodaStreamPure_StateId_STATE_FILTERINGCARBONATIONAWAIT;
+    
+    // State_FilteringCarbonationAwait behavior
+    // uml: enter / { StopWaterPump(); }
+    {
+        // Step 1: execute action `StopWaterPump();`
+        StopWaterPump();
+    } // end of behavior for State_FilteringCarbonationAwait
     
     // State_FilteringCarbonationAwait behavior
     // uml: enter / { StartCarbonationLedSequance(carbonationLevel); }
@@ -3024,10 +3165,17 @@ static void STATE_RINSING_enter(SMSodaStreamPure* sm)
     } // end of behavior for State_Rinsing
     
     // State_Rinsing behavior
-    // uml: enter / { StartWaterPump(1); }
+    // uml: enter / { pumpStopsOnSensor = true; }
     {
-        // Step 1: execute action `StartWaterPump(1);`
-        StartWaterPump(1);
+        // Step 1: execute action `pumpStopsOnSensor = true;`
+        sm->vars.pumpStopsOnSensor = true;
+    } // end of behavior for State_Rinsing
+    
+    // State_Rinsing behavior
+    // uml: enter / { StartWaterPump(); }
+    {
+        // Step 1: execute action `StartWaterPump();`
+        StartWaterPump();
     } // end of behavior for State_Rinsing
     
     // State_Rinsing behavior
@@ -3169,6 +3317,7 @@ char const * SMSodaStreamPure_state_id_to_string(SMSodaStreamPure_StateId id)
         case SMSodaStreamPure_StateId_STATE_STARTSTATUSTRANSMIT: return "STATE_STARTSTATUSTRANSMIT";
         case SMSodaStreamPure_StateId_STATE_STOP: return "STATE_STOP";
         case SMSodaStreamPure_StateId_STATE_STOPSTATUSTRANSMIT: return "STATE_STOPSTATUSTRANSMIT";
+        case SMSodaStreamPure_StateId_STATE_STOPWATERPUMP: return "STATE_STOPWATERPUMP";
         case SMSodaStreamPure_StateId_STATE_UVLEDOFF: return "STATE_UVLEDOFF";
         case SMSodaStreamPure_StateId_STATE_UVLEDON: return "STATE_UVLEDON";
         case SMSodaStreamPure_StateId_STATE_WATERPUMPOFF: return "STATE_WATERPUMPOFF";

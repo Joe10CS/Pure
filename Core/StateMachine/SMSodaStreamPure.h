@@ -68,28 +68,29 @@ typedef enum SMSodaStreamPure_StateId
     SMSodaStreamPure_StateId_STATE_STARTSTATUSTRANSMIT = 13,
     SMSodaStreamPure_StateId_STATE_STOP = 14,
     SMSodaStreamPure_StateId_STATE_STOPSTATUSTRANSMIT = 15,
-    SMSodaStreamPure_StateId_STATE_UVLEDOFF = 16,
-    SMSodaStreamPure_StateId_STATE_UVLEDON = 17,
-    SMSodaStreamPure_StateId_STATE_WATERPUMPOFF = 18,
-    SMSodaStreamPure_StateId_STATE_WATERPUMPON = 19,
-    SMSodaStreamPure_StateId_STATE_WATERPUMPONNOSENSOR = 20,
-    SMSodaStreamPure_StateId_STATE_AUTOMATICMODE = 21,
-    SMSodaStreamPure_StateId_SATE_CARBONATING = 22,
-    SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY = 23,
-    SMSodaStreamPure_StateId_STATE_EXITFILTERINGONLY = 24,
-    SMSodaStreamPure_StateId_STATE_FILTERING = 25,
-    SMSodaStreamPure_StateId_STATE_FILTERINGCARBONATIONAWAIT = 26,
-    SMSodaStreamPure_StateId_STATE_POWERON = 27,
-    SMSodaStreamPure_StateId_STATE_POWERONINIT = 28,
-    SMSodaStreamPure_StateId_STATE_READY = 29,
-    SMSodaStreamPure_StateId_STATE_READYRINSEREQUIRED = 30,
-    SMSodaStreamPure_StateId_STATE_STANDBY = 31,
-    SMSodaStreamPure_StateId_STATE_RINSING = 32
+    SMSodaStreamPure_StateId_STATE_STOPWATERPUMP = 16,
+    SMSodaStreamPure_StateId_STATE_UVLEDOFF = 17,
+    SMSodaStreamPure_StateId_STATE_UVLEDON = 18,
+    SMSodaStreamPure_StateId_STATE_WATERPUMPOFF = 19,
+    SMSodaStreamPure_StateId_STATE_WATERPUMPON = 20,
+    SMSodaStreamPure_StateId_STATE_WATERPUMPONNOSENSOR = 21,
+    SMSodaStreamPure_StateId_STATE_AUTOMATICMODE = 22,
+    SMSodaStreamPure_StateId_SATE_CARBONATING = 23,
+    SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY = 24,
+    SMSodaStreamPure_StateId_STATE_EXITFILTERINGONLY = 25,
+    SMSodaStreamPure_StateId_STATE_FILTERING = 26,
+    SMSodaStreamPure_StateId_STATE_FILTERINGCARBONATIONAWAIT = 27,
+    SMSodaStreamPure_StateId_STATE_POWERON = 28,
+    SMSodaStreamPure_StateId_STATE_POWERONINIT = 29,
+    SMSodaStreamPure_StateId_STATE_READY = 30,
+    SMSodaStreamPure_StateId_STATE_READYRINSEREQUIRED = 31,
+    SMSodaStreamPure_StateId_STATE_STANDBY = 32,
+    SMSodaStreamPure_StateId_STATE_RINSING = 33
 } SMSodaStreamPure_StateId;
 
 enum
 {
-    SMSodaStreamPure_StateIdCount = 33
+    SMSodaStreamPure_StateIdCount = 34
 };
 
 
@@ -101,6 +102,7 @@ typedef struct SMSodaStreamPure SMSodaStreamPure;
 typedef struct SMSodaStreamPure_Vars
 {
     uint16_t count; // this var can be referenced in diagram
+    bool pumpStopsOnSensor;
 } SMSodaStreamPure_Vars;
 
 
