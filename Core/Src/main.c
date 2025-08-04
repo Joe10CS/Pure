@@ -50,16 +50,14 @@ SPI_HandleTypeDef hspi1;
 
 TIM_HandleTypeDef htim1;
 
-UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
-DMA_HandleTypeDef hdma_usart1_rx;
-DMA_HandleTypeDef hdma_usart1_tx;
 DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 /// Define global variables to store the latest averaged ADC values.
 volatile uint16_t mReadWaterLevelADC;     // Stores the averaged value from ADC_CHANNEL_10 (PB2)
+volatile uint16_t mReadWaterPumpCureentADC;
 uint16_t mWaterLevelSensorThreahsold = 100; // TODO - set to correct default value
 bool mWaterLevelAboveThroshold = false;
 // ADC buffer definition
@@ -72,7 +70,6 @@ __IO   uint16_t   aADCxConvertedData[ADC_DMA_BUFFER_SIZE];
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_USART1_UART_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_I2C1_Init(void);
@@ -119,7 +116,6 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_USART1_UART_Init();
   MX_TIM1_Init();
   MX_USART2_UART_Init();
   MX_I2C1_Init();
@@ -212,12 +208,12 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.LowPowerAutoPowerOff = DISABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
-  hadc1.Init.NbrOfConversion = 1;
+  hadc1.Init.NbrOfConversion = 2;
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
   hadc1.Init.DMAContinuousRequests = ENABLE;
@@ -236,9 +232,18 @@ static void MX_ADC1_Init(void)
 
   /** Configure Regular Channel
   */
-  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Channel = ADC_CHANNEL_0;
   sConfig.Rank = ADC_REGULAR_RANK_1;
   sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  sConfig.Rank = ADC_REGULAR_RANK_2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -385,54 +390,6 @@ static void MX_TIM1_Init(void)
 }
 
 /**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 115200;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart1.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart1.Init.ClockPrescaler = UART_PRESCALER_DIV1;
-  huart1.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetTxFifoThreshold(&huart1, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_SetRxFifoThreshold(&huart1, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_UARTEx_DisableFifoMode(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -478,9 +435,6 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Channel1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
   /* DMA1_Channel2_3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
@@ -511,10 +465,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ACCEL_CS_GPIO_Port, ACCEL_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, WaterLVL_CMD_Pin|UV_LED_EN_Pin|LED_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, UV_LED_EN_Pin|LED_EN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, WaterPMP_CMD_Pin|Main_SW_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : ACCEL_CS_Pin */
   GPIO_InitStruct.Pin = ACCEL_CS_Pin;
@@ -523,19 +477,50 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(ACCEL_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : WaterPMP_CMD_Pin */
-  GPIO_InitStruct.Pin = WaterPMP_CMD_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  /*Configure GPIO pin : Pump_FDBK_Pin */
+  GPIO_InitStruct.Pin = Pump_FDBK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(WaterPMP_CMD_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(Pump_FDBK_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : UV_LED_EN_Pin LED_EN_Pin */
-  GPIO_InitStruct.Pin = UV_LED_EN_Pin|LED_EN_Pin;
+  /*Configure GPIO pin : WaterPMP_FDBK_Pin */
+  GPIO_InitStruct.Pin = WaterPMP_FDBK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(WaterPMP_FDBK_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : WaterLVL_CMD_Pin UV_LED_EN_Pin LED_EN_Pin */
+  GPIO_InitStruct.Pin = WaterLVL_CMD_Pin|UV_LED_EN_Pin|LED_EN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : BTN1_Pin BTN2_Pin BTN3_Pin BTN4_Pin */
+  GPIO_InitStruct.Pin = BTN1_Pin|BTN2_Pin|BTN3_Pin|BTN4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Pump_WD_FDBK_Pin */
+  GPIO_InitStruct.Pin = Pump_WD_FDBK_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(Pump_WD_FDBK_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : WaterPMP_CMD_Pin Main_SW_Pin */
+  GPIO_InitStruct.Pin = WaterPMP_CMD_Pin|Main_SW_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_3_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI4_15_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI4_15_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
@@ -577,16 +562,24 @@ HAL_StatusTypeDef StopADCConversion() {
   */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    // This callback is triggered when the SECOND HALF of the DMA buffer has been filled.
-    // In circular DMA mode, this means indices 8 to 15 have just been written,
-    // and DMA is wrapping around to fill the first half again.
-    // Each value is a CH10 sample already averaged by hardware oversampling.
+//    // This callback is triggered when the SECOND HALF of the DMA buffer has been filled.
+//    // In circular DMA mode, this means indices 8 to 15 have just been written,
+//    // and DMA is wrapping around to fill the first half again.
+//    // Each value is a CH10 sample already averaged by hardware oversampling.
+//
+//    // Since hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_4,
+//    // each value in the buffer represents the average of 16 raw samples.
+//    //
+//    // The last element in this half (index 15) contains the most recent CH10 sample.
+//	mReadWaterLevelADC = aADCxConvertedData[ADC_DMA_BUFFER_SIZE - 1]; // Latest sample (index 15)
 
-    // Since hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_4,
-    // each value in the buffer represents the average of 16 raw samples.
-    //
-    // The last element in this half (index 15) contains the most recent CH10 sample.
-	mReadWaterLevelADC = aADCxConvertedData[ADC_DMA_BUFFER_SIZE - 1]; // Latest sample (index 15)
+    // Index 14 = latest CH0 sample (even)
+    // Index 15 = latest CH10 sample (odd)
+    mReadWaterPumpCureentADC = aADCxConvertedData[14];   // ADC_CHANNEL_0
+    mReadWaterLevelADC       = aADCxConvertedData[15];   // ADC_CHANNEL_10
+
+
+
 	if ((!mWaterLevelAboveThroshold) && (mReadWaterLevelADC >= mWaterLevelSensorThreahsold))
 	{
 		// once moving above threshold, set bottle full event
@@ -602,17 +595,23 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
   */
 void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 {
-    // This callback is triggered when the FIRST HALF of the DMA buffer has been filled.
-    // In circular DMA mode, this means the first half (indices 0 to 7) just finished,
-    // and DMA is now filling the second half (indices 8 to 15).
-    // Each element corresponds to one CH10 sample after hardware oversampling.
+//    // This callback is triggered when the FIRST HALF of the DMA buffer has been filled.
+//    // In circular DMA mode, this means the first half (indices 0 to 7) just finished,
+//    // and DMA is now filling the second half (indices 8 to 15).
+//    // Each element corresponds to one CH10 sample after hardware oversampling.
+//
+//    // Because hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_4 (== divide by 16),
+//    // the hardware already averages 16 raw samples per reported value.
+//    // So each entry in aADCxConvertedData[] is the already-averaged 12-bit result.
+//    //
+//    // The last element in this half (index 7) contains the most recent CH10 sample.
+//	mReadWaterLevelADC = aADCxConvertedData[(ADC_DMA_BUFFER_SIZE / 2) - 1]; // Latest sample (index 7)
 
-    // Because hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_4 (== divide by 16),
-    // the hardware already averages 16 raw samples per reported value.
-    // So each entry in aADCxConvertedData[] is the already-averaged 12-bit result.
-    //
-    // The last element in this half (index 7) contains the most recent CH10 sample.
-	mReadWaterLevelADC = aADCxConvertedData[(ADC_DMA_BUFFER_SIZE / 2) - 1]; // Latest sample (index 7)
+    // Index 6 = latest CH0 sample (even)
+    // Index 7 = latest CH10 sample (odd)
+    mReadWaterPumpCureentADC = aADCxConvertedData[6];    // ADC_CHANNEL_0
+    mReadWaterLevelADC       = aADCxConvertedData[7];    // ADC_CHANNEL_10
+
 	if ((!mWaterLevelAboveThroshold) && (mReadWaterLevelADC >= mWaterLevelSensorThreahsold))
 	{
 		// once moving above threshold, set bottle full event

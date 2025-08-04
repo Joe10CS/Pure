@@ -69,12 +69,37 @@ extern bool gIsGuiControlMode;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define WaterPMP_CURR_ADC1_IN0_Pin GPIO_PIN_0
+#define WaterPMP_CURR_ADC1_IN0_GPIO_Port GPIOA
 #define ACCEL_CS_Pin GPIO_PIN_4
 #define ACCEL_CS_GPIO_Port GPIOA
+#define Pump_FDBK_Pin GPIO_PIN_0
+#define Pump_FDBK_GPIO_Port GPIOB
 #define WATER_LVL_ADC1_IN10_Pin GPIO_PIN_2
 #define WATER_LVL_ADC1_IN10_GPIO_Port GPIOB
+#define WaterPMP_FDBK_Pin GPIO_PIN_10
+#define WaterPMP_FDBK_GPIO_Port GPIOB
+#define WaterLVL_CMD_Pin GPIO_PIN_12
+#define WaterLVL_CMD_GPIO_Port GPIOB
+#define BTN1_Pin GPIO_PIN_13
+#define BTN1_GPIO_Port GPIOB
+#define BTN1_EXTI_IRQn EXTI4_15_IRQn
+#define BTN2_Pin GPIO_PIN_14
+#define BTN2_GPIO_Port GPIOB
+#define BTN2_EXTI_IRQn EXTI4_15_IRQn
+#define BTN3_Pin GPIO_PIN_15
+#define BTN3_GPIO_Port GPIOB
+#define BTN3_EXTI_IRQn EXTI4_15_IRQn
+#define Pump_WD_FDBK_Pin GPIO_PIN_8
+#define Pump_WD_FDBK_GPIO_Port GPIOA
+#define Pump_WD_FDBK_EXTI_IRQn EXTI4_15_IRQn
 #define WaterPMP_CMD_Pin GPIO_PIN_6
 #define WaterPMP_CMD_GPIO_Port GPIOC
+#define Main_SW_Pin GPIO_PIN_7
+#define Main_SW_GPIO_Port GPIOC
+#define BTN4_Pin GPIO_PIN_3
+#define BTN4_GPIO_Port GPIOB
+#define BTN4_EXTI_IRQn EXTI2_3_IRQn
 #define UV_LED_EN_Pin GPIO_PIN_5
 #define UV_LED_EN_GPIO_Port GPIOB
 #define LED_EN_Pin GPIO_PIN_9

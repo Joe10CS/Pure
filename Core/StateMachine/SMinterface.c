@@ -7,10 +7,11 @@
 
 #include "main.h"
 #include "SMinterface.h"
+#include "SMSodaStreamPure.h"
 
 eCarbonationLevel carbonationLevel = eCarbLevel_undef;
 
-
+extern SMSodaStreamPure mStateMachine;
 
 void StartCarbonation(eCarbonationLevel level) {}
 void StopCarbonation() {}
@@ -30,11 +31,18 @@ void StartWaterPump()
 	}
 
 
-	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_SET);
 }
 
 void StopWaterPump()
 {
+	if (mStateMachine.vars.pumpStopsOnSensor)
+	{
+		StopADCConversion();
+	}
+
+
+	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
 
 }
 
@@ -68,6 +76,9 @@ bool IsGuiControlMode()
 void SolenoidPump(int itOn) {}
 void SetLedByLastMsg() {}
 void SetRGBLedByLastMsg() {}
-void SolenoidPumpPower(int itOn) {}
+void SolenoidPumpPower(int itOn)
+{
+
+}
 void StartStatusTransmit() {}
 void StopStatusTransmit() {}
