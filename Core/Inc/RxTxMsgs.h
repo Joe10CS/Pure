@@ -56,6 +56,7 @@ typedef enum {
 	eUARTCommand_stop,
 	eUARTCommand_tilt,
 	eUARTCommand_wtrs,
+	eUARTCommand_uvld,
 	eUARTCommand_uvla,
 	eUARTCommand_pmpa,
 	eUARTCommand_rrtc,

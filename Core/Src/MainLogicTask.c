@@ -33,15 +33,16 @@ sUartMessage glb_last_RxMessage;
 uint8_t gRawMsgForEcho[MAX_RX_BUFFER_LEN];
 uint32_t gRawMessageLen = 0;
 uint32_t gQueueErrors = 0;
-uint32_t gWaterLevelSensorThreshold = 0; // Hold the threshold (A2D) value of the water sensor for bottle full detection
+extern uint16_t mWaterLevelSensorThreahsold; // Hold the threshold (A2D) value of the water sensor for bottle full detection
 uint32_t gPeriodicStatusSendIntervalMilliSconds = 0; // 0 -don't send
 bool gIsGuiControlMode = false;
+bool gIsUVLEdOn = false;
 bool gIsTilted = false;
 bool gAccelerometerIsPresent = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
-uint32_t gWaterLevelSensorLastRead = 0; // Hold the last read (A2D) value of the water level sensor
+extern uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
 uint32_t gUVLedLastReadCurrentMilliAmp = 0;
-uint32_t gPumpLastReadCurrentMilliAmp = 0;
+extern uint16_t mReadWaterPumpCureentADC;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
 // Defines the state of the pin at home position, default is 1 (SET)
@@ -71,7 +72,7 @@ void MainLogicInit(void) {
 
 }
 
-bool dbgSMEnabled = true;
+bool dbgSMEnabled = false;
 SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 
@@ -86,6 +87,7 @@ void MainLogicPeriodic() {
 		// on powerup, send the version number
 		glb_last_RxMessage.cmd = eUARTCommand_rver;
 		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
+		StartADCConversion();
 	}
 
 	CheckHWAndGenerateEventsAsNeeded();
@@ -148,7 +150,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	switch (msg->cmd)
 	{
 	case eUARTCommand_rver:
-		sprintf((char *)gRawMsgForEcho, "$RVER Version %s\r\n",(const char *)SWVERSION);
+		sprintf((char *)gRawMsgForEcho, "$RVER Version %d.%d\r\n",(int)(SWVERSION_MAJOR),(int)(SWVERSION_MINOR));
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		echoCommand = false;
 		break;
@@ -172,7 +174,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	case eUARTCommand_pump:
 		if (msg->params.pump.isOn == 1)
 		{
-			gWaterLevelSensorThreshold = msg->params.pump.sensorThreashold;
+			mWaterLevelSensorThreahsold = (uint16_t)(msg->params.pump.sensorThreashold);
 			event = (msg->params.pump.sensorThreashold == 0) ? SMSodaStreamPure_EventId_EVENT_WATERPUMOONNOSENSOR : SMSodaStreamPure_EventId_EVENT_WAREPUMPON;
 		}
 		else
@@ -196,9 +198,14 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		echoCommand = false;
 		break;
 	case eUARTCommand_wtrs: // Get Info - non state machine related command
-		sprintf((char *)gRawMsgForEcho, "$WRTS %d\r\n",(int)gWaterLevelSensorLastRead);
+		sprintf((char *)gRawMsgForEcho, "$WRTS %d\r\n",(int)mReadWaterLevelADC);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		echoCommand = false;
+		break;
+	case eUARTCommand_uvld:
+		gIsUVLEdOn = (msg->params.onOff.isOn == 1);
+		if (! SMEventQueue_Add(gIsUVLEdOn? SMSodaStreamPure_EventId_EVENT_UVLEDON : SMSodaStreamPure_EventId_EVENT_UVLEDOFF))
+			gQueueErrors++;
 		break;
 	case eUARTCommand_uvla: // Get Info - non state machine related command
 		sprintf((char *)gRawMsgForEcho, "$UVLA %d\r\n",(int)gUVLedLastReadCurrentMilliAmp);
@@ -206,7 +213,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		echoCommand = false;
 		break;
 	case eUARTCommand_pmpa: // Get Info - non state machine related command
-		sprintf((char *)gRawMsgForEcho, "$PMPA %d\r\n",(int)gPumpLastReadCurrentMilliAmp);
+		sprintf((char *)gRawMsgForEcho, "$PMPA %d\r\n",(int)mReadWaterPumpCureentADC);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		echoCommand = false;
 		break;

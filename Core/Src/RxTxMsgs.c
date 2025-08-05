@@ -45,6 +45,7 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		{4, {'S','T','O','P'}, 0},  // eUARTCommand_stop,
 		{4, {'T','I','L','T'}, 0},  // eUARTCommand_tilt,
 		{4, {'W','T','R','S'}, 0},  // eUARTCommand_wtrs,
+		{4, {'U','V','L','D'}, 1},  // eUARTCommand_uvld,
 		{4, {'U','V','L','A'}, 0},  // eUARTCommand_uvla,
 		{4, {'P','M','P','A'}, 0},  // eUARTCommand_pmpa,
 		{4, {'R','R','T','C'}, 0},  // eUARTCommand_rrtc,
@@ -200,25 +201,26 @@ bool CheckAndProcessUartMessage(sUartMessage *newMsg, uint8_t* msgPtr, uint32_t 
 	// The 'key' of the received command
 	uint16_t key = MAKE_CMD_KEY(msgPtr[0], msgPtr[1]);
 
-	// This code assumes that no two commands start with same key
-	// i.e. first two chars are different
 	int cmd_idx = ILLEGAL_VALUE;
 	for (int i = 0; i < eUARTCommand_num_commands; i++) {
-		if (MAKE_CMD_KEY(gCDMCommands[i].command[0], gCDMCommands[i].command[1]) == key) {
-			bool match = true;
-			for (int j = 2; j < gCDMCommands[i].len; j++) {
-				if (msgPtr[j] != gCDMCommands[i].command[j]) {
-					match = false;
-					break;
-				}
-			}
-			if (match) {
-				cmd_idx = i;
+		if (MAKE_CMD_KEY(gCDMCommands[i].command[0], gCDMCommands[i].command[1]) != key)
+			continue;
+
+		if (msgSize < gCDMCommands[i].len)
+			continue;
+
+		bool match = true;
+		for (int j = 2; j < gCDMCommands[i].len; j++) {
+			if (msgPtr[j] != gCDMCommands[i].command[j]) {
+				match = false;
 				break;
 			}
 		}
+		if (match) {
+			cmd_idx = i;
+			break;
+		}
 	}
-
 	if (cmd_idx == ILLEGAL_VALUE) {
 		gIllegalCommands++;
 		return false;

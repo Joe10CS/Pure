@@ -17,20 +17,21 @@ void StartCarbonation(eCarbonationLevel level) {}
 void StopCarbonation() {}
 
 
-void StartUVLEd() {}
-void StopUVLed() {}
+void StartUVLEd()
+{
+	HAL_GPIO_WritePin(UV_LED_EN_GPIO_Port, UV_LED_EN_Pin, GPIO_PIN_SET);
+}
+void StopUVLed()
+{
+	HAL_GPIO_WritePin(UV_LED_EN_GPIO_Port, UV_LED_EN_Pin, GPIO_PIN_RESET);
+}
 
 void StartWaterPump()
 {
-	// TODO consider moving enable ADC from here to amore general place or even do it continuously all the time
-	//      if there are more channels on the ADC1
-	// Enable ADC
 	if (mStateMachine.vars.pumpStopsOnSensor)
 	{
-		StartADCConversion();
+		HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, GPIO_PIN_SET);
 	}
-
-
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_SET);
 }
 
@@ -38,10 +39,8 @@ void StopWaterPump()
 {
 	if (mStateMachine.vars.pumpStopsOnSensor)
 	{
-		StopADCConversion();
+		HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, GPIO_PIN_RESET);
 	}
-
-
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
 
 }
@@ -73,12 +72,15 @@ bool IsGuiControlMode()
 	return gIsGuiControlMode;
 }
 
-void SolenoidPump(int itOn) {}
+void SolenoidPump(int isOn)
+{
+	SolenoidPumpPower(isOn);
+}
 void SetLedByLastMsg() {}
 void SetRGBLedByLastMsg() {}
-void SolenoidPumpPower(int itOn)
+void SolenoidPumpPower(int isOn)
 {
-
+	  HAL_GPIO_WritePin(GPIOC, WaterPMP_CMD_Pin|Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 void StartStatusTransmit() {}
 void StopStatusTransmit() {}
