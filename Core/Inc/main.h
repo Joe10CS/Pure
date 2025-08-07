@@ -69,6 +69,7 @@ HAL_StatusTypeDef StartADCConversion();
 
 
 extern bool gIsGuiControlMode;
+extern eCarbonationLevel gCarbonationLevel;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

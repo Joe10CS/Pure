@@ -10,15 +10,6 @@
 
 #include "main.h"
 
-
-typedef enum {
-	eCarbLevel_undef,
-	eCarbLevel_1,
-	eCarbLevel_2,
-	eCarbLevel_3,
-}eCarbonationLevel;
-
-
 #define LEDS_all (eLEDS_BlueWater|eLEDS_OrangeWater|eLEDS_CardLevel1|eLEDS_CardLevel2|eLEDS_CardLevel3)
 #define LEDS_AllCarbonation (eLEDS_CardLevel1|eLEDS_CardLevel2|eLEDS_CardLevel3)
 #define LEDS_OrangeWater (eLEDS_OrangeWater)
@@ -34,13 +25,11 @@ typedef enum
 	eLEDS_AmbiandLight = 0x20,
 }eLEDs;
 
-extern eCarbonationLevel carbonationLevel;
-
 void StartMalfunctionLedsSequence();
 void FadeOutAmbiantLight();
 
 
-void StartCarbonation(eCarbonationLevel carbonationLevel);
+void StartCarbonation();
 void StopCarbonation();
 
 
@@ -49,9 +38,13 @@ void StopUVLed();
 
 void StartWaterPump();
 void StopWaterPump();
+void StartCarbStageTimer();
+bool CarbonationOffCycleExpired(uint16_t carbCycle);
+bool CarbonationOnCycleExpired(uint16_t carbCycle);
+bool IsCarbonationLastCycle(uint16_t carbCycle);
 
 void StartWaterFilterLedSequence();
-void StartCarbonationLedSequance(eCarbonationLevel level);
+void StartCarbonationLedSequance();
 void StartMalfunctionLedsSequence();
 void StartRinsingLedSequence();
 void StopRinsingLedSequence();
@@ -65,7 +58,7 @@ void StartWaterPumpingTimer();
 
 void LedsOff(uint32_t leds);
 void FadeOutLeds(uint32_t leds);
-void FadeInLeds(eCarbonationLevel level);
+void FadeInLeds();
 
 void FadeInAmbiantLight();
 void AmbiantLightOff();
@@ -78,5 +71,4 @@ void SolenoidPumpPower(int itOn);
 void StartStatusTransmit();
 void StopStatusTransmit();
 
-extern eCarbonationLevel carbonationLevel;
 #endif /* INC_SMINTERFACE_H_ */

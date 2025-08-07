@@ -9,11 +9,14 @@
 #include "SMinterface.h"
 #include "SMSodaStreamPure.h"
 
-eCarbonationLevel carbonationLevel = eCarbLevel_undef;
+eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
+uint32_t mCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
+
 
 extern SMSodaStreamPure mStateMachine;
+extern uint16_t gCarbTimeTable[eLevel_number_of_levels][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS];
 
-void StartCarbonation(eCarbonationLevel level) {}
+void StartCarbonation() {}
 void StopCarbonation() {}
 
 
@@ -56,8 +59,41 @@ void StopWaterPump()
 
 }
 
+void StartCarbStageTimer()
+{
+	mCarbCycleTickStart = HAL_GetTick();
+}
+
+bool CarbonationOffCycleExpired(uint16_t carbCycle)
+{
+	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_off][carbCycle] >= HAL_GetTick())
+	{
+		return true;
+	}
+	return false;
+}
+
+bool CarbonationOnCycleExpired(uint16_t carbCycle)
+{
+	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_on][carbCycle] >= HAL_GetTick())
+	{
+		return true;
+	}
+	return false;
+}
+
+bool IsCarbonationLastCycle(uint16_t carbCycle)
+{
+	if (gCarbTimeTable[gCarbonationLevel][eCycle_on][carbCycle] == 0)
+	{
+		return true;
+	}
+	return false;
+
+}
+
 void StartWaterFilterLedSequence() {}
-void StartCarbonationLedSequance(eCarbonationLevel level) {}
+void StartCarbonationLedSequance() {}
 void StartMalfunctionLedsSequence() {}
 void StartRinsingLedSequence() {}
 void StopRinsingLedSequence() {}
@@ -71,7 +107,7 @@ void StartWaterPumpingTimer() {}
 
 void LedsOff(uint32_t leds) {}
 void FadeOutLeds(uint32_t leds) {}
-void FadeInLeds(eCarbonationLevel level) {}
+void FadeInLeds() {}
 
 void FadeInAmbiantLight() {}
 void FadeOutAmbiantLight() {}

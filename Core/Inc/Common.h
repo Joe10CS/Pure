@@ -14,7 +14,13 @@ typedef enum {
 	eLevel_high,
 
 	eLevel_number_of_levels
-}eCarbonationLEvel;
+}eCarbonationLevel;
 
+typedef enum {
+	eCycle_on,
+	eCycle_off,
+
+	eCycle_number_of_cycles
+}eCarbonationCycle;
 
 #endif /* INC_COMMON_H_ */

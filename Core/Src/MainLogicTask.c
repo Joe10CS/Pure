@@ -51,7 +51,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 void CheckHWAndGenerateEventsAsNeeded();
 
 /* Carbonation Time Table ----------------------------------------------------*/
-uint16_t gCarbTime[eLevel_number_of_levels][2][MAX_NUMBER_OF_CARBONATION_STEPS] = {
+uint16_t gCarbTimeTable[eLevel_number_of_levels][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS] = {
 //		eLevel_Low,
 		{ /* ON */  {700, 1000, 800, 0, 0, 0, 0, 0,},
 		  /* OFF */ {500, 500, 2000, 0, 0, 0, 0, 0,}},
@@ -254,7 +254,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			int onOff = (msg->params.list[0] - 1) % 2; // maps 1,2,3,4,5,6 -> 0,1,0,1,0,1
 			for (int i = 0; i < MAX_NUMBER_OF_CARBONATION_STEPS; i++)
 			{
-				gCarbTime[level][onOff][i] = msg->params.list[i+1];
+				gCarbTimeTable[level][onOff][i] = msg->params.list[i+1];
 			}
 			sprintf((char *)gRawMsgForEcho, "$STBL %d,OK\r\n",(const int)(msg->params.list[0]));
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
