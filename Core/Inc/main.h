@@ -42,7 +42,8 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 /* USER CODE BEGIN EC */
-#define ADC_DMA_BUFFER_SIZE   ((uint32_t)  16)
+// 6 full ADC scan cycles for 3 channels
+#define ADC_DMA_BUFFER_SIZE   ((uint32_t)  18)
 
 /* USER CODE END EC */
 
@@ -63,6 +64,7 @@ bool IsSlanted();
 void AccelerometerInit(void);
 bool AccelerometerIsPresent(void);
 
+HAL_StatusTypeDef StartADCConversion();
 
 
 extern bool gIsGuiControlMode;
@@ -73,12 +75,16 @@ extern bool gIsGuiControlMode;
 #define WaterPMP_CURR_ADC1_IN0_GPIO_Port GPIOA
 #define ACCEL_CS_Pin GPIO_PIN_4
 #define ACCEL_CS_GPIO_Port GPIOA
+#define Pump_CMD_Pin GPIO_PIN_5
+#define Pump_CMD_GPIO_Port GPIOA
 #define Pump_FDBK_Pin GPIO_PIN_0
 #define Pump_FDBK_GPIO_Port GPIOB
 #define WATER_LVL_ADC1_IN10_Pin GPIO_PIN_2
 #define WATER_LVL_ADC1_IN10_GPIO_Port GPIOB
 #define WaterPMP_FDBK_Pin GPIO_PIN_10
 #define WaterPMP_FDBK_GPIO_Port GPIOB
+#define UV_CURR_ADC1_IN15_Pin GPIO_PIN_11
+#define UV_CURR_ADC1_IN15_GPIO_Port GPIOB
 #define WaterLVL_CMD_Pin GPIO_PIN_12
 #define WaterLVL_CMD_GPIO_Port GPIOB
 #define BTN1_Pin GPIO_PIN_13

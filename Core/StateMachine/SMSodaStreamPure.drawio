@@ -1,6 +1,6 @@
 <mxfile host="Electron" scale="1.2" border="0" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.0.6 Chrome/138.0.7204.100 Electron/37.2.3 Safari/537.36" version="28.0.6" pages="3">
   <diagram name="design" id="ahwWs56YI2XBYRBzwlqw">
-    <mxGraphModel dx="4052" dy="3588" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+    <mxGraphModel dx="4564" dy="3876" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -493,8 +493,8 @@
         <mxCell id="-a6E0XnCvzOEeAQh_3vd-4" value="State_InitGuiMode" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#FAFAFA;fillColor=#545454;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;" parent="-a6E0XnCvzOEeAQh_3vd-1" vertex="1">
           <mxGeometry x="505" y="110" width="250" height="110" as="geometry" />
         </mxCell>
-        <mxCell id="-a6E0XnCvzOEeAQh_3vd-5" value="enter / StopWaterPump();&#xa;enter / StopUVLed();&#xa;enter / LedsOff(LEDS_all);" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="-a6E0XnCvzOEeAQh_3vd-4" vertex="1" connectable="0">
-          <mxGeometry y="30" width="210" height="60" as="geometry" />
+        <mxCell id="-a6E0XnCvzOEeAQh_3vd-5" value="enter / StopWaterPump();&#xa;enter / StopUVLed();&#xa;enter / LedsOff(LEDS_all);&#xa;enter / WaterPumpSensor(1);" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="-a6E0XnCvzOEeAQh_3vd-4" vertex="1" connectable="0">
+          <mxGeometry y="30" width="220" height="70" as="geometry" />
         </mxCell>
         <mxCell id="-a6E0XnCvzOEeAQh_3vd-6" value="State_GuiModeWaitCommands" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#FAFAFA;fillColor=#545454;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;" parent="-a6E0XnCvzOEeAQh_3vd-1" vertex="1">
           <mxGeometry x="505" y="260" width="250" height="90" as="geometry" />

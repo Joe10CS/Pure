@@ -57,8 +57,9 @@ DMA_HandleTypeDef hdma_usart2_tx;
 /* USER CODE BEGIN PV */
 /// Define global variables to store the latest averaged ADC values.
 volatile uint16_t mReadWaterLevelADC;     // Stores the averaged value from ADC_CHANNEL_10 (PB2)
-volatile uint16_t mReadWaterPumpCureentADC;
-uint16_t mWaterLevelSensorThreahsold = 100; // TODO - set to correct default value
+volatile uint16_t mReadWaterPumpCurrentADC;
+volatile uint16_t mReadUVCurrentADC;
+uint16_t mWaterLevelSensorThreahsold = 0x7fff;
 bool mWaterLevelAboveThroshold = false;
 // ADC buffer definition
 // This buffer will store the raw, oversampled (summed) values from both channels, interleaved.
@@ -208,7 +209,7 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
   hadc1.Init.Resolution = ADC_RESOLUTION_12B;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
-  hadc1.Init.ScanConvMode = ADC_SCAN_DISABLE;
+  hadc1.Init.ScanConvMode = ADC_SCAN_SEQ_FIXED;
   hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc1.Init.LowPowerAutoWait = DISABLE;
   hadc1.Init.LowPowerAutoPowerOff = DISABLE;
@@ -219,7 +220,6 @@ static void MX_ADC1_Init(void)
   hadc1.Init.DMAContinuousRequests = ENABLE;
   hadc1.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc1.Init.SamplingTimeCommon1 = ADC_SAMPLETIME_79CYCLES_5;
-  hadc1.Init.SamplingTimeCommon2 = ADC_SAMPLETIME_1CYCLE_5;
   hadc1.Init.OversamplingMode = ENABLE;
   hadc1.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_16;
   hadc1.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_4;
@@ -233,8 +233,23 @@ static void MX_ADC1_Init(void)
   /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_0;
-  sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLINGTIME_COMMON_1;
+  sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_10;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_15;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -456,6 +471,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ACCEL_CS_GPIO_Port, ACCEL_CS_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(Pump_CMD_GPIO_Port, Pump_CMD_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, WaterLVL_CMD_Pin|UV_LED_EN_Pin|LED_EN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -468,24 +486,25 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(ACCEL_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : Pump_FDBK_Pin */
-  GPIO_InitStruct.Pin = Pump_FDBK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(Pump_FDBK_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : Pump_CMD_Pin */
+  GPIO_InitStruct.Pin = Pump_CMD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(Pump_CMD_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : WaterPMP_FDBK_Pin */
-  GPIO_InitStruct.Pin = WaterPMP_FDBK_Pin;
+  /*Configure GPIO pins : Pump_FDBK_Pin WaterPMP_FDBK_Pin */
+  GPIO_InitStruct.Pin = Pump_FDBK_Pin|WaterPMP_FDBK_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(WaterPMP_FDBK_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : WaterLVL_CMD_Pin UV_LED_EN_Pin LED_EN_Pin */
-  GPIO_InitStruct.Pin = WaterLVL_CMD_Pin|UV_LED_EN_Pin|LED_EN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : WaterLVL_CMD_Pin */
+  GPIO_InitStruct.Pin = WaterLVL_CMD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(WaterLVL_CMD_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BTN1_Pin BTN2_Pin BTN3_Pin BTN4_Pin */
   GPIO_InitStruct.Pin = BTN1_Pin|BTN2_Pin|BTN3_Pin|BTN4_Pin;
@@ -502,9 +521,16 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : WaterPMP_CMD_Pin Main_SW_Pin */
   GPIO_InitStruct.Pin = WaterPMP_CMD_Pin|Main_SW_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : UV_LED_EN_Pin LED_EN_Pin */
+  GPIO_InitStruct.Pin = UV_LED_EN_Pin|LED_EN_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI2_3_IRQn, 0, 0);
@@ -566,16 +592,24 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 
     // Index 14 = latest CH0 sample (even)
     // Index 15 = latest CH10 sample (odd)
-    mReadWaterPumpCureentADC = aADCxConvertedData[14];   // ADC_CHANNEL_0
-    mReadWaterLevelADC       = aADCxConvertedData[15];   // ADC_CHANNEL_10
+    mReadWaterPumpCurrentADC = aADCxConvertedData[15];// IN0
+    mReadWaterLevelADC = aADCxConvertedData[16];      // IN10
+    mReadUVCurrentADC = aADCxConvertedData[17];        // IN15
 
-
-
-	if ((!mWaterLevelAboveThroshold) && (mReadWaterLevelADC >= mWaterLevelSensorThreahsold))
+    // This code assumes that debouncing is not required since after EVENT_BOTTLEFULLSENSOR that stops the pump,
+    // the pump need to be reactivated by long and slow user operation or by testing app
+    if (mReadWaterLevelADC >= mWaterLevelSensorThreahsold)
 	{
-		// once moving above threshold, set bottle full event
-		mWaterLevelAboveThroshold = true;
-		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR);
+		if (!mWaterLevelAboveThroshold)
+		{
+			// once moving above threshold, set bottle full event
+			mWaterLevelAboveThroshold = true;
+			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR);
+		}
+	}
+	else
+	{
+		mWaterLevelAboveThroshold = false;
 	}
 }
 
@@ -600,14 +634,24 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 
     // Index 6 = latest CH0 sample (even)
     // Index 7 = latest CH10 sample (odd)
-    mReadWaterPumpCureentADC = aADCxConvertedData[6];    // ADC_CHANNEL_0
-    mReadWaterLevelADC       = aADCxConvertedData[7];    // ADC_CHANNEL_10
+    mReadWaterPumpCurrentADC = aADCxConvertedData[6];// IN0
+    mReadWaterLevelADC = aADCxConvertedData[7];      // IN10
+    mReadUVCurrentADC = aADCxConvertedData[8];        // IN15
 
-	if ((!mWaterLevelAboveThroshold) && (mReadWaterLevelADC >= mWaterLevelSensorThreahsold))
+    // This code assumes that debouncing is not required since after EVENT_BOTTLEFULLSENSOR that stops the pump,
+    // the pump need to be reactivated by long and slow user operation or by testing app
+    if (mReadWaterLevelADC >= mWaterLevelSensorThreahsold)
 	{
-		// once moving above threshold, set bottle full event
-		mWaterLevelAboveThroshold = true;
-		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR);
+		if (!mWaterLevelAboveThroshold)
+		{
+			// once moving above threshold, set bottle full event
+			mWaterLevelAboveThroshold = true;
+			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR);
+		}
+	}
+	else
+	{
+		mWaterLevelAboveThroshold = false;
 	}
 }
 

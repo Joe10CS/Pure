@@ -1701,6 +1701,13 @@ static void STATE_INITGUIMODE_enter(SMSodaStreamPure* sm)
         // Step 1: execute action `LedsOff(LEDS_all);`
         LedsOff(LEDS_all);
     } // end of behavior for State_InitGuiMode
+    
+    // State_InitGuiMode behavior
+    // uml: enter / { WaterPumpSensor(1); }
+    {
+        // Step 1: execute action `WaterPumpSensor(1);`
+        WaterPumpSensor(1);
+    } // end of behavior for State_InitGuiMode
 }
 
 static void STATE_INITGUIMODE_exit(SMSodaStreamPure* sm)
@@ -2992,6 +2999,13 @@ static void STATE_POWERONINIT_enter(SMSodaStreamPure* sm)
     {
         // Step 1: execute action `AmbiantLightOff();`
         AmbiantLightOff();
+    } // end of behavior for State_PowerOnInit
+    
+    // State_PowerOnInit behavior
+    // uml: enter / { WaterPumpSensor(0); }
+    {
+        // Step 1: execute action `WaterPumpSensor(0);`
+        WaterPumpSensor(0);
     } // end of behavior for State_PowerOnInit
 }
 

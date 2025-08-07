@@ -41,8 +41,8 @@ bool gIsTilted = false;
 bool gAccelerometerIsPresent = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
 extern uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
-uint32_t gUVLedLastReadCurrentMilliAmp = 0;
-extern uint16_t mReadWaterPumpCureentADC;
+extern uint16_t mReadWaterPumpCurrentADC;
+extern uint16_t mReadUVCurrentADC;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
 // Defines the state of the pin at home position, default is 1 (SET)
@@ -72,7 +72,7 @@ void MainLogicInit(void) {
 
 }
 
-bool dbgSMEnabled = false;
+bool dbgSMEnabled = true;
 SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 
@@ -208,12 +208,12 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			gQueueErrors++;
 		break;
 	case eUARTCommand_uvla: // Get Info - non state machine related command
-		sprintf((char *)gRawMsgForEcho, "$UVLA %d\r\n",(int)gUVLedLastReadCurrentMilliAmp);
+		sprintf((char *)gRawMsgForEcho, "$UVLA %d\r\n",(int)mReadUVCurrentADC);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		echoCommand = false;
 		break;
 	case eUARTCommand_pmpa: // Get Info - non state machine related command
-		sprintf((char *)gRawMsgForEcho, "$PMPA %d\r\n",(int)mReadWaterPumpCureentADC);
+		sprintf((char *)gRawMsgForEcho, "$PMPA %d\r\n",(int)mReadWaterPumpCurrentADC);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		echoCommand = false;
 		break;

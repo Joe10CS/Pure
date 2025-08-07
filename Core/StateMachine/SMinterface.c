@@ -26,20 +26,31 @@ void StopUVLed()
 	HAL_GPIO_WritePin(UV_LED_EN_GPIO_Port, UV_LED_EN_Pin, GPIO_PIN_RESET);
 }
 
+void WaterPumpSensor(int isOn)
+{
+	HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
 void StartWaterPump()
 {
-	if (mStateMachine.vars.pumpStopsOnSensor)
+	// if auto mode - start pump sensor (based on pumpStopsOnSensor)
+	// in GUI mode the sensor is enabled all the time
+	// to allow reading the sensor value even when the pump is not working
+	if ((! IsGuiControlMode()) && mStateMachine.vars.pumpStopsOnSensor)
 	{
-		HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, GPIO_PIN_SET);
+		WaterPumpSensor(1);
 	}
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_SET);
 }
 
 void StopWaterPump()
 {
-	if (mStateMachine.vars.pumpStopsOnSensor)
+	// if auto mode - stop pump sensor (based on pumpStopsOnSensor)
+	// in GUI mode the sensor is enabled all the time
+	// to allow reading the sensor value even when the pump is not working
+	if ((! IsGuiControlMode()) && mStateMachine.vars.pumpStopsOnSensor)
 	{
-		HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, GPIO_PIN_RESET);
+		WaterPumpSensor(0);
 	}
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
 
@@ -74,13 +85,13 @@ bool IsGuiControlMode()
 
 void SolenoidPump(int isOn)
 {
-	SolenoidPumpPower(isOn);
+	HAL_GPIO_WritePin(Pump_CMD_GPIO_Port, Pump_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 void SetLedByLastMsg() {}
 void SetRGBLedByLastMsg() {}
 void SolenoidPumpPower(int isOn)
 {
-	  HAL_GPIO_WritePin(GPIOC, WaterPMP_CMD_Pin|Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 void StartStatusTransmit() {}
 void StopStatusTransmit() {}

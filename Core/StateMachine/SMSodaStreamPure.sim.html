@@ -274,6 +274,8 @@ state State_AutomaticMode {
 
                 State_PowerOnInit : enter / #123; AmbiantLightOff()#59; #125;
 
+                State_PowerOnInit : enter / #123; WaterPumpSensor(0)#59; #125;
+
         }
 
         State_Rinsing
@@ -411,6 +413,8 @@ state Stat_GUIControlMode {
         State_InitGuiMode : enter / #123; StopUVLed()#59; #125;
 
         State_InitGuiMode : enter / #123; LedsOff(LEDS_all)#59; #125;
+
+        State_InitGuiMode : enter / #123; WaterPumpSensor(1)#59; #125;
 
         State_GuiModeWaitCommands
 
@@ -2278,6 +2282,13 @@ evaluateGuard = null;
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsOff(LEDS_all);");`
             this.tracer?.log("⚡ FSM would execute action: " + "LedsOff(LEDS_all);");
         } // end of behavior for State_InitGuiMode
+        
+        // State_InitGuiMode behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(1);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(1);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(1);");
+        } // end of behavior for State_InitGuiMode
     }
     
     #STATE_INITGUIMODE_exit()
@@ -3899,6 +3910,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "AmbiantLightOff();");`
             this.tracer?.log("⚡ FSM would execute action: " + "AmbiantLightOff();");
+        } // end of behavior for State_PowerOnInit
+        
+        // State_PowerOnInit behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(0);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(0);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(0);");
         } // end of behavior for State_PowerOnInit
     }
     
