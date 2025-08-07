@@ -51,6 +51,7 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		{4, {'R','R','T','C'}, 0},  // eUARTCommand_rrtc,
 		{4, {'R','S','T','S'}, 1},  // eUARTCommand_rsts,
 		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver
+		{4, {'S','T','B','L'}, 9},  // eUARTCommand_stbl
 
 		{4, {'D','B','U','G'}, 2},  // eUARTCommand_dbug
 
@@ -178,7 +179,7 @@ eUartStatus COMM_UART_CheckNewMessage(sUartMessage *newMsg, uint8_t* rawMsgPtr, 
 				return eUART_MesssagePending;
             } else {
                 error = true;
-        		COMM_UART_QueueTxMessage((uint8_t *)"$Illegal Command\r\n", 18);
+                TxIllegalCommandResponse();
                 continue;
             }
         }
@@ -188,6 +189,11 @@ eUartStatus COMM_UART_CheckNewMessage(sUartMessage *newMsg, uint8_t* rawMsgPtr, 
     return eUART_NoMessage;
 }
 
+
+void TxIllegalCommandResponse()
+{
+	COMM_UART_QueueTxMessage((uint8_t *)"$Illegal Command\r\n", 18);
+}
 /* @brief  Try to read numBytes bytes from UART RX buffer
  * @param sUartMessage *newMsg - new message structure to fill
  * @param uint8_t* msgPtr - input message buffer to process

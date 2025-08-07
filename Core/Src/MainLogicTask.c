@@ -50,6 +50,19 @@ bool gFirstTime = true;
 void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t rawMessageLen);
 void CheckHWAndGenerateEventsAsNeeded();
 
+/* Carbonation Time Table ----------------------------------------------------*/
+uint16_t gCarbTime[eLevel_number_of_levels][2][MAX_NUMBER_OF_CARBONATION_STEPS] = {
+//		eLevel_Low,
+		{ /* ON */  {700, 1000, 800, 0, 0, 0, 0, 0,},
+		  /* OFF */ {500, 500, 2000, 0, 0, 0, 0, 0,}},
+//		eLevel_medium,
+		{ /* ON */  {700, 1000, 1000, 1000, 1000, 0, 0, 0,},
+		  /* OFF */ {500, 500,  500,  500,  2000, 0, 0, 0,}},
+//		eLevel_high,
+		{ /* ON */  {700, 1000, 1000, 1250, 1250, 1000, 0, 0,},
+		  /* OFF */ {500, 500,  500,  500,  500,  2000, 0, 0,}},
+};
+
 /* Private user code ---------------------------------------------------------*/
 /**
  * @brief  Function implementing the Main Logic Task main loop
@@ -225,6 +238,27 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	case eUARTCommand_rsts:
 		if (! SMEventQueue_Add((msg->params.periodicStatus.periodicStatusInterval > 0) ? SMSodaStreamPure_EventId_EVENT_STARTSTATUSTRANSMIT : SMSodaStreamPure_EventId_EVENT_STOPSTATUSTRANSMIT))
 			gQueueErrors++;
+		break;
+
+	case eUARTCommand_stbl:
+		{
+			echoCommand = false;
+			// msg->params.list[0] holds the row ID (1,2,3,4,5 or 6)
+			// msg->params.list[1..8] - the values
+			if ((msg->params.list[0] < 1) || (msg->params.list[0] > eSTBL_NumberOfRows))
+			{
+				TxIllegalCommandResponse();
+				break;
+			}
+			int level = (msg->params.list[0] - 1) / 2; // maps 1,2,3,4,5,6 -> 0,0,1,1,2,2
+			int onOff = (msg->params.list[0] - 1) % 2; // maps 1,2,3,4,5,6 -> 0,1,0,1,0,1
+			for (int i = 0; i < MAX_NUMBER_OF_CARBONATION_STEPS; i++)
+			{
+				gCarbTime[level][onOff][i] = msg->params.list[i+1];
+			}
+			sprintf((char *)gRawMsgForEcho, "$STBL %d,OK\r\n",(const int)(msg->params.list[0]));
+			COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+		}
 		break;
 
 	default:

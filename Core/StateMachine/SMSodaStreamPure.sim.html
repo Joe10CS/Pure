@@ -274,8 +274,6 @@ state State_AutomaticMode {
 
                 State_PowerOnInit : enter / #123; AmbiantLightOff()#59; #125;
 
-                State_PowerOnInit : enter / #123; WaterPumpSensor(0)#59; #125;
-
         }
 
         State_Rinsing
@@ -3910,13 +3908,6 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "AmbiantLightOff();");`
             this.tracer?.log("⚡ FSM would execute action: " + "AmbiantLightOff();");
-        } // end of behavior for State_PowerOnInit
-        
-        // State_PowerOnInit behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(0);"); }
-        {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(0);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "WaterPumpSensor(0);");
         } // end of behavior for State_PowerOnInit
     }
     

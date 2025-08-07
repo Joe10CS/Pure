@@ -26,7 +26,7 @@
 #define COMMAND_PRE_END_MARKER ('\r')
 #define COMMAND_END_MARKER     ('\n')
 
-#define MAX_NUMBER_OF_PARAMETERS (6)
+#define MAX_NUMBER_OF_PARAMETERS (9)
 
 /* enums ---------------------------------------------------------------------*/
 typedef enum {
@@ -44,6 +44,17 @@ typedef enum {
 	eUartDoneStatus_Total_Pressure_Switch_Cycles_Timeout = 110,
 	eUartDoneStatus_Engine_Error = 200,
 }eUartDoneStatus;
+
+typedef enum {
+	eSTBL_LowOn = 1,
+	eSTBL_LowOff = 2,
+	eSTBL_MediumOn = 3,
+	eSTBL_MediumOff = 4,
+	eSTBL_HighOn = 5,
+	eSTBL_HighOff = 6,
+
+	eSTBL_NumberOfRows = eSTBL_HighOff,
+}eSTBLRowIds;
 // commands from PC
 typedef enum {
 
@@ -62,6 +73,7 @@ typedef enum {
 	eUARTCommand_rrtc,
 	eUARTCommand_rsts,
 	eUARTCommand_rver,
+	eUARTCommand_stbl,
 
 	// DEBUG REMOVE ??
 	eUARTCommand_dbug, // debug messages
@@ -80,52 +92,52 @@ typedef struct {
 } sCommandDef;
 
 typedef struct {
-	uint32_t isOn;
+	uint16_t isOn;
 } sOnOffParams;
 
 typedef struct {
-	uint32_t isOn;
-	uint32_t sensorThreashold; // 0 – ignore water sensor, N – automatically stop on sensor value above N
+	uint16_t isOn;
+	uint16_t sensorThreashold; // 0 – ignore water sensor, N – automatically stop on sensor value above N
 } sPumpParams;
 
 typedef struct {
-	uint32_t periodicStatusInterval; // 0 – don't send, N – status send period in milli-seconds
+	uint16_t periodicStatusInterval; // 0 – don't send, N – status send period in milli-seconds
 } sPeriodicStatusParams;
 
 // !@#!@#  CDM stuff below
 typedef struct {
-	uint32_t cycleTime;
-	uint32_t numberOfCycles;;
-	uint32_t firstPSTimeout;
-	uint32_t motorSpeedPercent;
-	uint32_t numberOfPSCycles;
-	uint32_t PSTotlaCyclesTimeout;
+	uint16_t cycleTime;
+	uint16_t numberOfCycles;;
+	uint16_t firstPSTimeout;
+	uint16_t motorSpeedPercent;
+	uint16_t numberOfPSCycles;
+	uint16_t PSTotlaCyclesTimeout;
 } sCarbParams;
 
 typedef struct {
-	uint32_t motorDiection;
-	uint32_t motorSpeedPercent;
-	uint32_t motorTime;
+	uint16_t motorDiection;
+	uint16_t motorSpeedPercent;
+	uint16_t motorTime;
 } sStartParams;
 
 typedef struct {
-	uint32_t numOfInjectSignals;
-	uint32_t motorSpeedPercent;
+	uint16_t numOfInjectSignals;
+	uint16_t motorSpeedPercent;
 } sInjectSyrupParams;
 
 typedef struct {
-	uint32_t motorSpeedPercent;
-	uint32_t homePinState;
+	uint16_t motorSpeedPercent;
+	uint16_t homePinState;
 } sHomeParams;
 
 typedef union {
 	sOnOffParams onOff;
 	sPumpParams pump;
 	sPeriodicStatusParams periodicStatus;
+	uint16_t list[MAX_NUMBER_OF_PARAMETERS];
 
 	// !@#!@#  CDM stuff below
 
-	uint32_t list[MAX_NUMBER_OF_PARAMETERS];
     sCarbParams carbParams;
     sStartParams startParams;
     sInjectSyrupParams injectSytupParams;
@@ -146,6 +158,7 @@ void COMM_UART_ClearRxBytes();
 eUartStatus COMM_UART_CheckNewMessage(sUartMessage *newMsg, uint8_t* rawMsgPtr, uint32_t *rawMsgLen);
 //uint16_t COMM_UART_PrepareTXMessage(uint8_t *before, uint8_t *after, uint16_t before_size);
 bool COMM_UART_QueueTxMessage(uint8_t *msg, uint32_t msgLen);
+void TxIllegalCommandResponse();
 void COMM_UART_SendNextTxQueue(void);
 void SendMessageToCDMDesktop(eUARTCommandTypes msgType, uint16_t value1, uint16_t value2);
 void CDMSendDoneMessage(eUartDoneStatus status);
