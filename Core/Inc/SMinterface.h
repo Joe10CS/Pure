@@ -38,6 +38,7 @@ void StopUVLed();
 
 void StartWaterPump();
 void StopWaterPump();
+void ButtonsFunction(bool isFunctioning);
 void StartCarbStageTimer();
 bool CarbonationOffCycleExpired(uint16_t carbCycle);
 bool CarbonationOnCycleExpired(uint16_t carbCycle);

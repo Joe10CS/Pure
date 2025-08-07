@@ -258,6 +258,8 @@ state State_AutomaticMode {
 
                 State_Ready : enter / #123; StartReadyTimer()#59; #125;
 
+                State_Ready : enter / #123; ButtonsFunction(true)#59; #125;
+
                 State_ReadyRinseRequired
 
                 State_ReadyRinseRequired : State_ReadyRinseRequired
@@ -265,6 +267,8 @@ state State_AutomaticMode {
                 State_ReadyRinseRequired : enter / #123; FadeInLeds(LEDS_OrangeWater)#59; #125;
 
                 State_ReadyRinseRequired : enter / #123; StartReadyTimer()#59; #125;
+
+                State_ReadyRinseRequired : enter / #123; ButtonsFunction(true)#59; #125;
 
                 State_PowerOnInit
 
@@ -279,6 +283,8 @@ state State_AutomaticMode {
         State_Rinsing
 
         State_Rinsing : State_Rinsing
+
+        State_Rinsing : enter / #123; ButtonsFunction(false)#59; #125;
 
         State_Rinsing : enter / #123; FadeOutLeds(LEDS_AllCarbonation)#59; #125;
 
@@ -316,6 +322,8 @@ state State_AutomaticMode {
 
         State_FilteringCarbonationAwait : State_FilteringCarbonationAwait
 
+        State_FilteringCarbonationAwait : enter / #123; ButtonsFunction(false)#59; #125;
+
         State_FilteringCarbonationAwait : exit / #123; StopWaterPump()#59; #125;
 
         State_FilteringCarbonationAwait : exit / #123; StopUVLed()#59; #125;
@@ -341,6 +349,8 @@ state State_AutomaticMode {
         Sate_InitCarbonatingOnly
 
         Sate_InitCarbonatingOnly : Sate_InitCarbonatingOnly
+
+        Sate_InitCarbonatingOnly : enter / #123; ButtonsFunction(false)#59; #125;
 
         Sate_InitCarbonatingOnly : enter / #123; FadeInLeds(LEDS_all)#59; #125;
 
@@ -3358,6 +3368,13 @@ evaluateGuard = null;
         } // end of behavior for Sate_InitCarbonatingOnly
         
         // Sate_InitCarbonatingOnly behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");
+        } // end of behavior for Sate_InitCarbonatingOnly
+        
+        // Sate_InitCarbonatingOnly behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "FadeInLeds(LEDS_all);"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "FadeInLeds(LEDS_all);");`
@@ -4032,6 +4049,13 @@ evaluateGuard = null;
             // Step 1: execute action `this.tracer?.enterState('State_FilteringCarbonationAwait');`
             this.tracer?.enterState('State_FilteringCarbonationAwait');
         } // end of behavior for State_FilteringCarbonationAwait
+        
+        // State_FilteringCarbonationAwait behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");
+        } // end of behavior for State_FilteringCarbonationAwait
     }
     
     #STATE_FILTERINGCARBONATIONAWAIT_exit()
@@ -4344,6 +4368,13 @@ evaluateGuard = null;
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "StartReadyTimer();");`
             this.tracer?.log("⚡ FSM would execute action: " + "StartReadyTimer();");
         } // end of behavior for State_Ready
+        
+        // State_Ready behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");
+        } // end of behavior for State_Ready
     }
     
     #STATE_READY_exit()
@@ -4407,6 +4438,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "StartReadyTimer();");`
             this.tracer?.log("⚡ FSM would execute action: " + "StartReadyTimer();");
+        } // end of behavior for State_ReadyRinseRequired
+        
+        // State_ReadyRinseRequired behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");
         } // end of behavior for State_ReadyRinseRequired
     }
     
@@ -4493,6 +4531,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.enterState('State_Rinsing');`
             this.tracer?.enterState('State_Rinsing');
+        } // end of behavior for State_Rinsing
+        
+        // State_Rinsing behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");
         } // end of behavior for State_Rinsing
         
         // State_Rinsing behavior

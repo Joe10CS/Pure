@@ -11,6 +11,7 @@
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
 uint32_t mCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
+bool gButtonsFunction = false;
 
 
 extern SMSodaStreamPure mStateMachine;
@@ -57,6 +58,11 @@ void StopWaterPump()
 	}
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
 
+}
+
+void ButtonsFunction(bool isFunctioning)
+{
+	gButtonsFunction = isFunctioning;
 }
 
 void StartCarbStageTimer()

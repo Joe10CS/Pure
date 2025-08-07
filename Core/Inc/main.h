@@ -70,6 +70,7 @@ HAL_StatusTypeDef StartADCConversion();
 
 extern bool gIsGuiControlMode;
 extern eCarbonationLevel gCarbonationLevel;
+extern bool gButtonsFunction;
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

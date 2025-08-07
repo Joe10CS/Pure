@@ -2533,6 +2533,13 @@ static void SATE_INITCARBONATINGONLY_enter(SMSodaStreamPure* sm)
     sm->state_id = SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY;
     
     // Sate_InitCarbonatingOnly behavior
+    // uml: enter / { ButtonsFunction(false); }
+    {
+        // Step 1: execute action `ButtonsFunction(false);`
+        ButtonsFunction(false);
+    } // end of behavior for Sate_InitCarbonatingOnly
+    
+    // Sate_InitCarbonatingOnly behavior
     // uml: enter / { FadeInLeds(LEDS_all); }
     {
         // Step 1: execute action `FadeInLeds(LEDS_all);`
@@ -3081,6 +3088,13 @@ static void STATE_FILTERING_event_waterpumpingtimeout(SMSodaStreamPure* sm)
 static void STATE_FILTERINGCARBONATIONAWAIT_enter(SMSodaStreamPure* sm)
 {
     sm->state_id = SMSodaStreamPure_StateId_STATE_FILTERINGCARBONATIONAWAIT;
+    
+    // State_FilteringCarbonationAwait behavior
+    // uml: enter / { ButtonsFunction(false); }
+    {
+        // Step 1: execute action `ButtonsFunction(false);`
+        ButtonsFunction(false);
+    } // end of behavior for State_FilteringCarbonationAwait
 }
 
 static void STATE_FILTERINGCARBONATIONAWAIT_exit(SMSodaStreamPure* sm)
@@ -3342,6 +3356,13 @@ static void STATE_READY_enter(SMSodaStreamPure* sm)
         // Step 1: execute action `StartReadyTimer();`
         StartReadyTimer();
     } // end of behavior for State_Ready
+    
+    // State_Ready behavior
+    // uml: enter / { ButtonsFunction(true); }
+    {
+        // Step 1: execute action `ButtonsFunction(true);`
+        ButtonsFunction(true);
+    } // end of behavior for State_Ready
 }
 
 static void STATE_READY_exit(SMSodaStreamPure* sm)
@@ -3390,6 +3411,13 @@ static void STATE_READYRINSEREQUIRED_enter(SMSodaStreamPure* sm)
     {
         // Step 1: execute action `StartReadyTimer();`
         StartReadyTimer();
+    } // end of behavior for State_ReadyRinseRequired
+    
+    // State_ReadyRinseRequired behavior
+    // uml: enter / { ButtonsFunction(true); }
+    {
+        // Step 1: execute action `ButtonsFunction(true);`
+        ButtonsFunction(true);
     } // end of behavior for State_ReadyRinseRequired
 }
 
@@ -3448,6 +3476,13 @@ static void STATE_STANDBY_exit(SMSodaStreamPure* sm)
 static void STATE_RINSING_enter(SMSodaStreamPure* sm)
 {
     sm->state_id = SMSodaStreamPure_StateId_STATE_RINSING;
+    
+    // State_Rinsing behavior
+    // uml: enter / { ButtonsFunction(false); }
+    {
+        // Step 1: execute action `ButtonsFunction(false);`
+        ButtonsFunction(false);
+    } // end of behavior for State_Rinsing
     
     // State_Rinsing behavior
     // uml: enter / { FadeOutLeds(LEDS_AllCarbonation); }
