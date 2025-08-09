@@ -16,6 +16,12 @@
 
 /* Private define ------------------------------------------------------------*/
 #define DO_EVENT_INTERVAL_TICKS (1)
+
+#define PERIODIC_STATUS_SEND_MASK_STATEBUTS (1)
+#define PERIODIC_STATUS_SEND_MASK_ADC 		(2)
+#define PERIODIC_STATUS_SEND_MASK_RTCTILT 	(4)
+#define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
+
 /* Private macro -------------------------------------------------------------*/
 
 /* External variables ---------------------------------------------------------*/
@@ -45,11 +51,17 @@ extern uint16_t mReadWaterPumpCurrentADC;
 extern uint16_t mReadUVCurrentADC;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
+
+
+uint16_t gPeriodicStatusSendInterval = 0;
+uint16_t gPeriodicStatusSendMask = 0;
+uint32_t gPeriodicStatusSendLastTickSent = 0;
+
 // Defines the state of the pin at home position, default is 1 (SET)
 /* Private function prototypes -----------------------------------------------*/
 void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t rawMessageLen);
 void CheckHWAndGenerateEventsAsNeeded();
-
+void HandleStatusSend();
 /* Carbonation Time Table ----------------------------------------------------*/
 uint16_t gCarbTimeTable[eLevel_number_of_levels][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS] = {
 //		eLevel_Low,
@@ -85,7 +97,7 @@ void MainLogicInit(void) {
 
 }
 
-bool dbgSMEnabled = true;
+bool dbgSMEnabled = false; // DEBUG REMOVE
 SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 
@@ -141,6 +153,8 @@ void MainLogicPeriodic() {
 		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
 	}
 
+	// Send status as needed
+	HandleStatusSend();
 }
 
 
@@ -236,8 +250,13 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		echoCommand = false;
 		break;
 	case eUARTCommand_rsts:
-		if (! SMEventQueue_Add((msg->params.periodicStatus.periodicStatusInterval > 0) ? SMSodaStreamPure_EventId_EVENT_STARTSTATUSTRANSMIT : SMSodaStreamPure_EventId_EVENT_STOPSTATUSTRANSMIT))
-			gQueueErrors++;
+		gPeriodicStatusSendInterval = msg->params.periodicStatus.periodicStatusInterval;
+		if ((gPeriodicStatusSendMask == 0) && (msg->params.periodicStatus.periodicStatusMask != 0))
+		{
+			// just started - set the start time
+			gPeriodicStatusSendLastTickSent = HAL_GetTick();
+		}
+		gPeriodicStatusSendMask = msg->params.periodicStatus.periodicStatusMask;
 		break;
 
 	case eUARTCommand_stbl:
@@ -266,6 +285,50 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	if (echoCommand == true)
 	{
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
+	}
+}
+
+void HandleStatusSend()
+{
+	if (gIsGuiControlMode && (gPeriodicStatusSendMask != 0)) // send is enabled
+	{
+		// check to need to send now
+		if (gPeriodicStatusSendLastTickSent + gPeriodicStatusSendInterval < HAL_GetTick())
+		{
+			// sending now
+			gPeriodicStatusSendLastTickSent = HAL_GetTick();
+
+			// send messages by mask
+			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_STATEBUTS)
+			{
+				sprintf((char *)gRawMsgForEcho, "$RSTS %d,%d,%d,%d,%d,%d\r\n",
+						PERIODIC_STATUS_SEND_MASK_STATEBUTS,
+						1,  // TODO add error states instead of 1
+						(HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin) == GPIO_PIN_RESET) ? 1 : 0,
+						(HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin) == GPIO_PIN_RESET) ? 1 : 0,
+						(HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin) == GPIO_PIN_RESET) ? 1 : 0,
+						(HAL_GPIO_ReadPin(BTN4_GPIO_Port, BTN4_Pin) == GPIO_PIN_RESET) ? 1 : 0);
+				COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+			}
+			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_ADC)
+			{
+				sprintf((char *)gRawMsgForEcho, "$RSTS %d,%d,%d,%d\r\n",PERIODIC_STATUS_SEND_MASK_ADC,
+						mReadWaterLevelADC,mReadUVCurrentADC,mReadWaterPumpCurrentADC);
+				COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+			}
+			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_RTCTILT)
+			{
+				sprintf((char *)gRawMsgForEcho, "$RSTS %d,%d,%d,%d\r\n",
+						PERIODIC_STATUS_SEND_MASK_RTCTILT,
+						0, // TODO send RTC seconds since last filter change
+						(int)filtered_x,(int)filtered_y,(int)filtered_z);
+				COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+			}
+			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_LEDS)
+			{
+				// TODO not implemented yet
+			}
+		}
 	}
 }
 

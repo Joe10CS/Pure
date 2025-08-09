@@ -68,7 +68,7 @@ bool IsGuiControlMode();
 void SolenoidPump(int itOn);
 void SetLedByLastMsg();
 void SetRGBLedByLastMsg();
-void SolenoidPumpPower(int itOn);
+void SolenoidPumpUVPower(int itOn);
 void StartStatusTransmit();
 void StopStatusTransmit();
 

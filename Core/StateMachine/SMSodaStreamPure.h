@@ -37,16 +37,15 @@ typedef enum SMSodaStreamPure_EventId
     SMSodaStreamPure_EventId_EVENT_UVLEDOFF = 22,
     SMSodaStreamPure_EventId_EVENT_UVLEDON = 23,
     SMSodaStreamPure_EventId_EVENT_WAREPUMPON = 24,
-    SMSodaStreamPure_EventId_EVENT_WATERFILTERPRESSED = 25,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMOONNOSENSOR = 26,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMEOUT = 27,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMERTIMEOUT = 28,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMPOFF = 29
+    SMSodaStreamPure_EventId_EVENT_WATERPUMOONNOSENSOR = 25,
+    SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMEOUT = 26,
+    SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMERTIMEOUT = 27,
+    SMSodaStreamPure_EventId_EVENT_WATERPUMPOFF = 28
 } SMSodaStreamPure_EventId;
 
 enum
 {
-    SMSodaStreamPure_EventIdCount = 30
+    SMSodaStreamPure_EventIdCount = 29
 };
 
 typedef enum SMSodaStreamPure_StateId
@@ -74,11 +73,11 @@ typedef enum SMSodaStreamPure_StateId
     SMSodaStreamPure_StateId_STATE_WATERPUMPON = 20,
     SMSodaStreamPure_StateId_STATE_WATERPUMPONNOSENSOR = 21,
     SMSodaStreamPure_StateId_STATE_AUTOMATICMODE = 22,
-    SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY = 23,
-    SMSodaStreamPure_StateId_STATE_CARBONATING = 24,
-    SMSodaStreamPure_StateId_SATE_CARBONATING_OFF = 25,
-    SMSodaStreamPure_StateId_SATE_CARBONATING_ON = 26,
-    SMSodaStreamPure_StateId_SATE_EXIT_CARBONATING = 27,
+    SMSodaStreamPure_StateId_STATE_CARBONATING = 23,
+    SMSodaStreamPure_StateId_SATE_CARBONATING_OFF = 24,
+    SMSodaStreamPure_StateId_SATE_CARBONATING_ON = 25,
+    SMSodaStreamPure_StateId_SATE_EXIT_CARBONATING = 26,
+    SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY = 27,
     SMSodaStreamPure_StateId_SATE_START_CARBONATING = 28,
     SMSodaStreamPure_StateId_STATE_EXITFILTERINGONLY = 29,
     SMSodaStreamPure_StateId_STATE_FILTERING = 30,

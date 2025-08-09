@@ -191,12 +191,6 @@ static void STATE_AUTOMATICMODE_event_tiltdetected(SMSodaStreamPure* sm);
 
 static void State_AutomaticMode_InitialState_transition(SMSodaStreamPure* sm);
 
-static void SATE_INITCARBONATINGONLY_enter(SMSodaStreamPure* sm);
-
-static void SATE_INITCARBONATINGONLY_exit(SMSodaStreamPure* sm);
-
-static void SATE_INITCARBONATINGONLY_do(SMSodaStreamPure* sm);
-
 static void STATE_CARBONATING_enter(SMSodaStreamPure* sm);
 
 static void STATE_CARBONATING_exit(SMSodaStreamPure* sm);
@@ -223,6 +217,12 @@ static void SATE_EXIT_CARBONATING_exit(SMSodaStreamPure* sm);
 
 static void SATE_EXIT_CARBONATING_do(SMSodaStreamPure* sm);
 
+static void SATE_INITCARBONATINGONLY_enter(SMSodaStreamPure* sm);
+
+static void SATE_INITCARBONATINGONLY_exit(SMSodaStreamPure* sm);
+
+static void SATE_INITCARBONATINGONLY_do(SMSodaStreamPure* sm);
+
 static void SATE_START_CARBONATING_enter(SMSodaStreamPure* sm);
 
 static void SATE_START_CARBONATING_exit(SMSodaStreamPure* sm);
@@ -243,7 +243,9 @@ static void STATE_FILTERING_event_bottlefullsensor(SMSodaStreamPure* sm);
 
 static void STATE_FILTERING_event_carbonationlevelpressed(SMSodaStreamPure* sm);
 
-static void STATE_FILTERING_event_waterfilterpressed(SMSodaStreamPure* sm);
+static void STATE_FILTERING_event_longpresswaterfilter(SMSodaStreamPure* sm);
+
+static void STATE_FILTERING_event_shortpresswaterfilter(SMSodaStreamPure* sm);
 
 static void STATE_FILTERING_event_waterpumpingtimeout(SMSodaStreamPure* sm);
 
@@ -650,20 +652,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
             }
             break;
         
-        // STATE: Sate_InitCarbonatingOnly
-        case SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY:
-            switch (event_id)
-            {
-                case SMSodaStreamPure_EventId_DO: SATE_INITCARBONATINGONLY_do(sm); break;
-                case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STATE_AUTOMATICMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STATE_AUTOMATICMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STATE_AUTOMATICMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_ENTER_GUI_CONTROLLED_MODE: STATE_AUTOMATICMODE_event_enter_gui_controlled_mode(sm); break; // First ancestor handler for this event
-                
-                default: break; // to avoid "unused enumeration value in switch" warning
-            }
-            break;
-        
         // STATE: State_Carbonating
         case SMSodaStreamPure_StateId_STATE_CARBONATING:
             switch (event_id)
@@ -723,6 +711,21 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
             }
             break;
         
+        // STATE: Sate_InitCarbonatingOnly
+        case SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY:
+            switch (event_id)
+            {
+                case SMSodaStreamPure_EventId_DO: SATE_INITCARBONATINGONLY_do(sm); break;
+                case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STATE_AUTOMATICMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
+                case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STATE_AUTOMATICMODE_event_safetyfail(sm); break; // First ancestor handler for this event
+                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STATE_AUTOMATICMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
+                case SMSodaStreamPure_EventId_EVENT_ENTER_GUI_CONTROLLED_MODE: STATE_AUTOMATICMODE_event_enter_gui_controlled_mode(sm); break; // First ancestor handler for this event
+                case SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS: STATE_CARBONATING_event_anykeypress(sm); break; // First ancestor handler for this event
+                
+                default: break; // to avoid "unused enumeration value in switch" warning
+            }
+            break;
+        
         // STATE: Sate_Start_Carbonating
         case SMSodaStreamPure_StateId_SATE_START_CARBONATING:
             switch (event_id)
@@ -758,8 +761,9 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
             {
                 case SMSodaStreamPure_EventId_EVENT_CARBONATIONLEVELPRESSED: STATE_FILTERING_event_carbonationlevelpressed(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMEOUT: STATE_FILTERING_event_waterpumpingtimeout(sm); break;
-                case SMSodaStreamPure_EventId_EVENT_WATERFILTERPRESSED: STATE_FILTERING_event_waterfilterpressed(sm); break;
+                case SMSodaStreamPure_EventId_EVENT_SHORTPRESSWATERFILTER: STATE_FILTERING_event_shortpresswaterfilter(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR: STATE_FILTERING_event_bottlefullsensor(sm); break;
+                case SMSodaStreamPure_EventId_EVENT_LONGPRESSWATERFILTER: STATE_FILTERING_event_longpresswaterfilter(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STATE_AUTOMATICMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STATE_AUTOMATICMODE_event_safetyfail(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STATE_AUTOMATICMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
@@ -939,8 +943,6 @@ static void exit_up_to_state_handler(SMSodaStreamPure* sm, SMSodaStreamPure_Stat
             
             case SMSodaStreamPure_StateId_STATE_AUTOMATICMODE: STATE_AUTOMATICMODE_exit(sm); break;
             
-            case SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY: SATE_INITCARBONATINGONLY_exit(sm); break;
-            
             case SMSodaStreamPure_StateId_STATE_CARBONATING: STATE_CARBONATING_exit(sm); break;
             
             case SMSodaStreamPure_StateId_SATE_CARBONATING_OFF: SATE_CARBONATING_OFF_exit(sm); break;
@@ -948,6 +950,8 @@ static void exit_up_to_state_handler(SMSodaStreamPure* sm, SMSodaStreamPure_Stat
             case SMSodaStreamPure_StateId_SATE_CARBONATING_ON: SATE_CARBONATING_ON_exit(sm); break;
             
             case SMSodaStreamPure_StateId_SATE_EXIT_CARBONATING: SATE_EXIT_CARBONATING_exit(sm); break;
+            
+            case SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY: SATE_INITCARBONATINGONLY_exit(sm); break;
             
             case SMSodaStreamPure_StateId_SATE_START_CARBONATING: SATE_START_CARBONATING_exit(sm); break;
             
@@ -1919,10 +1923,10 @@ static void STATE_SOLENOIDPUMPPOWEROFF_enter(SMSodaStreamPure* sm)
     sm->state_id = SMSodaStreamPure_StateId_STATE_SOLENOIDPUMPPOWEROFF;
     
     // State_SolenoidPumpPowerOff behavior
-    // uml: enter / { SolenoidPumpPower(0); }
+    // uml: enter / { SolenoidPumpUVPower(0); }
     {
-        // Step 1: execute action `SolenoidPumpPower(0);`
-        SolenoidPumpPower(0);
+        // Step 1: execute action `SolenoidPumpUVPower(0);`
+        SolenoidPumpUVPower(0);
     } // end of behavior for State_SolenoidPumpPowerOff
 }
 
@@ -1961,10 +1965,10 @@ static void STATE_SOLENOIDPUMPPOWERON_enter(SMSodaStreamPure* sm)
     sm->state_id = SMSodaStreamPure_StateId_STATE_SOLENOIDPUMPPOWERON;
     
     // State_SolenoidPumpPowerOn behavior
-    // uml: enter / { SolenoidPumpPower(1); }
+    // uml: enter / { SolenoidPumpUVPower(1); }
     {
-        // Step 1: execute action `SolenoidPumpPower(1);`
-        SolenoidPumpPower(1);
+        // Step 1: execute action `SolenoidPumpUVPower(1);`
+        SolenoidPumpUVPower(1);
     } // end of behavior for State_SolenoidPumpPowerOn
 }
 
@@ -2052,10 +2056,10 @@ static void STATE_STOP_enter(SMSodaStreamPure* sm)
     } // end of behavior for State_Stop
     
     // State_Stop behavior
-    // uml: enter / { SolenoidPumpPower(0); }
+    // uml: enter / { SolenoidPumpUVPower(0); }
     {
-        // Step 1: execute action `SolenoidPumpPower(0);`
-        SolenoidPumpPower(0);
+        // Step 1: execute action `SolenoidPumpUVPower(0);`
+        SolenoidPumpUVPower(0);
     } // end of behavior for State_Stop
     
     // State_Stop behavior
@@ -2525,63 +2529,6 @@ static void State_AutomaticMode_InitialState_transition(SMSodaStreamPure* sm)
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// event handlers for state SATE_INITCARBONATINGONLY
-////////////////////////////////////////////////////////////////////////////////
-
-static void SATE_INITCARBONATINGONLY_enter(SMSodaStreamPure* sm)
-{
-    sm->state_id = SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY;
-    
-    // Sate_InitCarbonatingOnly behavior
-    // uml: enter / { ButtonsFunction(false); }
-    {
-        // Step 1: execute action `ButtonsFunction(false);`
-        ButtonsFunction(false);
-    } // end of behavior for Sate_InitCarbonatingOnly
-    
-    // Sate_InitCarbonatingOnly behavior
-    // uml: enter / { FadeInLeds(LEDS_all); }
-    {
-        // Step 1: execute action `FadeInLeds(LEDS_all);`
-        FadeInLeds(LEDS_all);
-    } // end of behavior for Sate_InitCarbonatingOnly
-    
-    // Sate_InitCarbonatingOnly behavior
-    // uml: enter / { FadeInAmbiantLight(); }
-    {
-        // Step 1: execute action `FadeInAmbiantLight();`
-        FadeInAmbiantLight();
-    } // end of behavior for Sate_InitCarbonatingOnly
-}
-
-static void SATE_INITCARBONATINGONLY_exit(SMSodaStreamPure* sm)
-{
-    sm->state_id = SMSodaStreamPure_StateId_STATE_AUTOMATICMODE;
-}
-
-static void SATE_INITCARBONATINGONLY_do(SMSodaStreamPure* sm)
-{
-    // Sate_InitCarbonatingOnly behavior
-    // uml: do TransitionTo(State_Carbonating)
-    {
-        // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
-        SATE_INITCARBONATINGONLY_exit(sm);
-        
-        // Step 2: Transition action: ``.
-        
-        // Step 3: Enter/move towards transition target `State_Carbonating`.
-        STATE_CARBONATING_enter(sm);
-        
-        // Finish transition by calling pseudo state transition function.
-        State_Carbonating_InitialState_transition(sm);
-        return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-    } // end of behavior for Sate_InitCarbonatingOnly
-    
-    // No ancestor handles this event.
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
 // event handlers for state STATE_CARBONATING
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2619,14 +2566,14 @@ static void STATE_CARBONATING_event_anykeypress(SMSodaStreamPure* sm)
 static void State_Carbonating_InitialState_transition(SMSodaStreamPure* sm)
 {
     // State_Carbonating.<InitialState> behavior
-    // uml: TransitionTo(Sate_Start_Carbonating)
+    // uml: TransitionTo(Sate_InitCarbonatingOnly)
     {
         // Step 1: Exit states until we reach `State_Carbonating` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
         
         // Step 2: Transition action: ``.
         
-        // Step 3: Enter/move towards transition target `Sate_Start_Carbonating`.
-        SATE_START_CARBONATING_enter(sm);
+        // Step 3: Enter/move towards transition target `Sate_InitCarbonatingOnly`.
+        SATE_INITCARBONATINGONLY_enter(sm);
         
         // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
         return;
@@ -2825,6 +2772,62 @@ static void SATE_EXIT_CARBONATING_do(SMSodaStreamPure* sm)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// event handlers for state SATE_INITCARBONATINGONLY
+////////////////////////////////////////////////////////////////////////////////
+
+static void SATE_INITCARBONATINGONLY_enter(SMSodaStreamPure* sm)
+{
+    sm->state_id = SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY;
+    
+    // Sate_InitCarbonatingOnly behavior
+    // uml: enter / { ButtonsFunction(false); }
+    {
+        // Step 1: execute action `ButtonsFunction(false);`
+        ButtonsFunction(false);
+    } // end of behavior for Sate_InitCarbonatingOnly
+    
+    // Sate_InitCarbonatingOnly behavior
+    // uml: enter / { FadeInLeds(LEDS_all); }
+    {
+        // Step 1: execute action `FadeInLeds(LEDS_all);`
+        FadeInLeds(LEDS_all);
+    } // end of behavior for Sate_InitCarbonatingOnly
+    
+    // Sate_InitCarbonatingOnly behavior
+    // uml: enter / { FadeInAmbiantLight(); }
+    {
+        // Step 1: execute action `FadeInAmbiantLight();`
+        FadeInAmbiantLight();
+    } // end of behavior for Sate_InitCarbonatingOnly
+}
+
+static void SATE_INITCARBONATINGONLY_exit(SMSodaStreamPure* sm)
+{
+    sm->state_id = SMSodaStreamPure_StateId_STATE_CARBONATING;
+}
+
+static void SATE_INITCARBONATINGONLY_do(SMSodaStreamPure* sm)
+{
+    // Sate_InitCarbonatingOnly behavior
+    // uml: do TransitionTo(Sate_Start_Carbonating)
+    {
+        // Step 1: Exit states until we reach `State_Carbonating` state (Least Common Ancestor for transition).
+        SATE_INITCARBONATINGONLY_exit(sm);
+        
+        // Step 2: Transition action: ``.
+        
+        // Step 3: Enter/move towards transition target `Sate_Start_Carbonating`.
+        SATE_START_CARBONATING_enter(sm);
+        
+        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+        return;
+    } // end of behavior for Sate_InitCarbonatingOnly
+    
+    // No ancestor handles this event.
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // event handlers for state SATE_START_CARBONATING
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -2887,6 +2890,13 @@ static void SATE_START_CARBONATING_do(SMSodaStreamPure* sm)
 static void STATE_EXITFILTERINGONLY_enter(SMSodaStreamPure* sm)
 {
     sm->state_id = SMSodaStreamPure_StateId_STATE_EXITFILTERINGONLY;
+    
+    // State_ExitFilteringOnly behavior
+    // uml: enter / { SolenoidPumpUVPower(0); }
+    {
+        // Step 1: execute action `SolenoidPumpUVPower(0);`
+        SolenoidPumpUVPower(0);
+    } // end of behavior for State_ExitFilteringOnly
     
     // State_ExitFilteringOnly behavior
     // uml: enter / { StopWaterPump(); }
@@ -2967,6 +2977,13 @@ static void STATE_FILTERING_enter(SMSodaStreamPure* sm)
     } // end of behavior for State_Filtering
     
     // State_Filtering behavior
+    // uml: enter / { SolenoidPumpUVPower(1); }
+    {
+        // Step 1: execute action `SolenoidPumpUVPower(1);`
+        SolenoidPumpUVPower(1);
+    } // end of behavior for State_Filtering
+    
+    // State_Filtering behavior
     // uml: enter / { StartUVLEd(); }
     {
         // Step 1: execute action `StartUVLEd();`
@@ -3040,10 +3057,30 @@ static void STATE_FILTERING_event_carbonationlevelpressed(SMSodaStreamPure* sm)
     // No ancestor handles this event.
 }
 
-static void STATE_FILTERING_event_waterfilterpressed(SMSodaStreamPure* sm)
+static void STATE_FILTERING_event_longpresswaterfilter(SMSodaStreamPure* sm)
 {
     // State_Filtering behavior
-    // uml: Event_WaterFilterPressed TransitionTo(State_ExitFilteringOnly)
+    // uml: Event_LongPressWaterFilter TransitionTo(State_ExitFilteringOnly)
+    {
+        // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
+        STATE_FILTERING_exit(sm);
+        
+        // Step 2: Transition action: ``.
+        
+        // Step 3: Enter/move towards transition target `State_ExitFilteringOnly`.
+        STATE_EXITFILTERINGONLY_enter(sm);
+        
+        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+        return;
+    } // end of behavior for State_Filtering
+    
+    // No ancestor handles this event.
+}
+
+static void STATE_FILTERING_event_shortpresswaterfilter(SMSodaStreamPure* sm)
+{
+    // State_Filtering behavior
+    // uml: Event_ShortPressWaterFilter TransitionTo(State_ExitFilteringOnly)
     {
         // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
         STATE_FILTERING_exit(sm);
@@ -3195,18 +3232,19 @@ static void STATE_POWERON_exit(SMSodaStreamPure* sm)
 static void STATE_POWERON_event_carbonationlevelpressed(SMSodaStreamPure* sm)
 {
     // State_PowerOn behavior
-    // uml: Event_CarbonationLevelPressed TransitionTo(Sate_InitCarbonatingOnly)
+    // uml: Event_CarbonationLevelPressed TransitionTo(State_Carbonating)
     {
         // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
         exit_up_to_state_handler(sm, SMSodaStreamPure_StateId_STATE_AUTOMATICMODE);
         
         // Step 2: Transition action: ``.
         
-        // Step 3: Enter/move towards transition target `Sate_InitCarbonatingOnly`.
-        SATE_INITCARBONATINGONLY_enter(sm);
+        // Step 3: Enter/move towards transition target `State_Carbonating`.
+        STATE_CARBONATING_enter(sm);
         
-        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-        return;
+        // Finish transition by calling pseudo state transition function.
+        State_Carbonating_InitialState_transition(sm);
+        return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
     } // end of behavior for State_PowerOn
     
     // No ancestor handles this event.
@@ -3506,6 +3544,13 @@ static void STATE_RINSING_enter(SMSodaStreamPure* sm)
     } // end of behavior for State_Rinsing
     
     // State_Rinsing behavior
+    // uml: enter / { SolenoidPumpUVPower(1); }
+    {
+        // Step 1: execute action `SolenoidPumpUVPower(1);`
+        SolenoidPumpUVPower(1);
+    } // end of behavior for State_Rinsing
+    
+    // State_Rinsing behavior
     // uml: enter / { StartWaterPump(); }
     {
         // Step 1: execute action `StartWaterPump();`
@@ -3536,6 +3581,13 @@ static void STATE_RINSING_enter(SMSodaStreamPure* sm)
 
 static void STATE_RINSING_exit(SMSodaStreamPure* sm)
 {
+    // State_Rinsing behavior
+    // uml: exit / { SolenoidPumpUVPower(0); }
+    {
+        // Step 1: execute action `SolenoidPumpUVPower(0);`
+        SolenoidPumpUVPower(0);
+    } // end of behavior for State_Rinsing
+    
     // State_Rinsing behavior
     // uml: exit / { StopWaterPump(); }
     {

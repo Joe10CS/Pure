@@ -49,7 +49,7 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		{4, {'U','V','L','A'}, 0},  // eUARTCommand_uvla,
 		{4, {'P','M','P','A'}, 0},  // eUARTCommand_pmpa,
 		{4, {'R','R','T','C'}, 0},  // eUARTCommand_rrtc,
-		{4, {'R','S','T','S'}, 1},  // eUARTCommand_rsts,
+		{4, {'R','S','T','S'}, 2},  // eUARTCommand_rsts,
 		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver
 		{4, {'S','T','B','L'}, 9},  // eUARTCommand_stbl
 

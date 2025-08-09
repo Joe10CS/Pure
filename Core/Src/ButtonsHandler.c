@@ -23,10 +23,11 @@
 
 /* Private macro -------------------------------------------------------------*/
 #define DEBOUNCE_BUTTONS_PERIOD_MSEC (150)
-#define LONG_PRESS_PERIOD_MSEC (2000)
+#define LONG_PRESS_PERIOD_MSEC (1000)
 /* Private variables ---------------------------------------------------------*/
 uint32_t gLastKeyPressTick = 0;
 uint32_t gFilterWaterPressTick = 0;
+bool gIgnoreFilterRelease = false;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
@@ -36,17 +37,24 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 	case GPIO_PIN_13: // BTN1 - Filter Water
 		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
 			gLastKeyPressTick = HAL_GetTick();
+			//COMM_UART_QueueTxMessage((uint8_t *)"$Filter pressed\r\n", 17);
 			if (gButtonsFunction)
 			{
-				gFilterWaterPressTick = gLastKeyPressTick;
+				gIgnoreFilterRelease = false;
+				gFilterWaterPressTick = HAL_GetTick();
 				return;
 			}
+			gIgnoreFilterRelease = true;
 			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+		} else { // if debounced the press, debounce the release too
+			gIgnoreFilterRelease = true;
 		}
+
 		break;
 	case GPIO_PIN_14: // BTN2 - Level Low
 		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
 			gLastKeyPressTick = HAL_GetTick();
+			//COMM_UART_QueueTxMessage((uint8_t *)"$BTN2Low falling\r\n", 18);
 			if (gButtonsFunction)
 			{
 				gCarbonationLevel = eLevel_Low;
@@ -59,6 +67,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 	case GPIO_PIN_15: // BTN3 - Level Medium
 		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
 			gLastKeyPressTick = HAL_GetTick();
+			//COMM_UART_QueueTxMessage((uint8_t *)"$BTN3 Med falling\r\n", 19);
 			if (gButtonsFunction)
 			{
 				gCarbonationLevel = eLevel_medium;
@@ -71,6 +80,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 	case GPIO_PIN_3: // BTN4 - Level High
 		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
 			gLastKeyPressTick = HAL_GetTick();
+			//COMM_UART_QueueTxMessage((uint8_t *)"$BTN4 High falling\r\n", 20);
 			if (gButtonsFunction)
 			{
 				gCarbonationLevel = eLevel_high;
@@ -86,14 +96,15 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin) {
-	case GPIO_PIN_13: // BTN1 - Filter Water
+	case GPIO_PIN_13: // BTN1 - Filter Water\
+		//COMM_UART_QueueTxMessage((uint8_t *)"$Filter released\r\n", 18);
 		// Act upon release
-		if (gFilterWaterPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_LONGPRESSWATERFILTER);
-		}
-		else
-		{
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_SHORTPRESSWATERFILTER);
+		if (gButtonsFunction && !gIgnoreFilterRelease) {
+			if (gFilterWaterPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_LONGPRESSWATERFILTER);
+			} else {
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_SHORTPRESSWATERFILTER);
+			}
 		}
 		break;
 	}

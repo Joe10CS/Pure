@@ -101,7 +101,8 @@ typedef struct {
 } sPumpParams;
 
 typedef struct {
-	uint16_t periodicStatusInterval; // 0 – don't send, N – status send period in milli-seconds
+	uint16_t periodicStatusMask;     // Mask of messages to send
+	uint16_t periodicStatusInterval;
 } sPeriodicStatusParams;
 
 // !@#!@#  CDM stuff below

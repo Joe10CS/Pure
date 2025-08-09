@@ -72,7 +72,7 @@ void StartCarbStageTimer()
 
 bool CarbonationOffCycleExpired(uint16_t carbCycle)
 {
-	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_off][carbCycle] >= HAL_GetTick())
+	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_off][carbCycle] < HAL_GetTick())
 	{
 		return true;
 	}
@@ -81,7 +81,7 @@ bool CarbonationOffCycleExpired(uint16_t carbCycle)
 
 bool CarbonationOnCycleExpired(uint16_t carbCycle)
 {
-	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_on][carbCycle] >= HAL_GetTick())
+	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_on][carbCycle] < HAL_GetTick())
 	{
 		return true;
 	}
@@ -131,7 +131,7 @@ void SolenoidPump(int isOn)
 }
 void SetLedByLastMsg() {}
 void SetRGBLedByLastMsg() {}
-void SolenoidPumpPower(int isOn)
+void SolenoidPumpUVPower(int isOn)
 {
 	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }

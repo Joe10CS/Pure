@@ -59,7 +59,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 volatile uint16_t mReadWaterLevelADC;     // Stores the averaged value from ADC_CHANNEL_10 (PB2)
 volatile uint16_t mReadWaterPumpCurrentADC;
 volatile uint16_t mReadUVCurrentADC;
-uint16_t mWaterLevelSensorThreahsold = 0x7fff;
+uint16_t mWaterLevelSensorThreahsold = 500; //0x7fff;
 bool mWaterLevelAboveThroshold = false;
 // ADC buffer definition
 // This buffer will store the raw, oversampled (summed) values from both channels, interleaved.
