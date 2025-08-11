@@ -45,16 +45,6 @@ typedef enum {
 	eUartDoneStatus_Engine_Error = 200,
 }eUartDoneStatus;
 
-typedef enum {
-	eSTBL_LowOn = 1,
-	eSTBL_LowOff = 2,
-	eSTBL_MediumOn = 3,
-	eSTBL_MediumOff = 4,
-	eSTBL_HighOn = 5,
-	eSTBL_HighOff = 6,
-
-	eSTBL_NumberOfRows = eSTBL_HighOff,
-}eSTBLRowIds;
 // commands from PC
 typedef enum {
 
@@ -74,6 +64,7 @@ typedef enum {
 	eUARTCommand_rsts,
 	eUARTCommand_rver,
 	eUARTCommand_stbl,
+	eUARTCommand_conf,
 
 	// DEBUG REMOVE ??
 	eUARTCommand_dbug, // debug messages
@@ -104,6 +95,11 @@ typedef struct {
 	uint16_t periodicStatusMask;     // Mask of messages to send
 	uint16_t periodicStatusInterval;
 } sPeriodicStatusParams;
+
+typedef struct {
+	uint16_t configurationParamID;     // Mask of messages to send
+	uint16_t value;
+} sConfigureParams;
 
 // !@#!@#  CDM stuff below
 typedef struct {
@@ -136,6 +132,7 @@ typedef union {
 	sPumpParams pump;
 	sPeriodicStatusParams periodicStatus;
 	uint16_t list[MAX_NUMBER_OF_PARAMETERS];
+	sConfigureParams config;
 
 	// !@#!@#  CDM stuff below
 

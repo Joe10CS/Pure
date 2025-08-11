@@ -52,6 +52,8 @@ extern uint16_t mReadUVCurrentADC;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
 
+uint32_t gPumpTimoutMsecs = 30000;
+uint32_t gBottleSizeThresholdmSecs = 15000;
 
 uint16_t gPeriodicStatusSendInterval = 0;
 uint16_t gPeriodicStatusSendMask = 0;
@@ -63,17 +65,28 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 void CheckHWAndGenerateEventsAsNeeded();
 void HandleStatusSend();
 /* Carbonation Time Table ----------------------------------------------------*/
-uint16_t gCarbTimeTable[eLevel_number_of_levels][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS] = {
+uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS] = {
+// --- 1 Litter bottle size ---------------------------------------------
 //		eLevel_Low,
-		{ /* ON */  {700, 1000, 800, 0, 0, 0, 0, 0,},
-		  /* OFF */ {500, 500, 2000, 0, 0, 0, 0, 0,}},
+				{ /* ON */{ 700, 1000, 800, 0, 0, 0, 0, 0, },
+				/* OFF */{ 500, 500, 2000, 0, 0, 0, 0, 0, } },
 //		eLevel_medium,
-		{ /* ON */  {700, 1000, 1000, 1000, 1000, 0, 0, 0,},
-		  /* OFF */ {500, 500,  500,  500,  2000, 0, 0, 0,}},
+				{ /* ON */{ 700, 1000, 1000, 1000, 1000, 0, 0, 0, },
+				/* OFF */{ 500, 500, 500, 500, 2000, 0, 0, 0, } },
 //		eLevel_high,
-		{ /* ON */  {700, 1000, 1000, 1250, 1250, 1000, 0, 0,},
-		  /* OFF */ {500, 500,  500,  500,  500,  2000, 0, 0,}},
-};
+				{ /* ON */{ 700, 1000, 1000, 1250, 1250, 1000, 0, 0, },
+				/* OFF */{ 500, 500, 500, 500, 500, 2000, 0, 0, } },
+// --- 0.5 Litter bottle size ---------------------------------------------
+//		eLevel_Low,
+				{ /* ON */{ 700, 1000, 800, 0, 0, 0, 0, 0, },
+				/* OFF */{ 500, 500, 2000, 0, 0, 0, 0, 0, } },
+//		eLevel_medium,
+				{ /* ON */{ 700, 1000, 1000, 1000, 1000, 0, 0, 0, },
+				/* OFF */{ 500, 500, 500, 500, 2000, 0, 0, 0, } },
+//		eLevel_high,
+				{ /* ON */{ 700, 1000, 1000, 1250, 1250, 1000, 0, 0, },
+				/* OFF */{ 500, 500, 500, 500, 500, 2000, 0, 0, } },
+		};
 
 /* Private user code ---------------------------------------------------------*/
 /**
@@ -130,6 +143,13 @@ void MainLogicPeriodic() {
 		}
 	}
 	// DEBUG REMOVE
+
+	// Check for water pump timout
+	if (mPumpStartTimeTick > 0) { // need to monitor water pump time
+		if (mPumpStartTimeTick + gPumpTimoutMsecs < HAL_GetTick()){
+			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMEOUT);
+		}
+	}
 
 	// dispatch queued events from your ring buffer (if any)
 	SMSodaStreamPure_EventId ev;
@@ -262,14 +282,14 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	case eUARTCommand_stbl:
 		{
 			echoCommand = false;
-			// msg->params.list[0] holds the row ID (1,2,3,4,5 or 6)
+			// msg->params.list[0] holds the row ID (1 to 12)
 			// msg->params.list[1..8] - the values
-			if ((msg->params.list[0] < 1) || (msg->params.list[0] > eSTBL_NumberOfRows))
+			if ((msg->params.list[0] < 1) || (msg->params.list[0] > 12))
 			{
 				TxIllegalCommandResponse();
 				break;
 			}
-			int level = (msg->params.list[0] - 1) / 2; // maps 1,2,3,4,5,6 -> 0,0,1,1,2,2
+			int level = (msg->params.list[0] - 1) / 2; // maps 1,2,3,4,5,6,7,8,9,10,11,12 -> 0,0,1,1,2,2,3,3,4,4,5,5
 			int onOff = (msg->params.list[0] - 1) % 2; // maps 1,2,3,4,5,6 -> 0,1,0,1,0,1
 			for (int i = 0; i < MAX_NUMBER_OF_CARBONATION_STEPS; i++)
 			{
@@ -279,7 +299,17 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		}
 		break;
-
+	case eUARTCommand_conf:
+		switch (msg->params.config.configurationParamID)
+		{
+		case 1:
+			gBottleSizeThresholdmSecs = msg->params.config.value * 1000; // sent in Seconds, convert to milliseconds
+			break;
+		case 2:
+			gPumpTimoutMsecs = msg->params.config.value * 1000; // sent in Seconds, convert to milliseconds
+			break;
+		}
+		break;
 	default:
 	}
 	if (echoCommand == true)
@@ -318,7 +348,7 @@ void HandleStatusSend()
 			}
 			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_RTCTILT)
 			{
-				sprintf((char *)gRawMsgForEcho, "$RSTS %d,%d,%d,%d\r\n",
+				sprintf((char *)gRawMsgForEcho, "$RSTS %d,%d,%d,%d,%d\r\n",
 						PERIODIC_STATUS_SEND_MASK_RTCTILT,
 						0, // TODO send RTC seconds since last filter change
 						(int)filtered_x,(int)filtered_y,(int)filtered_z);

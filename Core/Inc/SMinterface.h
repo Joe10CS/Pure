@@ -36,6 +36,8 @@ void StopCarbonation();
 void StartUVLEd();
 void StopUVLed();
 
+void InitCarbonationOnly();
+void WaterPumpSensor(int isOn);
 void StartWaterPump();
 void StopWaterPump();
 void ButtonsFunction(bool isFunctioning);

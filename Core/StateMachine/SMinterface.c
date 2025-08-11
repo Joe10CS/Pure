@@ -11,11 +11,14 @@
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
 uint32_t mCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
+uint32_t mPumpStartTimeTick = 0;
+uint32_t mLastPumpTimeMSecs = 0;
+eBottleSize mLastDetectedBottleSize = eBottle_1_Litter; // default
 bool gButtonsFunction = false;
 
 
 extern SMSodaStreamPure mStateMachine;
-extern uint16_t gCarbTimeTable[eLevel_number_of_levels][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS];
+extern uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS];
 
 void StartCarbonation() {}
 void StopCarbonation() {}
@@ -35,14 +38,27 @@ void WaterPumpSensor(int isOn)
 	HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
+void InitCarbonationOnly()
+{
+	mLastDetectedBottleSize = eBottle_1_Litter;
+	mLastPumpTimeMSecs = 0;
+	mPumpStartTimeTick = 0;
+}
+
 void StartWaterPump()
 {
 	// if auto mode - start pump sensor (based on pumpStopsOnSensor)
 	// in GUI mode the sensor is enabled all the time
 	// to allow reading the sensor value even when the pump is not working
-	if ((! IsGuiControlMode()) && mStateMachine.vars.pumpStopsOnSensor)
+	if (! gIsGuiControlMode)
 	{
-		WaterPumpSensor(1);
+		mPumpStartTimeTick = HAL_GetTick();
+		mLastPumpTimeMSecs = 0;
+		if (mStateMachine.vars.pumpStopsOnSensor)
+		{
+			WaterPumpSensor(1);
+		}
+
 	}
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_SET);
 }
@@ -52,10 +68,18 @@ void StopWaterPump()
 	// if auto mode - stop pump sensor (based on pumpStopsOnSensor)
 	// in GUI mode the sensor is enabled all the time
 	// to allow reading the sensor value even when the pump is not working
-	if ((! IsGuiControlMode()) && mStateMachine.vars.pumpStopsOnSensor)
-	{
+	if ((! IsGuiControlMode()) && mStateMachine.vars.pumpStopsOnSensor) {
 		WaterPumpSensor(0);
 	}
+	mLastPumpTimeMSecs = HAL_GetTick() - mPumpStartTimeTick;
+	if (mLastPumpTimeMSecs >= gBottleSizeThresholdmSecs) {
+		mLastDetectedBottleSize = eBottle_1_Litter;
+	} else {
+		mLastDetectedBottleSize = eBottle_0_5_Litter;
+	}
+
+	mPumpStartTimeTick = 0;
+
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
 
 }
@@ -72,7 +96,8 @@ void StartCarbStageTimer()
 
 bool CarbonationOffCycleExpired(uint16_t carbCycle)
 {
-	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_off][carbCycle] < HAL_GetTick())
+	int row_index = gCarbonationLevel + ((mLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	if (mCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_off][carbCycle] < HAL_GetTick())
 	{
 		return true;
 	}
@@ -81,7 +106,8 @@ bool CarbonationOffCycleExpired(uint16_t carbCycle)
 
 bool CarbonationOnCycleExpired(uint16_t carbCycle)
 {
-	if (mCarbCycleTickStart + gCarbTimeTable[gCarbonationLevel][eCycle_on][carbCycle] < HAL_GetTick())
+	int row_index = gCarbonationLevel + ((mLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	if (mCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_on][carbCycle] < HAL_GetTick())
 	{
 		return true;
 	}
@@ -90,7 +116,8 @@ bool CarbonationOnCycleExpired(uint16_t carbCycle)
 
 bool IsCarbonationLastCycle(uint16_t carbCycle)
 {
-	if (gCarbTimeTable[gCarbonationLevel][eCycle_on][carbCycle] == 0)
+	int row_index = gCarbonationLevel + ((mLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	if (gCarbTimeTable[row_index][eCycle_on][carbCycle] == 0)
 	{
 		return true;
 	}

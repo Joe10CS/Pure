@@ -8,6 +8,7 @@
 
 #define MAX_NUMBER_OF_CARBONATION_STEPS (8)
 
+
 typedef enum {
 	eLevel_Low,
 	eLevel_medium,
@@ -17,10 +18,17 @@ typedef enum {
 }eCarbonationLevel;
 
 typedef enum {
+	eBottle_1_Litter,
+	eBottle_0_5_Litter
+}eBottleSize;
+
+typedef enum {
 	eCycle_on,
 	eCycle_off,
 
 	eCycle_number_of_cycles
 }eCarbonationCycle;
+
+
 
 #endif /* INC_COMMON_H_ */

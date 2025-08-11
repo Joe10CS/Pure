@@ -71,6 +71,9 @@ HAL_StatusTypeDef StartADCConversion();
 extern bool gIsGuiControlMode;
 extern eCarbonationLevel gCarbonationLevel;
 extern bool gButtonsFunction;
+extern uint32_t gBottleSizeThresholdmSecs;
+extern uint32_t mPumpStartTimeTick;
+
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/

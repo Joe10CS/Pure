@@ -30,22 +30,19 @@ typedef enum SMSodaStreamPure_EventId
     SMSodaStreamPure_EventId_EVENT_SHORTPRESSWATERFILTER = 15,
     SMSodaStreamPure_EventId_EVENT_SOLENDOIDPUMPPOWEROFF = 16,
     SMSodaStreamPure_EventId_EVENT_SOLENDOIDPUMPPOWERON = 17,
-    SMSodaStreamPure_EventId_EVENT_STARTSTATUSTRANSMIT = 18,
-    SMSodaStreamPure_EventId_EVENT_STOP = 19,
-    SMSodaStreamPure_EventId_EVENT_STOPSTATUSTRANSMIT = 20,
-    SMSodaStreamPure_EventId_EVENT_TILTDETECTED = 21,
-    SMSodaStreamPure_EventId_EVENT_UVLEDOFF = 22,
-    SMSodaStreamPure_EventId_EVENT_UVLEDON = 23,
-    SMSodaStreamPure_EventId_EVENT_WAREPUMPON = 24,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMOONNOSENSOR = 25,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMEOUT = 26,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMERTIMEOUT = 27,
-    SMSodaStreamPure_EventId_EVENT_WATERPUMPOFF = 28
+    SMSodaStreamPure_EventId_EVENT_STOP = 18,
+    SMSodaStreamPure_EventId_EVENT_TILTDETECTED = 19,
+    SMSodaStreamPure_EventId_EVENT_UVLEDOFF = 20,
+    SMSodaStreamPure_EventId_EVENT_UVLEDON = 21,
+    SMSodaStreamPure_EventId_EVENT_WAREPUMPON = 22,
+    SMSodaStreamPure_EventId_EVENT_WATERPUMOONNOSENSOR = 23,
+    SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMEOUT = 24,
+    SMSodaStreamPure_EventId_EVENT_WATERPUMPOFF = 25
 } SMSodaStreamPure_EventId;
 
 enum
 {
-    SMSodaStreamPure_EventIdCount = 29
+    SMSodaStreamPure_EventIdCount = 26
 };
 
 typedef enum SMSodaStreamPure_StateId
@@ -63,36 +60,33 @@ typedef enum SMSodaStreamPure_StateId
     SMSodaStreamPure_StateId_STATE_SETLED = 10,
     SMSodaStreamPure_StateId_STATE_SOLENOIDPUMPPOWEROFF = 11,
     SMSodaStreamPure_StateId_STATE_SOLENOIDPUMPPOWERON = 12,
-    SMSodaStreamPure_StateId_STATE_STARTSTATUSTRANSMIT = 13,
-    SMSodaStreamPure_StateId_STATE_STOP = 14,
-    SMSodaStreamPure_StateId_STATE_STOPSTATUSTRANSMIT = 15,
-    SMSodaStreamPure_StateId_STATE_STOPWATERPUMP = 16,
-    SMSodaStreamPure_StateId_STATE_UVLEDOFF = 17,
-    SMSodaStreamPure_StateId_STATE_UVLEDON = 18,
-    SMSodaStreamPure_StateId_STATE_WATERPUMPOFF = 19,
-    SMSodaStreamPure_StateId_STATE_WATERPUMPON = 20,
-    SMSodaStreamPure_StateId_STATE_WATERPUMPONNOSENSOR = 21,
-    SMSodaStreamPure_StateId_STATE_AUTOMATICMODE = 22,
-    SMSodaStreamPure_StateId_STATE_CARBONATING = 23,
-    SMSodaStreamPure_StateId_SATE_CARBONATING_OFF = 24,
-    SMSodaStreamPure_StateId_SATE_CARBONATING_ON = 25,
-    SMSodaStreamPure_StateId_SATE_EXIT_CARBONATING = 26,
-    SMSodaStreamPure_StateId_SATE_INITCARBONATINGONLY = 27,
-    SMSodaStreamPure_StateId_SATE_START_CARBONATING = 28,
-    SMSodaStreamPure_StateId_STATE_EXITFILTERINGONLY = 29,
-    SMSodaStreamPure_StateId_STATE_FILTERING = 30,
-    SMSodaStreamPure_StateId_STATE_FILTERINGCARBONATIONAWAIT = 31,
-    SMSodaStreamPure_StateId_STATE_POWERON = 32,
-    SMSodaStreamPure_StateId_STATE_POWERONINIT = 33,
-    SMSodaStreamPure_StateId_STATE_READY = 34,
-    SMSodaStreamPure_StateId_STATE_READYRINSEREQUIRED = 35,
-    SMSodaStreamPure_StateId_STATE_STANDBY = 36,
-    SMSodaStreamPure_StateId_STATE_RINSING = 37
+    SMSodaStreamPure_StateId_STATE_STOP = 13,
+    SMSodaStreamPure_StateId_STATE_STOPWATERPUMP = 14,
+    SMSodaStreamPure_StateId_STATE_UVLEDOFF = 15,
+    SMSodaStreamPure_StateId_STATE_UVLEDON = 16,
+    SMSodaStreamPure_StateId_STATE_WATERPUMPOFF = 17,
+    SMSodaStreamPure_StateId_STATE_WATERPUMPON = 18,
+    SMSodaStreamPure_StateId_STATE_WATERPUMPONNOSENSOR = 19,
+    SMSodaStreamPure_StateId_STATE_AUTOMATICMODE = 20,
+    SMSodaStreamPure_StateId_STATE_CARBONATING = 21,
+    SMSodaStreamPure_StateId_SATE_CARBONATING_OFF = 22,
+    SMSodaStreamPure_StateId_SATE_CARBONATING_ON = 23,
+    SMSodaStreamPure_StateId_SATE_EXIT_CARBONATING = 24,
+    SMSodaStreamPure_StateId_SATE_START_CARBONATING = 25,
+    SMSodaStreamPure_StateId_STATE_EXITFILTERINGONLY = 26,
+    SMSodaStreamPure_StateId_STATE_FILTERING = 27,
+    SMSodaStreamPure_StateId_STATE_FILTERINGCARBONATIONAWAIT = 28,
+    SMSodaStreamPure_StateId_STATE_POWERON = 29,
+    SMSodaStreamPure_StateId_STATE_POWERONINIT = 30,
+    SMSodaStreamPure_StateId_STATE_READY = 31,
+    SMSodaStreamPure_StateId_STATE_READYRINSEREQUIRED = 32,
+    SMSodaStreamPure_StateId_STATE_STANDBY = 33,
+    SMSodaStreamPure_StateId_STATE_RINSING = 34
 } SMSodaStreamPure_StateId;
 
 enum
 {
-    SMSodaStreamPure_StateIdCount = 38
+    SMSodaStreamPure_StateIdCount = 35
 };
 
 
