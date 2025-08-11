@@ -39,7 +39,7 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		{4, {'M','G','U','I'}, 1},  // eUARTCommand_mgui,
 		{4, {'P','O','W','R'}, 1},  // eUARTCommand_powr,
 		{4, {'S','L','E','D'}, 2},  // eUARTCommand_sled,
-		{4, {'S','R','G','B'}, 4},  // eUARTCommand_srgb,
+		{4, {'S','R','G','B'}, 3},  // eUARTCommand_srgb,
 		{4, {'P','U','M','P'}, 2},  // eUARTCommand_pump,
 		{4, {'C','A','R','B'}, 1},  // eUARTCommand_carb,
 		{4, {'S','T','O','P'}, 0},  // eUARTCommand_stop,

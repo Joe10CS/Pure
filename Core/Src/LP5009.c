@@ -7,11 +7,11 @@
 
 #include "LP5009.h"
 
-static const uint8_t lp5009_brightness_regs[3] = {
-    LP5009_REG_LED0_BRIGHTNESS,
-    LP5009_REG_LED1_BRIGHTNESS,
-    LP5009_REG_LED2_BRIGHTNESS
-};
+//static const uint8_t lp5009_brightness_regs[3] = {
+//    LP5009_REG_LED0_BRIGHTNESS,
+//    LP5009_REG_LED1_BRIGHTNESS,
+//    LP5009_REG_LED2_BRIGHTNESS
+//};
 
 static const uint8_t lp5009_color_regs[LP5009_LED_COUNT] = {
     LP5009_REG_OUT0_COLOR, LP5009_REG_OUT1_COLOR, LP5009_REG_OUT2_COLOR,
@@ -72,6 +72,34 @@ HAL_StatusTypeDef LP5009_AllLedsOff(I2C_HandleTypeDef *hi2c)
 
     return HAL_OK;
 }
+//HAL_StatusTypeDef LP5009_RGB(I2C_HandleTypeDef *hi2c,
+//                             uint8_t r, uint8_t g, uint8_t b)
+//{
+//    uint8_t regR = 255 - r; // OUT5
+//    uint8_t regG = 255 - g; // OUT6
+//    uint8_t regB = 255 - b; // OUT7
+//
+//    if (HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT5_COLOR, 1, &regR, 1, HAL_MAX_DELAY) != HAL_OK)
+//        return HAL_ERROR;
+//    if (HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT6_COLOR, 1, &regG, 1, HAL_MAX_DELAY) != HAL_OK)
+//        return HAL_ERROR;
+//    if (HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT7_COLOR, 1, &regB, 1, HAL_MAX_DELAY) != HAL_OK)
+//        return HAL_ERROR;
+//
+//    return HAL_OK;
+//}
+
+HAL_StatusTypeDef LP5009_RGB(I2C_HandleTypeDef *hi2c, uint8_t r, uint8_t g, uint8_t b)
+{
+//    uint8_t wr[3] = { (uint8_t)(255 - r), (uint8_t)(255 - g), (uint8_t)(255 - b) };
+    uint8_t wr[3] = { (uint8_t)(r), (uint8_t)(g), (uint8_t)(b) };
+    // OUT5_COLOR..OUT7_COLOR are consecutive; auto-increment is enabled by default
+    if (HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT5_COLOR, 1, &wr[0], 1, HAL_MAX_DELAY)) return HAL_ERROR;
+    if (HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT6_COLOR, 1, &wr[1], 1, HAL_MAX_DELAY)) return HAL_ERROR;
+    if (HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT7_COLOR, 1, &wr[2], 1, HAL_MAX_DELAY)) return HAL_ERROR;
+    return HAL_OK;
+}
+
 
 // Set brightness (0–100%) for individual OUTx pin
 HAL_StatusTypeDef LP5009_SetLed(I2C_HandleTypeDef *hi2c, uint8_t ledNumber, uint8_t brightnessPercent)
@@ -84,200 +112,38 @@ HAL_StatusTypeDef LP5009_SetLed(I2C_HandleTypeDef *hi2c, uint8_t ledNumber, uint
 
     return HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, lp5009_color_regs[ledNumber], 1, &regValue, 1, HAL_MAX_DELAY);
 }
-
-
-// DEBUG REMOVE
-int dd_wr_err = 0;
-int dd_rd_err = 0;
-int dd_val_err = 0;
-int dd_HAL_ERROR = 0;
-int dd_HAL_BUSY = 0;
-int dd_HAL_TIMEOUT = 0;
-void cntErr(HAL_StatusTypeDef sts)
+HAL_StatusTypeDef LP5009_SetLedOff(I2C_HandleTypeDef *hi2c)
 {
-	switch (sts)
-	{
-	case HAL_ERROR:
-		dd_HAL_ERROR++;
-		break;
-	case HAL_BUSY:
-		dd_HAL_BUSY++;
-		break;
-	case HAL_TIMEOUT:
-		dd_HAL_TIMEOUT++;
-		break;
-	default:
-		break;
-	}
-}
-HAL_StatusTypeDef I2C_Write_Read_Byte(I2C_HandleTypeDef *hi2c,
-                                      uint16_t DevAddress,
-                                      uint16_t MemAddress,
-                                      uint16_t MemAddSize,
-                                      uint8_t value,
-                                      uint32_t Timeout)
-{
-    HAL_StatusTypeDef status;
-
-    // 1. Write one byte
-    status = HAL_I2C_Mem_Write(hi2c, DevAddress, MemAddress, MemAddSize, &value, 1, Timeout);
-    if (status != HAL_OK)
-    {
-    	dd_wr_err++;
-    	cntErr(status);
-    	return status;
-    }
-
-    // 2. Read back the same byte
-    uint8_t readback = 0;
-    status = HAL_I2C_Mem_Read(hi2c, DevAddress, MemAddress, MemAddSize, &readback, 1, Timeout);
-    if (status != HAL_OK)
-    {
-    	dd_rd_err++;
-        return status;
-    }
-    // 3. Compare written and read values
-    if (readback == value)
-  	{
-    	return HAL_OK;
-   	}
-    else
-    {
-    	dd_val_err++;
-        return HAL_ERROR;
-    }
-}
-int ddd_conf0_err = 0;
-int ddd_conf1_err = 0;
-void LP5009_check_config(I2C_HandleTypeDef *hi2c,
-                                      uint16_t DevAddress,
-									  uint8_t expected_config0,
-									  uint8_t expected_config1)
-{
-    HAL_StatusTypeDef status;
-
-    uint8_t readback = 0;
-    status = HAL_I2C_Mem_Read(hi2c, DevAddress, LP5009_REG_DEVICE_CONFIG0, 1, &readback, 1, HAL_MAX_DELAY);
-    if (status != HAL_OK)
-    {
-    	dd_rd_err++;
-    }
-    else if (readback != expected_config0)
-    {
-    	ddd_conf0_err++;
-    }
-    status = HAL_I2C_Mem_Read(hi2c, DevAddress, LP5009_REG_DEVICE_CONFIG1, 1, &readback, 1, HAL_MAX_DELAY);
-    if (status != HAL_OK)
-    {
-    	dd_rd_err++;
-    }
-    else if (readback != expected_config1)
-    {
-    	ddd_conf1_err++;
-    }
+	uint8_t zero = 0x00;
+	HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_LED1_BRIGHTNESS, 1, &zero, 1, HAL_MAX_DELAY);
+	HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_LED2_BRIGHTNESS, 1, &zero, 1, HAL_MAX_DELAY);
+    return HAL_OK;
 }
 
-HAL_StatusTypeDef stat = 0;
-int err_count = 0;
-int ok_count = 0;
-extern I2C_HandleTypeDef hi2c2;
-
-void test_LP5009()
+HAL_StatusTypeDef LP5009_RGB_Off(I2C_HandleTypeDef *hi2c)
 {
-	 // Hardware disable pin for reset (?)
-	  HAL_GPIO_WritePin(LED_EN_GPIO_Port, LED_EN_Pin, GPIO_PIN_RESET);
-		HAL_Delay(20);
-		  // Hardware Enable the chip (power up the chip)
-	  HAL_GPIO_WritePin(LED_EN_GPIO_Port, LED_EN_Pin, GPIO_PIN_SET);
+    uint8_t ff = 0xFF; // OUTx_COLOR: 0xFF = OFF
+    HAL_StatusTypeDef s;
+    s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT5_COLOR, 1, &ff, 1, HAL_MAX_DELAY); if (s) return s;
+    s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT6_COLOR, 1, &ff, 1, HAL_MAX_DELAY); if (s) return s;
+    s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_OUT7_COLOR, 1, &ff, 1, HAL_MAX_DELAY); if (s) return s;
+    return HAL_OK;
+}
 
-		HAL_Delay(2);
+HAL_StatusTypeDef LP5009_RGB_DisableGroups(I2C_HandleTypeDef *hi2c) // "hard off"
+{
+    uint8_t zero = 0x00;
+    HAL_StatusTypeDef s;
+    s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_LED1_BRIGHTNESS, 1, &zero, 1, HAL_MAX_DELAY); if (s) return s;
+    s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_LED2_BRIGHTNESS, 1, &zero, 1, HAL_MAX_DELAY); if (s) return s;
+    return HAL_OK;
+}
 
-		stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x00, 1, 0x40, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-	  // 3. Disable power-save mode, keep other features enabled
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x01, 1, 0x2C, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x02, 1, 0x00, HAL_MAX_DELAY);
-	if (stat != HAL_OK)
-			{
-				err_count++;
-			}
-
-	// 4. Set LED0 group brightness to max (controls OUT0–2)
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x07, 1, 0xFF, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x08, 1, 0xFF, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-	  // 5. Set OUT0_COLOR to 0x00 (fully ON)
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x0B, 1, 0x00, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x0C, 1, 0x00, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x0D, 1, 0x00, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-	  stat = I2C_Write_Read_Byte(&hi2c2, 0x28, 0x0E, 1, 0x00, HAL_MAX_DELAY);
-	  if (stat != HAL_OK)
-	  		{
-	  			err_count++;
-	  		}
-
-	  LP5009_Init(&hi2c2);
-	  LP5009_AllLedsOff(&hi2c2);
-	  /* USER CODE END 2 */
-
-	  /* Infinite loop */
-	  /* USER CODE BEGIN WHILE */
-	  int led = 0;
-	  int led_bright = 0;
-
-
-
-
-
-	  while (1)
-	  {
-		HAL_Delay(100);
-		stat = LP5009_SetLed(&hi2c2,led, led_bright);
-			if (stat != HAL_OK)
-			{
-				err_count++;
-			}
-			else
-			{
-				ok_count++;
-				led_bright += 10;
-				if (led_bright > 100)
-				{
-					led_bright = 0;
-					led++;
-					if (led >= LP5009_LED_COUNT)
-					{
-						led = 0;
-					}
-				}
-			}
-	  }
-
+HAL_StatusTypeDef LP5009_RGB_EnableGroups(I2C_HandleTypeDef *hi2c)  // call before lighting RGB again
+{
+    uint8_t full = 0xFF;
+    HAL_StatusTypeDef s;
+    s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_LED1_BRIGHTNESS, 1, &full, 1, HAL_MAX_DELAY); if (s) return s;
+    s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_LED2_BRIGHTNESS, 1, &full, 1, HAL_MAX_DELAY); if (s) return s;
+    return HAL_OK;
 }

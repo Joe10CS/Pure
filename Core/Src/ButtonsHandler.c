@@ -96,6 +96,9 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin) {
+	case GPIO_PIN_8: // Pump_WD_FDBK - error on 1
+		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG);
+		break;
 	case GPIO_PIN_13: // BTN1 - Filter Water
 		//COMM_UART_QueueTxMessage((uint8_t *)"$Filter released\r\n", 18);
 		// Act upon release

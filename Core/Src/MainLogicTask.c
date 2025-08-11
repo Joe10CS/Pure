@@ -10,7 +10,7 @@
 #include "string.h"
 #include "EventQueue.h"
 #include "RxTxMsgs.h"
-/* Private includes ----------------------------------------------------------*/
+#include "LP5009.h"/* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -27,6 +27,7 @@
 /* External variables ---------------------------------------------------------*/
 // TIM1 runs the main logic each 10ms
 extern TIM_HandleTypeDef htim1;
+extern I2C_HandleTypeDef hi2c1;
 
 extern int8_t filtered_x;
 extern int8_t filtered_y;
@@ -45,6 +46,7 @@ bool gIsGuiControlMode = false;
 bool gIsUVLEdOn = false;
 bool gIsTilted = false;
 bool gAccelerometerIsPresent = false;
+bool gLP5009InitOK = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
 extern uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
 extern uint16_t mReadWaterPumpCurrentADC;
@@ -101,9 +103,13 @@ void MainLogicInit(void) {
 	SMSodaStreamPure_start(&mStateMachine);
 
 
-	gAccelerometerIsPresent = AccelerometerIsPresent();
 	// Initialize the Accelerometer
 	AccelerometerInit();
+	gAccelerometerIsPresent = AccelerometerIsPresent();
+
+	// Initialize the LED chip LP5009
+	HAL_StatusTypeDef st = LP5009_Init(&hi2c1);
+	gLP5009InitOK = (st == HAL_OK);
 
 	// starts the main logic timer
 	HAL_TIM_Base_Start_IT(&htim1);
@@ -211,12 +217,37 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			gQueueErrors++;
 		break;
 	case eUARTCommand_sled:
-		if (! SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_SETLED))
-			gQueueErrors++;
+		if (gLP5009InitOK)
+		{
+			if ((msg->params.sled.ledNumber < 1) || (msg->params.sled.ledNumber > 5) || (msg->params.sled.intensity > 100))
+			{
+				echoCommand = false;
+				TxIllegalCommandResponse();
+				break;
+			}
+			LP5009_SetLed(&hi2c1, (uint8_t)(msg->params.sled.ledNumber), 100-(uint8_t)(msg->params.sled.intensity));
+		}
 		break;
 	case eUARTCommand_srgb:
-		if (! SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_SETRGBLED))
-			gQueueErrors++;
+		if (gLP5009InitOK) {
+			if ((msg->params.srgb.valueR > 255) ||(msg->params.srgb.valueG > 255) || (msg->params.srgb.valueB > 255)) {
+				echoCommand = false;
+				TxIllegalCommandResponse();
+				break;
+			}
+			if ((msg->params.srgb.valueR == 0) && (msg->params.srgb.valueG == 0) && (msg->params.srgb.valueB == 0)) {
+				LP5009_SetLedOff(&hi2c1);
+				//LP5009_RGB_Off(&hi2c1);
+			} else {
+				LP5009_RGB_EnableGroups(&hi2c1);
+
+				// Blue and Red switched
+				LP5009_RGB(&hi2c1,(uint8_t)(msg->params.srgb.valueB),(uint8_t)(msg->params.srgb.valueG),(uint8_t)(msg->params.srgb.valueR));
+				// // Red and green are reverese
+				// LP5009_RGB(&hi2c1,(uint8_t)(msg->params.srgb.valueG),(uint8_t)(msg->params.srgb.valueR),(uint8_t)(msg->params.srgb.valueB));
+			}
+
+		}
 		break;
 	case eUARTCommand_pump:
 		if (msg->params.pump.isOn == 1)

@@ -69,10 +69,6 @@ static void STATE_GUIMODEWAITCOMMANDS_event_carboff(SMSodaStreamPure* sm);
 
 static void STATE_GUIMODEWAITCOMMANDS_event_carbon(SMSodaStreamPure* sm);
 
-static void STATE_GUIMODEWAITCOMMANDS_event_setled(SMSodaStreamPure* sm);
-
-static void STATE_GUIMODEWAITCOMMANDS_event_setrgbled(SMSodaStreamPure* sm);
-
 static void STATE_GUIMODEWAITCOMMANDS_event_solendoidpumppoweroff(SMSodaStreamPure* sm);
 
 static void STATE_GUIMODEWAITCOMMANDS_event_solendoidpumppoweron(SMSodaStreamPure* sm);
@@ -94,18 +90,6 @@ static void STATE_INITGUIMODE_enter(SMSodaStreamPure* sm);
 static void STATE_INITGUIMODE_exit(SMSodaStreamPure* sm);
 
 static void STATE_INITGUIMODE_do(SMSodaStreamPure* sm);
-
-static void STATE_RGBLEDON_enter(SMSodaStreamPure* sm);
-
-static void STATE_RGBLEDON_exit(SMSodaStreamPure* sm);
-
-static void STATE_RGBLEDON_do(SMSodaStreamPure* sm);
-
-static void STATE_SETLED_enter(SMSodaStreamPure* sm);
-
-static void STATE_SETLED_exit(SMSodaStreamPure* sm);
-
-static void STATE_SETLED_do(SMSodaStreamPure* sm);
 
 static void STATE_SOLENOIDPUMPPOWEROFF_enter(SMSodaStreamPure* sm);
 
@@ -406,8 +390,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_EVENT_WATERPUMPOFF: STATE_GUIMODEWAITCOMMANDS_event_waterpumpoff(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_UVLEDON: STATE_GUIMODEWAITCOMMANDS_event_uvledon(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_UVLEDOFF: STATE_GUIMODEWAITCOMMANDS_event_uvledoff(sm); break;
-                case SMSodaStreamPure_EventId_EVENT_SETLED: STATE_GUIMODEWAITCOMMANDS_event_setled(sm); break;
-                case SMSodaStreamPure_EventId_EVENT_SETRGBLED: STATE_GUIMODEWAITCOMMANDS_event_setrgbled(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_STOP: STATE_GUIMODEWAITCOMMANDS_event_stop(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR: STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
@@ -424,34 +406,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
             switch (event_id)
             {
                 case SMSodaStreamPure_EventId_DO: STATE_INITGUIMODE_do(sm); break;
-                case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
-                
-                default: break; // to avoid "unused enumeration value in switch" warning
-            }
-            break;
-        
-        // STATE: State_RGBLedOn
-        case SMSodaStreamPure_StateId_STATE_RGBLEDON:
-            switch (event_id)
-            {
-                case SMSodaStreamPure_EventId_DO: STATE_RGBLEDON_do(sm); break;
-                case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
-                
-                default: break; // to avoid "unused enumeration value in switch" warning
-            }
-            break;
-        
-        // STATE: State_SetLed
-        case SMSodaStreamPure_StateId_STATE_SETLED:
-            switch (event_id)
-            {
-                case SMSodaStreamPure_EventId_DO: STATE_SETLED_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
@@ -847,10 +801,6 @@ static void exit_up_to_state_handler(SMSodaStreamPure* sm, SMSodaStreamPure_Stat
             case SMSodaStreamPure_StateId_STATE_GUIMODEWAITCOMMANDS: STATE_GUIMODEWAITCOMMANDS_exit(sm); break;
             
             case SMSodaStreamPure_StateId_STATE_INITGUIMODE: STATE_INITGUIMODE_exit(sm); break;
-            
-            case SMSodaStreamPure_StateId_STATE_RGBLEDON: STATE_RGBLEDON_exit(sm); break;
-            
-            case SMSodaStreamPure_StateId_STATE_SETLED: STATE_SETLED_exit(sm); break;
             
             case SMSodaStreamPure_StateId_STATE_SOLENOIDPUMPPOWEROFF: STATE_SOLENOIDPUMPPOWEROFF_exit(sm); break;
             
@@ -1453,46 +1403,6 @@ static void STATE_GUIMODEWAITCOMMANDS_event_carbon(SMSodaStreamPure* sm)
     // No ancestor handles this event.
 }
 
-static void STATE_GUIMODEWAITCOMMANDS_event_setled(SMSodaStreamPure* sm)
-{
-    // State_GuiModeWaitCommands behavior
-    // uml: Event_SetLed TransitionTo(State_SetLed)
-    {
-        // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition).
-        STATE_GUIMODEWAITCOMMANDS_exit(sm);
-        
-        // Step 2: Transition action: ``.
-        
-        // Step 3: Enter/move towards transition target `State_SetLed`.
-        STATE_SETLED_enter(sm);
-        
-        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-        return;
-    } // end of behavior for State_GuiModeWaitCommands
-    
-    // No ancestor handles this event.
-}
-
-static void STATE_GUIMODEWAITCOMMANDS_event_setrgbled(SMSodaStreamPure* sm)
-{
-    // State_GuiModeWaitCommands behavior
-    // uml: Event_SetRGBLed TransitionTo(State_RGBLedOn)
-    {
-        // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition).
-        STATE_GUIMODEWAITCOMMANDS_exit(sm);
-        
-        // Step 2: Transition action: ``.
-        
-        // Step 3: Enter/move towards transition target `State_RGBLedOn`.
-        STATE_RGBLEDON_enter(sm);
-        
-        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-        return;
-    } // end of behavior for State_GuiModeWaitCommands
-    
-    // No ancestor handles this event.
-}
-
 static void STATE_GUIMODEWAITCOMMANDS_event_solendoidpumppoweroff(SMSodaStreamPure* sm)
 {
     // State_GuiModeWaitCommands behavior
@@ -1712,90 +1622,6 @@ static void STATE_INITGUIMODE_do(SMSodaStreamPure* sm)
         // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
         return;
     } // end of behavior for State_InitGuiMode
-    
-    // No ancestor handles this event.
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// event handlers for state STATE_RGBLEDON
-////////////////////////////////////////////////////////////////////////////////
-
-static void STATE_RGBLEDON_enter(SMSodaStreamPure* sm)
-{
-    sm->state_id = SMSodaStreamPure_StateId_STATE_RGBLEDON;
-    
-    // State_RGBLedOn behavior
-    // uml: enter / { SetRGBLedByLastMsg(); }
-    {
-        // Step 1: execute action `SetRGBLedByLastMsg();`
-        SetRGBLedByLastMsg();
-    } // end of behavior for State_RGBLedOn
-}
-
-static void STATE_RGBLEDON_exit(SMSodaStreamPure* sm)
-{
-    sm->state_id = SMSodaStreamPure_StateId_STAT_GUICONTROLMODE;
-}
-
-static void STATE_RGBLEDON_do(SMSodaStreamPure* sm)
-{
-    // State_RGBLedOn behavior
-    // uml: do TransitionTo(State_GuiModeWaitCommands)
-    {
-        // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition).
-        STATE_RGBLEDON_exit(sm);
-        
-        // Step 2: Transition action: ``.
-        
-        // Step 3: Enter/move towards transition target `State_GuiModeWaitCommands`.
-        STATE_GUIMODEWAITCOMMANDS_enter(sm);
-        
-        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-        return;
-    } // end of behavior for State_RGBLedOn
-    
-    // No ancestor handles this event.
-}
-
-
-////////////////////////////////////////////////////////////////////////////////
-// event handlers for state STATE_SETLED
-////////////////////////////////////////////////////////////////////////////////
-
-static void STATE_SETLED_enter(SMSodaStreamPure* sm)
-{
-    sm->state_id = SMSodaStreamPure_StateId_STATE_SETLED;
-    
-    // State_SetLed behavior
-    // uml: enter / { SetLedByLastMsg(); }
-    {
-        // Step 1: execute action `SetLedByLastMsg();`
-        SetLedByLastMsg();
-    } // end of behavior for State_SetLed
-}
-
-static void STATE_SETLED_exit(SMSodaStreamPure* sm)
-{
-    sm->state_id = SMSodaStreamPure_StateId_STAT_GUICONTROLMODE;
-}
-
-static void STATE_SETLED_do(SMSodaStreamPure* sm)
-{
-    // State_SetLed behavior
-    // uml: do TransitionTo(State_GuiModeWaitCommands)
-    {
-        // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition).
-        STATE_SETLED_exit(sm);
-        
-        // Step 2: Transition action: ``.
-        
-        // Step 3: Enter/move towards transition target `State_GuiModeWaitCommands`.
-        STATE_GUIMODEWAITCOMMANDS_enter(sm);
-        
-        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-        return;
-    } // end of behavior for State_SetLed
     
     // No ancestor handles this event.
 }

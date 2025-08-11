@@ -44,5 +44,8 @@ HAL_StatusTypeDef I2C_Write_Read_Byte(I2C_HandleTypeDef *hi2c,
                                       uint16_t MemAddSize,
                                       uint8_t value,
                                       uint32_t Timeout);
-
+HAL_StatusTypeDef LP5009_RGB(I2C_HandleTypeDef *hi2c,uint8_t r, uint8_t g, uint8_t b);
+HAL_StatusTypeDef LP5009_SetLedOff(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef LP5009_RGB_EnableGroups(I2C_HandleTypeDef *hi2c);
+HAL_StatusTypeDef LP5009_RGB_Off(I2C_HandleTypeDef *hi2c);
 #endif /* INC_LP5009_H_ */

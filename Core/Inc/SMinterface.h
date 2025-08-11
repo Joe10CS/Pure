@@ -68,8 +68,6 @@ void AmbiantLightOff();
 
 bool IsGuiControlMode();
 void SolenoidPump(int itOn);
-void SetLedByLastMsg();
-void SetRGBLedByLastMsg();
 void SolenoidPumpUVPower(int itOn);
 void StartStatusTransmit();
 void StopStatusTransmit();

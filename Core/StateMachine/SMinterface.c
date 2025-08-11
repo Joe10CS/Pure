@@ -156,8 +156,6 @@ void SolenoidPump(int isOn)
 {
 	HAL_GPIO_WritePin(Pump_CMD_GPIO_Port, Pump_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
-void SetLedByLastMsg() {}
-void SetRGBLedByLastMsg() {}
 void SolenoidPumpUVPower(int isOn)
 {
 	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);

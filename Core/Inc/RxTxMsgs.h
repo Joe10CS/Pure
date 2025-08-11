@@ -101,6 +101,17 @@ typedef struct {
 	uint16_t value;
 } sConfigureParams;
 
+typedef struct {
+	uint16_t valueR;
+	uint16_t valueG;
+	uint16_t valueB;
+} sSetRGBLEdParams;
+typedef struct {
+	uint16_t ledNumber;
+	uint16_t intensity;
+} sSetLEdParams;
+
+
 // !@#!@#  CDM stuff below
 typedef struct {
 	uint16_t cycleTime;
@@ -133,6 +144,8 @@ typedef union {
 	sPeriodicStatusParams periodicStatus;
 	uint16_t list[MAX_NUMBER_OF_PARAMETERS];
 	sConfigureParams config;
+	sSetRGBLEdParams srgb;
+	sSetLEdParams sled;
 
 	// !@#!@#  CDM stuff below
 
