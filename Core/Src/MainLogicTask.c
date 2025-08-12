@@ -111,6 +111,9 @@ void MainLogicInit(void) {
 	HAL_StatusTypeDef st = LP5009_Init(&hi2c1);
 	gLP5009InitOK = (st == HAL_OK);
 
+	// Initialize the filter RTC timer
+	FilterRTCTimer_Init();
+
 	// starts the main logic timer
 	HAL_TIM_Base_Start_IT(&htim1);
 
@@ -296,7 +299,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		echoCommand = false;
 		break;
 	case eUARTCommand_rrtc: // Get Info - non state machine related command
-		sprintf((char *)gRawMsgForEcho, "$RRTC %d\r\n",0); // TOOD get total seconds from RTC
+		sprintf((char *)gRawMsgForEcho, "$RRTC %d\r\n",(int)FilterRTC_SecondsElapsed());
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		echoCommand = false;
 		break;
@@ -391,7 +394,7 @@ void HandleStatusSend()
 			{
 				sprintf((char *)gRawMsgForEcho, "$RSTS %d,%d,%d,%d,%d\r\n",
 						PERIODIC_STATUS_SEND_MASK_RTCTILT,
-						0, // TODO send RTC seconds since last filter change
+						(int)(FilterRTC_SecondsElapsed()),
 						(int)filtered_x,(int)filtered_y,(int)filtered_z);
 				COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 			}
@@ -408,25 +411,24 @@ void CheckHWAndGenerateEventsAsNeeded()
 {
 
 	// check for tilt and set event if needed
-#if 0
 	if (gAccelerometerIsPresent)
 	{
+		// This need to be called periodcally to read the X,Y,Z
 		if (IsSlanted())
 		{
-			if (! gIsTilted) // just became tilted
-			{
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_TILTDETECTED);
-			}
-			gIsTilted = true;
-
-		}
-		else if (gIsTilted) // if was tilted before and not tilted anymore
-		{
-			gIsTilted = false;
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_NOTTILTED);
+//			if (! gIsTilted) // just became tilted
+//			{
+//				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_TILTDETECTED);
+//			}
+//			gIsTilted = true;
+//
+//		}
+//		else if (gIsTilted) // if was tilted before and not tilted anymore
+//		{
+//			gIsTilted = false;
+//			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_NOTTILTED);
 		}
 	}
-#endif
 	//if (gWaterLevelIsActive)
 	{
 

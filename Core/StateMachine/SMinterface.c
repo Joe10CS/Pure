@@ -132,9 +132,15 @@ void StartRinsingLedSequence() {}
 void StopRinsingLedSequence() {}
 void WaterLedOrangeToBlue() {}
 
-void ResetFilterLifetimeTimer() {}
+void ResetFilterLifetimeTimer()
+{
+	FilterRTC_Replaced_StartTimer();
+}
 bool IsFirstPowerON() {return false;}
-bool FilterLifeTimeExpired() {return false;}
+bool FilterLifeTimeExpired()
+{
+	return FilterRTC_IsDue();
+}
 void StartReadyTimer() {}
 void StartWaterPumpingTimer() {}
 
