@@ -116,7 +116,7 @@ void MainLogicInit(void) {
 
 }
 
-bool dbgSMEnabled = false; // DEBUG REMOVE
+bool dbgSMEnabled = true; // DEBUG REMOVE
 SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 
@@ -341,6 +341,16 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			break;
 		}
 		break;
+	case eUARTCommand_swsp:
+		if (! gIsGuiControlMode)
+		{
+			echoCommand = false;
+			TxIllegalCommandResponse();
+			break;
+		}
+		WaterPumpSensor((int)(msg->params.onOff.isOn));
+		break;
+
 	default:
 	}
 	if (echoCommand == true)
@@ -398,6 +408,7 @@ void CheckHWAndGenerateEventsAsNeeded()
 {
 
 	// check for tilt and set event if needed
+#if 0
 	if (gAccelerometerIsPresent)
 	{
 		if (IsSlanted())
@@ -415,7 +426,7 @@ void CheckHWAndGenerateEventsAsNeeded()
 			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_NOTTILTED);
 		}
 	}
-
+#endif
 	//if (gWaterLevelIsActive)
 	{
 

@@ -43,8 +43,6 @@ static void STAT_GUICONTROLMODE_event_hwwatchdog(SMSodaStreamPure* sm);
 
 static void STAT_GUICONTROLMODE_event_safetyfail(SMSodaStreamPure* sm);
 
-static void STAT_GUICONTROLMODE_event_tiltdetected(SMSodaStreamPure* sm);
-
 static void Stat_GUIControlMode_InitialState_transition(SMSodaStreamPure* sm);
 
 static void STATE_CARBOFF_enter(SMSodaStreamPure* sm);
@@ -341,7 +339,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
             switch (event_id)
             {
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break;
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break;
                 
@@ -356,7 +353,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_CARBOFF_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -370,7 +366,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_CARBON_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -394,7 +389,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR: STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -408,7 +402,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_INITGUIMODE_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -422,7 +415,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_SOLENOIDPUMPPOWEROFF_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -436,7 +428,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_SOLENOIDPUMPPOWERON_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -450,7 +441,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_STOP_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -464,7 +454,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_STOPWATERPUMP_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -478,7 +467,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_UVLEDOFF_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -492,7 +480,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_UVLEDON_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -506,7 +493,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_WATERPUMPOFF_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -520,7 +506,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_WATERPUMPON_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -534,7 +519,6 @@ void SMSodaStreamPure_dispatch_event(SMSodaStreamPure* sm, SMSodaStreamPure_Even
                 case SMSodaStreamPure_EventId_DO: STATE_WATERPUMPONNOSENSOR_do(sm); break;
                 case SMSodaStreamPure_EventId_EVENT_HWWATCHDOG: STAT_GUICONTROLMODE_event_hwwatchdog(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_SAFETYFAIL: STAT_GUICONTROLMODE_event_safetyfail(sm); break; // First ancestor handler for this event
-                case SMSodaStreamPure_EventId_EVENT_TILTDETECTED: STAT_GUICONTROLMODE_event_tiltdetected(sm); break; // First ancestor handler for this event
                 case SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE: STAT_GUICONTROLMODE_event_exit_gui_controlled_mode(sm); break; // First ancestor handler for this event
                 
                 default: break; // to avoid "unused enumeration value in switch" warning
@@ -1181,26 +1165,6 @@ static void STAT_GUICONTROLMODE_event_safetyfail(SMSodaStreamPure* sm)
     // No ancestor handles this event.
 }
 
-static void STAT_GUICONTROLMODE_event_tiltdetected(SMSodaStreamPure* sm)
-{
-    // Stat_GUIControlMode behavior
-    // uml: Event_TiltDetected TransitionTo(Sate_Tilted)
-    {
-        // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
-        exit_up_to_state_handler(sm, SMSodaStreamPure_StateId_ROOT);
-        
-        // Step 2: Transition action: ``.
-        
-        // Step 3: Enter/move towards transition target `Sate_Tilted`.
-        SATE_TILTED_enter(sm);
-        
-        // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
-        return;
-    } // end of behavior for Stat_GUIControlMode
-    
-    // No ancestor handles this event.
-}
-
 static void Stat_GUIControlMode_InitialState_transition(SMSodaStreamPure* sm)
 {
     // Stat_GUIControlMode.<InitialState> behavior
@@ -1591,13 +1555,6 @@ static void STATE_INITGUIMODE_enter(SMSodaStreamPure* sm)
     {
         // Step 1: execute action `LedsOff(LEDS_all);`
         LedsOff(LEDS_all);
-    } // end of behavior for State_InitGuiMode
-    
-    // State_InitGuiMode behavior
-    // uml: enter / { WaterPumpSensor(1); }
-    {
-        // Step 1: execute action `WaterPumpSensor(1);`
-        WaterPumpSensor(1);
     } // end of behavior for State_InitGuiMode
 }
 

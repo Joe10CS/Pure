@@ -48,7 +48,7 @@ void InitCarbonationOnly()
 void StartWaterPump()
 {
 	// if auto mode - start pump sensor (based on pumpStopsOnSensor)
-	// in GUI mode the sensor is enabled all the time
+	// in GUI mode the sensor controlled by command
 	// to allow reading the sensor value even when the pump is not working
 	if (! gIsGuiControlMode)
 	{
