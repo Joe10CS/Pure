@@ -51,6 +51,7 @@ bool gLP5009InitOK = false;
 extern uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
 extern uint16_t mReadWaterPumpCurrentADC;
 extern uint16_t mReadUVCurrentADC;
+extern uint32_t mLastPumpTimeMSecs;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
 
@@ -119,7 +120,7 @@ void MainLogicInit(void) {
 
 }
 
-bool dbgSMEnabled = true; // DEBUG REMOVE
+bool dbgSMEnabled = false; // DEBUG REMOVE
 SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 
@@ -228,7 +229,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 				TxIllegalCommandResponse();
 				break;
 			}
-			LP5009_SetLed(&hi2c1, (uint8_t)(msg->params.sled.ledNumber), 100-(uint8_t)(msg->params.sled.intensity));
+			LP5009_SetLed(&hi2c1, (uint8_t)(msg->params.sled.ledNumber - 1), 100 - (uint8_t)(msg->params.sled.intensity));
 		}
 		break;
 	case eUARTCommand_srgb:
@@ -353,7 +354,11 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		}
 		WaterPumpSensor((int)(msg->params.onOff.isOn));
 		break;
-
+	case eUARTCommand_lptm:
+		sprintf((char *)gRawMsgForEcho, "$LPTM %d\r\n",(int)mLastPumpTimeMSecs);
+		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+		echoCommand = false;
+		break;
 	default:
 	}
 	if (echoCommand == true)

@@ -47,13 +47,14 @@ void InitCarbonationOnly()
 
 void StartWaterPump()
 {
+	mPumpStartTimeTick = HAL_GetTick();
+	mLastPumpTimeMSecs = 0;
+	mLastDetectedBottleSize = eBottle_1_Litter; // set to default
 	// if auto mode - start pump sensor (based on pumpStopsOnSensor)
 	// in GUI mode the sensor controlled by command
 	// to allow reading the sensor value even when the pump is not working
 	if (! gIsGuiControlMode)
 	{
-		mPumpStartTimeTick = HAL_GetTick();
-		mLastPumpTimeMSecs = 0;
 		if (mStateMachine.vars.pumpStopsOnSensor)
 		{
 			WaterPumpSensor(1);

@@ -66,6 +66,7 @@ typedef enum {
 	eUARTCommand_stbl,
 	eUARTCommand_conf,
 	eUARTCommand_swsp,
+	eUARTCommand_lptm,
 
 	// DEBUG REMOVE ??
 	eUARTCommand_dbug, // debug messages
