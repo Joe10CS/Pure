@@ -29,6 +29,9 @@ typedef enum {
 	eCycle_number_of_cycles
 }eCarbonationCycle;
 
+typedef enum {
+	eDone_OK = 0,
+}eDoneResults;
 
-
+extern void SendDoneMessage(eDoneResults result);
 #endif /* INC_COMMON_H_ */

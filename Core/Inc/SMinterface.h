@@ -40,6 +40,7 @@ void InitCarbonationOnly();
 void WaterPumpSensor(int isOn);
 void StartWaterPump();
 void StopWaterPump();
+void SendDonePumpOK();
 void ButtonsFunction(bool isFunctioning);
 void StartCarbStageTimer();
 bool CarbonationOffCycleExpired(uint16_t carbCycle);

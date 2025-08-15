@@ -100,7 +100,7 @@ typedef struct {
 
 typedef struct {
 	uint16_t configurationParamID;     // Mask of messages to send
-	uint16_t value;
+	uint32_t value;
 } sConfigureParams;
 
 typedef struct {

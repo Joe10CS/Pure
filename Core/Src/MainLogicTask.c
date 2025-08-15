@@ -338,10 +338,13 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		switch (msg->params.config.configurationParamID)
 		{
 		case 1:
-			gBottleSizeThresholdmSecs = msg->params.config.value * 1000; // sent in Seconds, convert to milliseconds
+			gBottleSizeThresholdmSecs = msg->params.config.value;
 			break;
 		case 2:
-			gPumpTimoutMsecs = msg->params.config.value * 1000; // sent in Seconds, convert to milliseconds
+			gPumpTimoutMsecs = msg->params.config.value;
+			break;
+		case 3:
+			mWaterLevelSensorThreahsold = msg->params.config.value;
 			break;
 		}
 		break;
@@ -411,6 +414,11 @@ void HandleStatusSend()
 	}
 }
 
+void SendDoneMessage(eDoneResults result)
+{
+	sprintf((char *)gRawMsgForEcho, "$DONE %04d\r\n",(int)result);
+	COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+}
 
 void CheckHWAndGenerateEventsAsNeeded()
 {

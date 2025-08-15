@@ -63,6 +63,8 @@ volatile uint16_t mReadWaterPumpCurrentADC;
 volatile uint16_t mReadUVCurrentADC;
 uint16_t mWaterLevelSensorThreahsold = 500; //0x7fff;
 bool mWaterLevelAboveThroshold = false;
+#define WATER_FULL_EVENT_DEBOUNCE_MSEC (50)
+uint32_t mLastWaterFullSensorEventSent = 0;
 // ADC buffer definition
 // This buffer will store the raw, oversampled (summed) values from both channels, interleaved.
 __IO   uint16_t   aADCxConvertedData[ADC_DMA_BUFFER_SIZE];
@@ -644,21 +646,7 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
     mReadWaterLevelADC = aADCxConvertedData[16];      // IN10
     mReadUVCurrentADC = aADCxConvertedData[17];        // IN15
 
-    // This code assumes that debouncing is not required since after EVENT_BOTTLEFULLSENSOR that stops the pump,
-    // the pump need to be reactivated by long and slow user operation or by testing app
-    if (mReadWaterLevelADC >= mWaterLevelSensorThreahsold)
-	{
-		if (!mWaterLevelAboveThroshold)
-		{
-			// once moving above threshold, set bottle full event
-			mWaterLevelAboveThroshold = true;
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR);
-		}
-	}
-	else
-	{
-		mWaterLevelAboveThroshold = false;
-	}
+    CheckAndSentWaterFullSensorEvent();
 }
 
 /**
@@ -686,15 +674,22 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
     mReadWaterLevelADC = aADCxConvertedData[7];      // IN10
     mReadUVCurrentADC = aADCxConvertedData[8];        // IN15
 
-    // This code assumes that debouncing is not required since after EVENT_BOTTLEFULLSENSOR that stops the pump,
-    // the pump need to be reactivated by long and slow user operation or by testing app
+    CheckAndSentWaterFullSensorEvent();
+}
+
+void CheckAndSentWaterFullSensorEvent()
+{
     if (mReadWaterLevelADC >= mWaterLevelSensorThreahsold)
 	{
 		if (!mWaterLevelAboveThroshold)
 		{
 			// once moving above threshold, set bottle full event
 			mWaterLevelAboveThroshold = true;
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR);
+			if (mLastWaterFullSensorEventSent + WATER_FULL_EVENT_DEBOUNCE_MSEC < HAL_GetTick())
+			{
+				mLastWaterFullSensorEventSent = HAL_GetTick();
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_BOTTLEFULLSENSOR);
+			}
 		}
 	}
 	else
@@ -702,8 +697,6 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 		mWaterLevelAboveThroshold = false;
 	}
 }
-
-
 
 /* USER CODE END 4 */
 

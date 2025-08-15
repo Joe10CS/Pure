@@ -72,19 +72,24 @@ void StopWaterPump()
 	if ((! IsGuiControlMode()) && mStateMachine.vars.pumpStopsOnSensor) {
 		WaterPumpSensor(0);
 	}
-	mLastPumpTimeMSecs = HAL_GetTick() - mPumpStartTimeTick;
-	if (mLastPumpTimeMSecs >= gBottleSizeThresholdmSecs) {
-		mLastDetectedBottleSize = eBottle_1_Litter;
-	} else {
-		mLastDetectedBottleSize = eBottle_0_5_Litter;
+	if (mPumpStartTimeTick > 0)
+	{
+		mLastPumpTimeMSecs = HAL_GetTick() - mPumpStartTimeTick;
+		if (mLastPumpTimeMSecs >= gBottleSizeThresholdmSecs) {
+			mLastDetectedBottleSize = eBottle_1_Litter;
+		} else {
+			mLastDetectedBottleSize = eBottle_0_5_Litter;
+		}
+		mPumpStartTimeTick = 0;
 	}
 
-	mPumpStartTimeTick = 0;
-
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
-
 }
 
+void SendDonePumpOK()
+{
+	SendDoneMessage(eDone_OK);
+}
 void ButtonsFunction(bool isFunctioning)
 {
 	gButtonsFunction = isFunctioning;

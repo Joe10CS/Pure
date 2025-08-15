@@ -192,7 +192,6 @@ eUartStatus COMM_UART_CheckNewMessage(sUartMessage *newMsg, uint8_t* rawMsgPtr, 
     return eUART_NoMessage;
 }
 
-
 void TxIllegalCommandResponse()
 {
 	COMM_UART_QueueTxMessage((uint8_t *)"$Illegal Command\r\n", 18);
@@ -252,7 +251,11 @@ bool CheckAndProcessUartMessage(sUartMessage *newMsg, uint8_t* msgPtr, uint32_t 
 			while ((idx < msgSize) && (msgPtr[idx] != ',') && (msgPtr[idx] != COMMAND_PRE_END_MARKER)) // look for end of param
 			{
 				if (! ISDIGIT(msgPtr[idx])) { gIllegalCommands++; return false; }
-				newMsg->params.list[param_counter] = newMsg->params.list[param_counter] * 10 + DIGITCHAR_2_VAL(msgPtr[idx]);
+				if ((cmd_idx == eUARTCommand_conf) && (param_counter == 1)) { // configuration parameters are 32 bits so cannot use params.list
+					newMsg->params.config.value = newMsg->params.config.value * 10 + DIGITCHAR_2_VAL(msgPtr[idx]);
+				} else {
+ 				    newMsg->params.list[param_counter] = newMsg->params.list[param_counter] * 10 + DIGITCHAR_2_VAL(msgPtr[idx]);
+				}
 				idx++;
 			}
 			param_counter++;
