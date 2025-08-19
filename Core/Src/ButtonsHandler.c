@@ -22,7 +22,7 @@
 /* Private define ------------------------------------------------------------*/
 
 /* Private macro -------------------------------------------------------------*/
-#define DEBOUNCE_BUTTONS_PERIOD_MSEC (150)
+#define DEBOUNCE_BUTTONS_PERIOD_MSEC (300)
 #define LONG_PRESS_PERIOD_MSEC (1000)
 /* Private variables ---------------------------------------------------------*/
 uint32_t gLastKeyPressTick = 0;

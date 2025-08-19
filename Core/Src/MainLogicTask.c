@@ -10,7 +10,9 @@
 #include "string.h"
 #include "EventQueue.h"
 #include "RxTxMsgs.h"
-#include "LP5009.h"/* Private includes ----------------------------------------------------------*/
+#include "LP5009.h"// TODO remove this on new Pure board
+#include "WS2811.h"
+/* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -26,7 +28,7 @@
 
 /* External variables ---------------------------------------------------------*/
 // TIM1 runs the main logic each 10ms
-extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim14;
 extern I2C_HandleTypeDef hi2c1;
 
 extern int8_t filtered_x;
@@ -81,14 +83,14 @@ uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_
 				/* OFF */{ 500, 500, 500, 500, 500, 2000, 0, 0, } },
 // --- 0.5 Litter bottle size ---------------------------------------------
 //		eLevel_Low,
-				{ /* ON */{ 700, 1000, 800, 0, 0, 0, 0, 0, },
-				/* OFF */{ 500, 500, 2000, 0, 0, 0, 0, 0, } },
+				{ /* ON */{ 700, 1000, 0, 0, 0, 0, 0, 0, },
+				/* OFF */{ 500, 500, 0, 0, 0, 0, 0, 0, } },
 //		eLevel_medium,
-				{ /* ON */{ 700, 1000, 1000, 1000, 1000, 0, 0, 0, },
-				/* OFF */{ 500, 500, 500, 500, 2000, 0, 0, 0, } },
+				{ /* ON */{ 700, 1000, 1000, 0, 0, 0, 0, 0, },
+				/* OFF */{ 500, 500, 500, 0, 0, 0, 0, 0, } },
 //		eLevel_high,
-				{ /* ON */{ 700, 1000, 1000, 1250, 1250, 1000, 0, 0, },
-				/* OFF */{ 500, 500, 500, 500, 500, 2000, 0, 0, } },
+				{ /* ON */{ 700, 1000, 1000, 1250, 1250, 0, 0, 0, },
+				/* OFF */{ 500, 500, 500, 500, 500, 0, 0, 0, } },
 		};
 
 /* Private user code ---------------------------------------------------------*/
@@ -108,27 +110,42 @@ void MainLogicInit(void) {
 	AccelerometerInit();
 	gAccelerometerIsPresent = AccelerometerIsPresent();
 
+	// TODO [START] remove this on new Pure board
 	// Initialize the LED chip LP5009
 	HAL_StatusTypeDef st = LP5009_Init(&hi2c1);
 	gLP5009InitOK = (st == HAL_OK);
+	// TODO [END] remove this on new Pure board
+
+	// Pure VDL LEds
+	WS_InitLeds();
 
 	// Initialize the filter RTC timer
 	FilterRTCTimer_Init();
 
 	// starts the main logic timer
-	HAL_TIM_Base_Start_IT(&htim1);
+	HAL_TIM_Base_Start_IT(&htim14);
 
 }
 
-bool dbgSMEnabled = false; // DEBUG REMOVE
+bool dbgSMEnabled = true; // DEBUG REMOVE
 SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
+
+uint8_t mLedsp[NUMBER_OF_LEDS] = {
+		0x12, 0x34, 0x56,
+		0x78, 0x9A, 0xBC,
+		0x55, 0xCC, 0xFF,
+		41, 42, 43,
+		51, 52, 53,
+		61, 62, 63};
 
 void MainLogicPeriodic() {
 
 
 	if (gFirstTime)
 	{
+		WS_SetLeds(mLedsp, 3); // TODO debug remove
+
 		gFirstTime = false;
 		// Start reading from the UART
 		COMM_UART_StartRx();
@@ -447,3 +464,9 @@ void CheckHWAndGenerateEventsAsNeeded()
 
 	}
 }
+
+//void DBGSendMessage(char *msg)
+//{
+//	sprintf((char *)gRawMsgForEcho, "$%s\r\n",msg);
+//	COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+//}

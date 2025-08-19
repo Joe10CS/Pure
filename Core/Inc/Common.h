@@ -33,5 +33,6 @@ typedef enum {
 	eDone_OK = 0,
 }eDoneResults;
 
-extern void SendDoneMessage(eDoneResults result);
+void SendDoneMessage(eDoneResults result);
+
 #endif /* INC_COMMON_H_ */

@@ -8,6 +8,7 @@
 #include "main.h"
 #include "SMinterface.h"
 #include "SMSodaStreamPure.h"
+#include "LP5009.h"// TODO remove this on new Pure board
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
 uint32_t mCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
@@ -19,6 +20,8 @@ bool gButtonsFunction = false;
 
 extern SMSodaStreamPure mStateMachine;
 extern uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS];
+char dbgMsg[40];
+extern void DBGSendMessage(char *msg);
 
 void StartCarbonation() {}
 void StopCarbonation() {}
@@ -75,10 +78,12 @@ void StopWaterPump()
 	if (mPumpStartTimeTick > 0)
 	{
 		mLastPumpTimeMSecs = HAL_GetTick() - mPumpStartTimeTick;
+
 		if (mLastPumpTimeMSecs >= gBottleSizeThresholdmSecs) {
 			mLastDetectedBottleSize = eBottle_1_Litter;
 		} else {
 			mLastDetectedBottleSize = eBottle_0_5_Litter;
+			LP5009_SetLed(&hi2c1, (uint8_t)(3), 0);
 		}
 		mPumpStartTimeTick = 0;
 	}
@@ -130,12 +135,27 @@ bool IsCarbonationLastCycle(uint16_t carbCycle)
 	return false;
 
 }
-
-void StartWaterFilterLedSequence() {}
+void SetLevelLed()
+{
+	LP5009_SetLed(&hi2c1, (uint8_t)(gCarbonationLevel), 0);
+}
+void StartWaterFilterLedSequence()
+{
+	// B G R
+	LP5009_RGB(&hi2c1,(uint8_t)(250),(uint8_t)(0),(uint8_t)(0));
+}
 void StartCarbonationLedSequance() {}
 void StartMalfunctionLedsSequence() {}
-void StartRinsingLedSequence() {}
-void StopRinsingLedSequence() {}
+void StartRinsingLedSequence()
+{
+	// B G R
+	LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(255),(uint8_t)(0));
+}
+void StopRinsingLedSequence()
+{
+	// B G R
+	LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
+}
 void WaterLedOrangeToBlue() {}
 
 void ResetFilterLifetimeTimer()
@@ -150,9 +170,19 @@ bool FilterLifeTimeExpired()
 void StartReadyTimer() {}
 void StartWaterPumpingTimer() {}
 
-void LedsOff(uint32_t leds) {}
+void LedsOff(uint32_t leds)
+{
+	LP5009_SetLed(&hi2c1, (uint8_t)(0), 100);
+	LP5009_SetLed(&hi2c1, (uint8_t)(1), 100);
+	LP5009_SetLed(&hi2c1, (uint8_t)(2), 100);
+	LP5009_SetLed(&hi2c1, (uint8_t)(3), 100);
+	LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
+}
 void FadeOutLeds(uint32_t leds) {}
-void FadeInLeds() {}
+void FadeInLeds()
+{
+	LedsOff(0);
+}
 
 void FadeInAmbiantLight() {}
 void FadeOutAmbiantLight() {}
@@ -168,8 +198,10 @@ void SolenoidPump(int isOn)
 {
 	HAL_GPIO_WritePin(Pump_CMD_GPIO_Port, Pump_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
+bool dddP = false;  // TODO debug remove
 void SolenoidPumpUVPower(int isOn)
 {
+	dddP = isOn;
 	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 void StartStatusTransmit() {}

@@ -48,4 +48,6 @@ HAL_StatusTypeDef LP5009_RGB(I2C_HandleTypeDef *hi2c,uint8_t r, uint8_t g, uint8
 HAL_StatusTypeDef LP5009_SetLedOff(I2C_HandleTypeDef *hi2c);
 HAL_StatusTypeDef LP5009_RGB_EnableGroups(I2C_HandleTypeDef *hi2c);
 HAL_StatusTypeDef LP5009_RGB_Off(I2C_HandleTypeDef *hi2c);
+
+extern I2C_HandleTypeDef hi2c1;
 #endif /* INC_LP5009_H_ */
