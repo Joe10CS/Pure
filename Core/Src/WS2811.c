@@ -38,9 +38,9 @@ extern DMA_HandleTypeDef  hdma_tim1_up;    // TIM1 Update DMA (Mem->Periph)
 #define WS_CCR_0              20                 // '0' high  ~0.3125 us, low ~0.9375 us
 #define WS_CCR_1              55                 // '1' high  ~0.8594 us, low ~0.3906 us
 
-// Reset/latch gap: > 280 us LOW. We'll send K slots with CCR=0 (no rising edges at all).
-#define WS_RESET_US           300U               // target ≥ 280 us
-#define WS_RESET_SLOTS  ((uint16_t)((WS_RESET_US + 1249U) / 1250U))  // ceil(300/1.25) = 240
+// Reset/latch gap: a short, edge-free preamble to settle TIM+DMA
+#define WS_PREAMBLE_US      12U  // pick 10–20 us; 12 us shown here
+#define WS_PREAMBLE_SLOTS   ((uint16_t)(((WS_PREAMBLE_US)*1000U + 1249U) / 1250U))  // ceil(us / 1.25us)
 
 // ---- Driver state ----
 static volatile bool s_ws_busy = false;
@@ -49,11 +49,11 @@ static volatile bool s_ws_busy = false;
 // Enough for reset preamble + all bits of the largest frame you send.
 // NUMBER_OF_LEDS = devices * 3 (channels); bits = 8*NUMBER_OF_LEDS.
 // Add WS_RESET_SLOTS of preamble.
-static uint16_t s_ccr_stream[WS_RESET_SLOTS + 8 * NUMBER_OF_LEDS];
+static uint16_t s_ccr_stream[WS_PREAMBLE_SLOTS + 8 * NUMBER_OF_LEDS];
 
 // Forward decls
 static inline uint8_t pct_to_byte(uint8_t p);
-static void encode_reset_preamble(uint16_t **p_ccr);
+static void encode_preamble(uint16_t **p_ccr);
 static void encode_first_n_channels_raw    (uint16_t **p_ccr, const uint8_t *raw_grb,     uint16_t channels);
 static void encode_first_n_channels_percent(uint16_t **p_ccr, const uint8_t *percent_grb, uint16_t channels);
 
@@ -98,7 +98,7 @@ HAL_StatusTypeDef WS_SetLeds(const uint8_t *leds_percent, uint16_t num_to_set_ch
 
     // Build [reset preamble + data] into s_ccr_stream
     uint16_t *w = s_ccr_stream;
-    encode_reset_preamble(&w);
+    encode_preamble(&w);
     encode_first_n_channels_percent(&w, leds_percent, num_to_set_channels);
     uint16_t total_entries = (uint16_t)(w - s_ccr_stream);
 
@@ -143,7 +143,7 @@ HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_ch
 
     // Build [reset preamble + data] into s_ccr_stream
     uint16_t *w = s_ccr_stream;
-    encode_reset_preamble(&w);
+    encode_preamble(&w);
     encode_first_n_channels_raw(&w, grb_bytes, num_to_set_channels);
     uint16_t total_entries = (uint16_t)(w - s_ccr_stream);
 
@@ -204,12 +204,11 @@ static inline uint8_t pct_to_byte(uint8_t p)
     return (uint8_t)((p * 255u + 50u) / 100u);
 }
 
-// Write K entries of CCR=0 → continuous LOW for ≥ 280 us
-static void encode_reset_preamble(uint16_t **p_ccr)
-{
+// Write K entries of CCR=0 → continuous LOW few us
+static void encode_preamble(uint16_t **p_ccr) {
     uint16_t *p = *p_ccr;
-    for (uint16_t i = 0; i < WS_RESET_SLOTS; ++i) {
-        *p++ = 0;  // CCR=0 => 0% duty => stays LOW entire 1.25 us slot
+    for (uint16_t i = 0; i < WS_PREAMBLE_SLOTS; ++i) {
+        *p++ = 0;  // CCR=0 → line stays LOW, no rising edge, no bit consumed
     }
     *p_ccr = p;
 }
