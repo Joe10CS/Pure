@@ -76,7 +76,6 @@ bool FilterRTC_IsDue(void);
 uint32_t FilterRTC_SecondsElapsed(void);
 
 void WS_InitLeds(void);
-HAL_StatusTypeDef WS_SetLeds(uint8_t *leds, uint16_t num_to_set);
 
 
 extern bool gIsGuiControlMode;

@@ -24,6 +24,10 @@
 #define PERIODIC_STATUS_SEND_MASK_RTCTILT 	(4)
 #define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
+//#define DEBUG_WS_LEDS
+//#define DEBUG_STATE_MACHINE
+
+
 /* Private macro -------------------------------------------------------------*/
 
 /* External variables ---------------------------------------------------------*/
@@ -116,8 +120,10 @@ void MainLogicInit(void) {
 	gLP5009InitOK = (st == HAL_OK);
 	// TODO [END] remove this on new Pure board
 
+#ifdef DEBUG_WS_LEDS
 	// Pure VDL LEds
 	WS_InitLeds();
+#endif
 
 	// Initialize the filter RTC timer
 	FilterRTCTimer_Init();
@@ -127,10 +133,12 @@ void MainLogicInit(void) {
 
 }
 
-bool dbgSMEnabled = true; // DEBUG REMOVE
+#ifdef DEBUG_STATE_MACHINE
 SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
+#endif
 
+#ifdef DEBUG_WS_LEDS
 uint8_t mLedsp[NUMBER_OF_LEDS] = {
 		0x12, 0x34, 0x56,
 		0x78, 0x9A, 0xBC,
@@ -138,14 +146,16 @@ uint8_t mLedsp[NUMBER_OF_LEDS] = {
 		41, 42, 43,
 		51, 52, 53,
 		61, 62, 63};
+#endif
 
 void MainLogicPeriodic() {
 
 
 	if (gFirstTime)
 	{
+#ifdef DEBUG_WS_LEDS
 		WS_SetLeds(mLedsp, 3); // TODO debug remove
-
+#endif
 		gFirstTime = false;
 		// Start reading from the UART
 		COMM_UART_StartRx();
@@ -159,6 +169,7 @@ void MainLogicPeriodic() {
 
 	// optional: dispatch DO every tick
 	SMSodaStreamPure_dispatch_event(&mStateMachine, SMSodaStreamPure_EventId_DO);
+#ifdef DEBUG_STATE_MACHINE
 	// DEBUG REMOVE
 	if (dbgSMEnabled)
 	{
@@ -170,6 +181,7 @@ void MainLogicPeriodic() {
 		}
 	}
 	// DEBUG REMOVE
+#endif
 
 	// Check for water pump timout
 	if (mPumpStartTimeTick > 0) { // need to monitor water pump time
@@ -182,6 +194,7 @@ void MainLogicPeriodic() {
 	SMSodaStreamPure_EventId ev;
 	while (SMEventQueue_Take(&ev)) {
 		SMSodaStreamPure_dispatch_event(&mStateMachine, ev);
+#ifdef DEBUG_STATE_MACHINE
 		// DEBUG REMOVE
 		if (dbgSMEnabled)
 		{
@@ -193,6 +206,7 @@ void MainLogicPeriodic() {
 			}
 		}
 		// DEBUG REMOVE
+#endif
 	}
 
 	// process all pending commands
