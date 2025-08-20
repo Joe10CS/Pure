@@ -140,7 +140,7 @@ SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 
 #ifdef DEBUG_WS_LEDS
 uint8_t mLedsp[NUMBER_OF_LEDS] = {
-		0x12, 0x34, 0x56,
+		0xff, 0x34, 0x56,
 		0x78, 0x9A, 0xBC,
 		0x55, 0xCC, 0xFF,
 		41, 42, 43,
@@ -154,7 +154,7 @@ void MainLogicPeriodic() {
 	if (gFirstTime)
 	{
 #ifdef DEBUG_WS_LEDS
-		WS_SetLeds(mLedsp, 3); // TODO debug remove
+		WS_SetLedsRaw(mLedsp, 3); // TODO debug remove
 #endif
 		gFirstTime = false;
 		// Start reading from the UART
