@@ -20,7 +20,6 @@
 // Public API (see WS2811.h):
 //   void WS_InitLeds(void);
 //   HAL_StatusTypeDef WS_SetLeds(const uint8_t *leds_percent, uint16_t num_to_set_channels);
-//   HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_channels);
 //   bool WS_IsBusy(void);
 
 #include "WS2811.h"
@@ -60,7 +59,6 @@ static uint16_t s_ccr_stream[WS_PREAMBLE_SLOTS + 8 * NUMBER_OF_LEDS];
 static inline uint8_t pct_to_byte(uint8_t p);
 static void encode_preamble(uint16_t **p_ccr);
 static void encode_first_n_channels_raw    (uint16_t **p_ccr, const uint8_t *raw_grb,     uint16_t channels);
-static void encode_first_n_channels_percent(uint16_t **p_ccr, const uint8_t *percent_grb, uint16_t channels);
 
 // DMA callbacks (G0 HAL uses registered function pointers)
 static void WS_TIM1_DMA_Complete(DMA_HandleTypeDef *hdma);
@@ -90,53 +88,8 @@ void WS_InitLeds(void)
 
 bool WS_IsBusy(void) { return gLedsWSBusyTxing; }
 
-HAL_StatusTypeDef WS_SetLeds(const uint8_t *leds_percent, uint16_t num_to_set_channels)
-{
-    if (gLedsWSBusyTxing)                        return HAL_BUSY;
-    if (!leds_percent)                    return HAL_ERROR;
-    if (num_to_set_channels == 0)         return HAL_ERROR;
-    if (num_to_set_channels > NUMBER_OF_LEDS)
-        num_to_set_channels = NUMBER_OF_LEDS;
 
-    // MUST send whole WS2811 devices (3 channels) to preserve downstream alignment
-    if ((num_to_set_channels % 3u) != 0u) return HAL_ERROR;
-
-    // Build [reset preamble + data] into s_ccr_stream
-    uint16_t *w = s_ccr_stream;
-    encode_preamble(&w);
-    encode_first_n_channels_percent(&w, leds_percent, num_to_set_channels);
-    uint16_t total_entries = (uint16_t)(w - s_ccr_stream);
-
-    // ---- race-proof start for Update-DMA stream ----
-    // Period #0 uses s_ccr_stream[0] (which is 0, i.e., low). Any start-up race is harmless here.
-    TIM1->CCR4 = s_ccr_stream[0];
-
-    // Arm DMA for the rest of the entries
-    if (total_entries > 1u) {
-        if (HAL_DMA_Start_IT(&hdma_tim1_up,
-                             (uint32_t)&s_ccr_stream[1],
-                             (uint32_t)&TIM1->CCR4,
-                             (uint16_t)(total_entries - 1u)) != HAL_OK) {
-            return HAL_ERROR;
-        }
-        __HAL_TIM_ENABLE_DMA(&htim1, TIM_DMA_UPDATE);
-    }
-
-    // Reset counters and start PWM
-    __HAL_TIM_SET_COUNTER(&htim1, 0);
-    if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4) != HAL_OK) {
-        if (total_entries > 1u) {
-            __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
-            HAL_DMA_Abort(&hdma_tim1_up);
-        }
-        return HAL_ERROR;
-    }
-
-    gLedsWSBusyTxing = true;
-    return HAL_OK;
-}
-
-HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_channels)
+HAL_StatusTypeDef WS_SetLeds(const uint8_t *grb_bytes, uint16_t num_to_set_channels)
 {
     if (gLedsWSBusyTxing)                        return HAL_BUSY;
     if (!grb_bytes)                       return HAL_ERROR;
@@ -189,26 +142,11 @@ HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_ch
 // ============================================================================
 // DMA callbacks — stop PWM at end; line idles LOW (reset for next frame)
 // ============================================================================
-// Called by HAL when TIM1 update fires (we’ll hook it through HAL_TIM_PeriodElapsedCallback)
-void WS_Tim1UpdateGuard(void)
-{
-    if (gLedsWSBusyTxing && gLedsCountTxCountDown) {
-        if (--gLedsCountTxCountDown == 0) {
-            // We’ve emitted exactly the requested number of 1.25 us periods.
-            __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
-            __HAL_TIM_DISABLE_IT(&htim1, TIM_IT_UPDATE);
-            HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_4);
-            gLedsWSBusyTxing = false;
-        }
-    }
-}
 
 static void WS_TIM1_DMA_Complete(DMA_HandleTypeDef *hdma)
 {
     if (hdma == &hdma_tim1_up) {
         __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
-        HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_4);  // line stays LOW; reset gap satisfied until next call
-        gLedsWSBusyTxing = false;
     }
 }
 
@@ -216,9 +154,9 @@ static void WS_TIM1_DMA_Error(DMA_HandleTypeDef *hdma)
 {
     if (hdma == &hdma_tim1_up) {
         __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
+        __HAL_TIM_DISABLE_IT(&htim1, TIM_IT_UPDATE);
         HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_4);
         gLedsWSBusyTxing = false;
-        // optional: inspect HAL_DMA_GetError(hdma)
     }
 }
 
@@ -253,14 +191,3 @@ static void encode_first_n_channels_raw(uint16_t **p_ccr, const uint8_t *raw_grb
     *p_ccr = p;
 }
 
-static void encode_first_n_channels_percent(uint16_t **p_ccr, const uint8_t *percent_grb, uint16_t channels)
-{
-    uint16_t *p = *p_ccr;
-    for (uint16_t i = 0; i < channels; ++i) {
-        uint8_t v = pct_to_byte(percent_grb[i]); // 0..100% -> 0..255
-        for (int b = 7; b >= 0; --b) {
-            *p++ = ((v >> b) & 1) ? WS_CCR_1 : WS_CCR_0;
-        }
-    }
-    *p_ccr = p;
-}

@@ -42,14 +42,11 @@
 /** Initialize the driver (idles line low, registers DMA callbacks). Call once after HAL init. */
 void WS_InitLeds(void);
 
-/** Non‑blocking send using percent inputs (0..100 per channel).
+/** Non‑blocking send using raw bytes (0..255 per channel)
     `leds_percent` layout: GRB,GRB,GRB... (length at least num_to_set_channels).
     `num_to_set_channels` MUST be a multiple of 3 (whole devices).
     Transmits exactly num_to_set_channels*8 bits. Returns HAL_BUSY if previous frame active. */
 HAL_StatusTypeDef WS_SetLeds(const uint8_t *leds_percent, uint16_t num_to_set_channels);
-
-/** Non‑blocking send using raw bytes (0..255 per channel). Same rules as WS_SetLeds. */
-HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_channels);
 
 /** True while a frame is being sent (or until the DMA completion stops PWM). */
 bool WS_IsBusy(void);

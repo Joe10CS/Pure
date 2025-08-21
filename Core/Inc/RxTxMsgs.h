@@ -67,8 +67,7 @@ typedef enum {
 	eUARTCommand_conf,
 	eUARTCommand_swsp,
 	eUARTCommand_lptm,
-
-	// DEBUG REMOVE ??
+	eUARTCommand_done, // just for replay
 	eUARTCommand_dbug, // debug messages
 
 
@@ -164,6 +163,7 @@ typedef struct {
 /* variables -----------------------------------------------------------------*/
 extern eUARTCommandTypes glb_last_msg_type;
 extern sUartMessage glb_last_RxMessage;
+extern sCommandDef gCDMCommands[eUARTCommand_num_commands];
 /* functions ----------------------------------------------------------------*/
 
 void COMM_UART_StartRx();
@@ -175,4 +175,8 @@ void TxIllegalCommandResponse();
 void COMM_UART_SendNextTxQueue(void);
 void SendMessageToCDMDesktop(eUARTCommandTypes msgType, uint16_t value1, uint16_t value2);
 void CDMSendDoneMessage(eUartDoneStatus status);
+size_t BuildReply(char *dst, const sCommandDef *cmd, const uint32_t *nums, uint8_t nums_count, bool ok_suffix);
+size_t BuildReplySigned(char *dst, const sCommandDef *cmd, const int32_t *nums, uint8_t nums_count, bool ok_suffix);
+char* u32_to_str(char *dst, uint32_t val);
+char* s32_to_str(char* dst, int32_t v);
 #endif /* INC_RXTXMSGS_H_ */

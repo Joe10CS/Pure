@@ -55,17 +55,9 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		{4, {'C','O','N','F'}, 2},  // eUARTCommand_conf
 		{4, {'S','W','S','P'}, 1},  // eUARTCommand_swsp
 		{4, {'L','P','T','M'}, 0},  // eUARTCommand_lptm
+		{4, {'D','O','N','E'}, 0},  // eUARTCommand_done,  just for replay
 
 		{4, {'D','B','U','G'}, 2},  // eUARTCommand_dbug
-
-//		{4, {'R','V','E','R'}, 0},  // eUARTCommand_rver,
-//		{4, {'C','A','R','B'}, 5},  // eUARTCommand_carb,   // if PS counter is implemented change the number of params to  6
-//		{4, {'P','R','S','W'}, 0},  // eUARTCommand_prsw,
-//		{4, {'S','T','R','T'}, 3},  // eUARTCommand_strt,
-//		{4, {'S','T','O','P'}, 0},  // eUARTCommand_stop,
-//		{4, {'H','O','M','E'}, 2},  // eUARTCommand_home, - syrup injection to home, parameter: % PWM (speed), 0/1 home pin state
-//		{4, {'I','N','J','C'}, 2},  // eUARTCommand_injC, - syrup inject, parameter: N signals, % PWM (speed)
-//		{4, {'G','I','S','T'}, 0},  // eUARTCommand_gist, - syrup injection status
 };
 
 /* Extern Variables ---------------------------------------------------*/
@@ -354,4 +346,115 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
     }
 }
 
+// //////////////////////////////////////// response builders ///////////////////////////////////////////
 
+// ---------- tiny integer printer (no libc needed) ----------
+char* u32_to_str(char *dst, uint32_t val)
+{
+    char tmp[10];
+    int i = 0;
+    if (val == 0) { *dst++ = '0'; return dst; }
+    while (val) { tmp[i++] = (char)('0' + (val % 10)); val /= 10; }
+    while (i--) { *dst++ = tmp[i]; }
+    return dst;
+}
+
+char* s32_to_str(char* dst, int32_t v) {
+    if (v < 0) { *dst++ = '-'; v = -v; }
+    return u32_to_str(dst, (uint32_t)v);
+}
+
+// ---------- core reply builder ----------
+// nums_count: 1..4 (can be 0 if you have such a reply shape)
+// ok_suffix: pass true to append ",OK" (only your $STBL), else false
+// returns number of bytes written (excluding '\0')
+size_t BuildReply(char *dst,
+                         const sCommandDef *cmd,
+                         const uint32_t *nums,
+                         uint8_t nums_count,
+                         bool ok_suffix)
+{
+    char *p = dst;
+
+    *p++ = '$';
+    *p++ = cmd->command[0];
+    *p++ = cmd->command[1];
+    *p++ = cmd->command[2];
+    *p++ = cmd->command[3];
+
+    if (nums_count || ok_suffix) *p++ = ' ';
+
+    for (uint8_t i = 0; i < nums_count; i++) {
+        p = u32_to_str(p, nums[i]);
+        if (i + 1u < nums_count) *p++ = ',';
+    }
+
+    if (ok_suffix) {
+        if (nums_count) *p++ = ',';
+        *p++ = 'O'; *p++ = 'K';
+    }
+
+    *p++ = '\r';
+    *p++ = '\n';
+
+    *p = '\0';  // keep NUL for convenience
+    return (size_t)(p - dst); // length WITHOUT the NUL
+}
+// signed version
+size_t BuildReplySigned(char *dst,
+                         const sCommandDef *cmd,
+                         const int32_t *nums,
+						 uint8_t nums_count,
+                         bool ok_suffix)
+{
+    char *p = dst;
+
+    *p++ = '$';
+    *p++ = cmd->command[0];
+    *p++ = cmd->command[1];
+    *p++ = cmd->command[2];
+    *p++ = cmd->command[3];
+
+    if (nums_count || ok_suffix) *p++ = ' ';
+
+    for (uint8_t i = 0; i < nums_count; i++) {
+        p = s32_to_str(p, nums[i]);
+        if (i + 1u < nums_count) *p++ = ',';
+    }
+
+    if (ok_suffix) {
+        if (nums_count) *p++ = ',';
+        *p++ = 'O'; *p++ = 'K';
+    }
+
+    *p++ = '\r';
+    *p++ = '\n';
+
+    *p = '\0';  // keep NUL for convenience
+    return (size_t)(p - dst); // length WITHOUT the NUL
+}
+
+// ---------- examples ----------
+/*
+extern sCommandDef gCDMCommands[];
+
+uint8_t Make_RVER(char *out, uint32_t maj, uint32_t min)
+{
+    uint32_t nums[2] = { maj, min };
+    BuildReply(out, &gCDMCommands[eUARTCommand_rver], nums, 2, false);
+    return (uint8_t)strlen(out); // or track length in BuildReply if you want to avoid strlen
+}
+
+uint8_t Make_STBL(char *out, uint32_t nn)
+{
+    BuildReply(out, &gCDMCommands[eUARTCommand_stbl], &nn, 1, true);  // "$STBL nn,OK\r\n"
+    return (uint8_t)strlen(out);
+}
+
+// Generic for 1..4 numbers:
+uint8_t Make_GenericReply(char *out, eUARTCommandTypes cmd, const uint32_t *nums, uint8_t n)
+{
+    BuildReply(out, &gCDMCommands[cmd], nums, n, false);
+    return (uint8_t)strlen(out);
+}
+*/
