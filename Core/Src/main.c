@@ -70,7 +70,8 @@ uint32_t mLastWaterFullSensorEventSent = 0;
 // ADC buffer definition
 // This buffer will store the raw, oversampled (summed) values from both channels, interleaved.
 __IO   uint16_t   aADCxConvertedData[ADC_DMA_BUFFER_SIZE];
-
+extern uint16_t gLedsCountTxCountDown;
+extern bool gLedsWSBusyTxing;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -679,7 +680,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
 	if (htim->Instance == TIM14) {
 		MainLogicPeriodic();
-	}
+	} else if (htim->Instance == TIM1) {
+        // WS2811 guard: stop exactly after the intended number of 1.25us periods
+        if (gLedsWSBusyTxing && gLedsCountTxCountDown) {
+            if (--gLedsCountTxCountDown == 0) {
+                __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
+                __HAL_TIM_DISABLE_IT(&htim1, TIM_IT_UPDATE);
+                HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_4);
+                gLedsWSBusyTxing = false;
+            }
+        }
+    }
 }
 
 

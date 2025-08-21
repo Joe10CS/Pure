@@ -42,8 +42,13 @@ extern DMA_HandleTypeDef  hdma_tim1_up;    // TIM1 Update DMA (Mem->Periph)
 #define WS_PREAMBLE_US      12U  // pick 10–20 us; 12 us shown here
 #define WS_PREAMBLE_SLOTS   ((uint16_t)(((WS_PREAMBLE_US)*1000U + 1249U) / 1250U))  // ceil(us / 1.25us)
 
+// tiny low tail so any late stop emits LOW, not extra edges
+#define WS_TAIL_SLOTS        4U   // ~5 us tail (4 × 1.25 us)
+
 // ---- Driver state ----
-static volatile bool s_ws_busy = false;
+volatile bool gLedsWSBusyTxing = false;
+// Track how many 1.25 us periods we plan to emit in this frame
+volatile uint16_t gLedsCountTxCountDown = 0;
 
 // One halfword per PWM period we emit.
 // Enough for reset preamble + all bits of the largest frame you send.
@@ -80,14 +85,14 @@ void WS_InitLeds(void)
     HAL_DMA_RegisterCallback(&hdma_tim1_up, HAL_DMA_XFER_CPLT_CB_ID,  WS_TIM1_DMA_Complete);
     HAL_DMA_RegisterCallback(&hdma_tim1_up, HAL_DMA_XFER_ERROR_CB_ID, WS_TIM1_DMA_Error);
 
-    s_ws_busy = false;
+    gLedsWSBusyTxing = false;
 }
 
-bool WS_IsBusy(void) { return s_ws_busy; }
+bool WS_IsBusy(void) { return gLedsWSBusyTxing; }
 
 HAL_StatusTypeDef WS_SetLeds(const uint8_t *leds_percent, uint16_t num_to_set_channels)
 {
-    if (s_ws_busy)                        return HAL_BUSY;
+    if (gLedsWSBusyTxing)                        return HAL_BUSY;
     if (!leds_percent)                    return HAL_ERROR;
     if (num_to_set_channels == 0)         return HAL_ERROR;
     if (num_to_set_channels > NUMBER_OF_LEDS)
@@ -127,13 +132,13 @@ HAL_StatusTypeDef WS_SetLeds(const uint8_t *leds_percent, uint16_t num_to_set_ch
         return HAL_ERROR;
     }
 
-    s_ws_busy = true;
+    gLedsWSBusyTxing = true;
     return HAL_OK;
 }
 
 HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_channels)
 {
-    if (s_ws_busy)                        return HAL_BUSY;
+    if (gLedsWSBusyTxing)                        return HAL_BUSY;
     if (!grb_bytes)                       return HAL_ERROR;
     if (num_to_set_channels == 0)         return HAL_ERROR;
     if (num_to_set_channels > NUMBER_OF_LEDS)
@@ -145,7 +150,13 @@ HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_ch
     uint16_t *w = s_ccr_stream;
     encode_preamble(&w);
     encode_first_n_channels_raw(&w, grb_bytes, num_to_set_channels);
+    // Append LOW tail (WS_TAIL_SLOTS periods of CCR=0)
+    for (uint16_t i = 0; i < WS_TAIL_SLOTS; ++i) { *w++ = 0; }
     uint16_t total_entries = (uint16_t)(w - s_ccr_stream);
+    uint16_t max_entries   = (uint16_t)(sizeof(s_ccr_stream) / sizeof(s_ccr_stream[0]));
+    if (total_entries == 0 || total_entries > max_entries) return HAL_ERROR;
+    // This is how many 1.25 us periods we expect to emit in this frame
+    gLedsCountTxCountDown = total_entries;
 
     // Start as above
     TIM1->CCR4 = s_ccr_stream[0];
@@ -158,29 +169,46 @@ HAL_StatusTypeDef WS_SetLedsRaw(const uint8_t *grb_bytes, uint16_t num_to_set_ch
         }
         __HAL_TIM_ENABLE_DMA(&htim1, TIM_DMA_UPDATE);
     }
+    __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_CC4);   // ensure CC4 DMA is off
+    __HAL_TIM_ENABLE_IT(&htim1, TIM_IT_UPDATE);   // guard
+
     __HAL_TIM_SET_COUNTER(&htim1, 0);
     if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4) != HAL_OK) {
         if (total_entries > 1u) {
             __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
             HAL_DMA_Abort(&hdma_tim1_up);
         }
+        __HAL_TIM_DISABLE_IT(&htim1, TIM_IT_UPDATE);
         return HAL_ERROR;
     }
 
-    s_ws_busy = true;
+    gLedsWSBusyTxing = true;
     return HAL_OK;
 }
 
 // ============================================================================
 // DMA callbacks — stop PWM at end; line idles LOW (reset for next frame)
 // ============================================================================
+// Called by HAL when TIM1 update fires (we’ll hook it through HAL_TIM_PeriodElapsedCallback)
+void WS_Tim1UpdateGuard(void)
+{
+    if (gLedsWSBusyTxing && gLedsCountTxCountDown) {
+        if (--gLedsCountTxCountDown == 0) {
+            // We’ve emitted exactly the requested number of 1.25 us periods.
+            __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
+            __HAL_TIM_DISABLE_IT(&htim1, TIM_IT_UPDATE);
+            HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_4);
+            gLedsWSBusyTxing = false;
+        }
+    }
+}
 
 static void WS_TIM1_DMA_Complete(DMA_HandleTypeDef *hdma)
 {
     if (hdma == &hdma_tim1_up) {
         __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
         HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_4);  // line stays LOW; reset gap satisfied until next call
-        s_ws_busy = false;
+        gLedsWSBusyTxing = false;
     }
 }
 
@@ -189,7 +217,7 @@ static void WS_TIM1_DMA_Error(DMA_HandleTypeDef *hdma)
     if (hdma == &hdma_tim1_up) {
         __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
         HAL_TIM_PWM_Stop(&htim1, TIM_CHANNEL_4);
-        s_ws_busy = false;
+        gLedsWSBusyTxing = false;
         // optional: inspect HAL_DMA_GetError(hdma)
     }
 }
