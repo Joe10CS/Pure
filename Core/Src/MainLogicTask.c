@@ -140,13 +140,90 @@ SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 
 #ifdef DEBUG_WS_LEDS
 uint8_t mLedsp[NUMBER_OF_LEDS] = {
-		0xff, 0x34, 0x56,
-		0x78, 0x9A, 0xBC,
-		0x55, 0xCC, 0xFF,
+		0xff, 0x00, 0x00,
+		0x00, 0xff, 0x00,
+		0x00, 0x00, 0xFF,
 		41, 42, 43,
 		51, 52, 53,
 		61, 62, 63};
 #endif
+
+uint32_t cnt = 0;
+void playl()
+{
+	cnt++;
+	if (cnt == 100)
+	{
+		mLedsp[0] = 0;
+		mLedsp[1] = 0xff;
+		mLedsp[2] = 0;
+		mLedsp[3] = 0;
+		mLedsp[4] = 0xff;
+		mLedsp[5] = 0;
+		mLedsp[6] = 0;
+		mLedsp[7] = 0xff;
+		mLedsp[8] = 0;
+	}
+	else if (cnt == 200)
+	{
+		mLedsp[0] = 0;
+		mLedsp[1] = 0;
+		mLedsp[2] = 0xff;
+		mLedsp[3] = 0;
+		mLedsp[4] = 0;
+		mLedsp[5] = 0xff;
+		mLedsp[6] = 0;
+		mLedsp[7] = 0;
+		mLedsp[8] = 0xff;
+	}
+	else if (cnt == 300)
+	{
+		mLedsp[0] = 0xff;
+		mLedsp[1] = 0xff;
+		mLedsp[2] = 0xff;
+		mLedsp[3] = 0xff;
+		mLedsp[4] = 0xff;
+		mLedsp[5] = 0xff;
+		mLedsp[6] = 0xff;
+		mLedsp[7] = 0xff;
+		mLedsp[8] = 0xff;
+	}
+	else if (cnt == 400)
+	{
+		mLedsp[0] = 0xff;
+		mLedsp[1] = 0;
+		mLedsp[2] = 0;
+		mLedsp[3] = 0;
+		mLedsp[4] = 0;
+		mLedsp[5] = 0;
+		mLedsp[6] = 0;
+		mLedsp[7] = 0;
+		mLedsp[8] = 0;
+	}
+	else if (cnt > 400)
+	{
+		for (int i = 0; i < 9; i++)
+		{
+			if (mLedsp[i] == 0xff)
+			{
+				mLedsp[i] = 0x0;
+				if (i < 8)
+				{
+					mLedsp[i+1] = 1;
+				}
+				else
+				{
+					mLedsp[0] = 1;
+				}
+			}
+			else if (mLedsp[i] > 0)
+			{
+				mLedsp[i]++;
+			}
+		}
+	}
+	WS_SetLedsRaw(mLedsp, 9); // TODO debug remove
+}
 
 void MainLogicPeriodic() {
 
@@ -154,7 +231,7 @@ void MainLogicPeriodic() {
 	if (gFirstTime)
 	{
 #ifdef DEBUG_WS_LEDS
-		WS_SetLedsRaw(mLedsp, 3); // TODO debug remove
+		WS_SetLedsRaw(mLedsp, 9); // TODO debug remove
 #endif
 		gFirstTime = false;
 		// Start reading from the UART
@@ -164,6 +241,7 @@ void MainLogicPeriodic() {
 		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
 		StartADCConversion();
 	}
+	playl();
 
 	CheckHWAndGenerateEventsAsNeeded();
 
