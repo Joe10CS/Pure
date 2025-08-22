@@ -198,10 +198,8 @@ void SolenoidPump(int isOn)
 {
 	HAL_GPIO_WritePin(Pump_CMD_GPIO_Port, Pump_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
-bool dddP = false;  // TODO debug remove
 void SolenoidPumpUVPower(int isOn)
 {
-	dddP = isOn;
 	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 void StartStatusTransmit() {}

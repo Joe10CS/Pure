@@ -86,7 +86,7 @@ static void MX_ADC1_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM14_Init(void);
 /* USER CODE BEGIN PFP */
-
+void CheckAndSentWaterFullSensorEvent();
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/

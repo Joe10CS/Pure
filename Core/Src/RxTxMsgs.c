@@ -366,7 +366,7 @@ char* s32_to_str(char* dst, int32_t v) {
 
 // ---------- core reply builder ----------
 // nums_count: 1..4 (can be 0 if you have such a reply shape)
-// ok_suffix: pass true to append ",OK" (only your $STBL), else false
+// ok_suffix: pass true to append ",OK" (only for $STBL), else false
 // returns number of bytes written (excluding '\0')
 size_t BuildReply(char *dst,
                          const sCommandDef *cmd,

@@ -8,7 +8,7 @@
 #ifndef INC_LP5009_H_
 #define INC_LP5009_H_
 
-#include "main.h"  // Adjust to your STM32 series
+#include "main.h"
 
 // ====== I2C DEVICE ADDRESS
 #define LP5009_I2C_ADDR         (0x14 << 1)  // = 0x28

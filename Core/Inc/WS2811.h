@@ -20,7 +20,7 @@
   - Uses TIM1 edge‑aligned PWM mode 1 on CH4 (PA11) and the TIM1 Update DMA request.
 
   Hardware assumptions:
-    * PA11 is wired to LED data (through your AHCT buffer).
+    * PA11 is wired to LED data (through AHCT buffer).
     * TIM1 configured for PWM CH4, PSC=0, ARR=79 (1.25 µs), OC preload on CH4 DISABLED.
     * DMA TIM1_UP configured and NVIC enabled.
 */

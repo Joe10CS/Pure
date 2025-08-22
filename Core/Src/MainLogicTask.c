@@ -265,7 +265,7 @@ void MainLogicPeriodic() {
 		}
 	}
 
-	// dispatch queued events from your ring buffer (if any)
+	// dispatch queued events from the ring buffer (if any)
 	SMSodaStreamPure_EventId ev;
 	while (SMEventQueue_Take(&ev)) {
 		SMSodaStreamPure_dispatch_event(&mStateMachine, ev);
@@ -302,7 +302,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 {
 	// All command are echo by default, unless a response is sent (or error)
 	bool echoCommand = true;
-	SMSodaStreamPure_EventId event = SMSodaStreamPure_EventId_DO; // stam
+	bool illegalCommand = false;
 	uint8_t msg_len = 0;
 	/*
 	eUARTCommand_rsts,
@@ -317,20 +317,27 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		break;
 	case eUARTCommand_mgui:
 		gIsGuiControlMode = (msg->params.onOff.isOn == 1);
+		if (gIsGuiControlMode) {
+			StopWaterPump();
+			StopUVLed();
+			LedsOff(LEDS_all);
+		}
 		if (! SMEventQueue_Add(gIsGuiControlMode? SMSodaStreamPure_EventId_EVENT_ENTER_GUI_CONTROLLED_MODE : SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE))
 			gQueueErrors++;
 		break;
 	case eUARTCommand_powr:
-		if (! SMEventQueue_Add((msg->params.onOff.isOn == 1)? SMSodaStreamPure_EventId_EVENT_SOLENDOIDPUMPPOWERON : SMSodaStreamPure_EventId_EVENT_SOLENDOIDPUMPPOWEROFF))
-			gQueueErrors++;
+		if (gIsGuiControlMode){
+			SolenoidPumpUVPower(msg->params.onOff.isOn);
+		} else {
+			illegalCommand = true;
+		}
 		break;
 	case eUARTCommand_sled:
 		if (gLP5009InitOK)
 		{
 			if ((msg->params.sled.ledNumber < 1) || (msg->params.sled.ledNumber > 5) || (msg->params.sled.intensity > 100))
 			{
-				echoCommand = false;
-				TxIllegalCommandResponse();
+				illegalCommand = true;
 				break;
 			}
 			LP5009_SetLed(&hi2c1, (uint8_t)(msg->params.sled.ledNumber - 1), 100 - (uint8_t)(msg->params.sled.intensity));
@@ -339,8 +346,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	case eUARTCommand_srgb:
 		if (gLP5009InitOK) {
 			if ((msg->params.srgb.valueR > 255) ||(msg->params.srgb.valueG > 255) || (msg->params.srgb.valueB > 255)) {
-				echoCommand = false;
-				TxIllegalCommandResponse();
+				illegalCommand = true;
 				break;
 			}
 			if ((msg->params.srgb.valueR == 0) && (msg->params.srgb.valueG == 0) && (msg->params.srgb.valueB == 0)) {
@@ -358,25 +364,43 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		}
 		break;
 	case eUARTCommand_pump:
-		if (msg->params.pump.isOn == 1)
-		{
-			mWaterLevelSensorThreahsold = (uint16_t)(msg->params.pump.sensorThreashold);
-			event = (msg->params.pump.sensorThreashold == 0) ? SMSodaStreamPure_EventId_EVENT_WATERPUMOONNOSENSOR : SMSodaStreamPure_EventId_EVENT_WAREPUMPON;
+		if (gIsGuiControlMode){
+			echoCommand = false; // done here since might need to send done message after it
+			COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
+
+			if (msg->params.pump.isOn == 1) {
+				mStateMachine.vars.pumpStopsOnSensor = (msg->params.pump.sensorThreashold != 0);
+				StartWaterPump();
+			} else {
+				StopWaterPump();
+				SendDonePumpOK();
+			}
+		} else {
+			illegalCommand = true;
 		}
-		else
-		{
-			event = SMSodaStreamPure_EventId_EVENT_WATERPUMPOFF;
-		}
-		if (! SMEventQueue_Add(event))
-			gQueueErrors++;
 		break;
 	case eUARTCommand_carb:
-		if (! SMEventQueue_Add((msg->params.onOff.isOn == 1)? SMSodaStreamPure_EventId_EVENT_CARBON : SMSodaStreamPure_EventId_EVENT_CARBOFF))
-			gQueueErrors++;
+		if (gIsGuiControlMode){
+			SolenoidPump(msg->params.onOff.isOn);
+		} else {
+			illegalCommand = true;
+		}
 		break;
 	case eUARTCommand_stop:
-		if (! SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_STOP))
-			gQueueErrors++;
+		if (gIsGuiControlMode){
+			echoCommand = false; // done here since might need to send done message after it
+			COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
+
+			if (mStateMachine.vars.pumpStopsOnSensor) {
+				mStateMachine.vars.pumpStopsOnSensor = false;
+				SendDoneMessage(eDone_OK);
+			}
+			SolenoidPump(0);
+			SolenoidPumpUVPower(0);
+			StopWaterPump();
+		} else {
+			illegalCommand = true;
+		}
 		break;
 	case eUARTCommand_tilt: // Get Info - non state machine related command
 		msg_len = (uint8_t)BuildReplySigned((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_tilt], (int32_t[]){filtered_x, filtered_y, filtered_z}, 3, false);
@@ -389,9 +413,16 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		echoCommand = false;
 		break;
 	case eUARTCommand_uvld:
-		gIsUVLEdOn = (msg->params.onOff.isOn == 1);
-		if (! SMEventQueue_Add(gIsUVLEdOn? SMSodaStreamPure_EventId_EVENT_UVLEDON : SMSodaStreamPure_EventId_EVENT_UVLEDOFF))
-			gQueueErrors++;
+		if (gIsGuiControlMode){
+			gIsUVLEdOn = (msg->params.onOff.isOn == 1);
+			if (gIsUVLEdOn) {
+				StartUVLEd();
+			} else {
+				StopUVLed();
+			}
+		} else {
+			illegalCommand = true;
+		}
 		break;
 	case eUARTCommand_uvla: // Get Info - non state machine related command
 		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_uvla], (uint32_t[]){mReadUVCurrentADC}, 1, false);
@@ -425,7 +456,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			// msg->params.list[1..8] - the values
 			if ((msg->params.list[0] < 1) || (msg->params.list[0] > 12))
 			{
-				TxIllegalCommandResponse();
+				illegalCommand = true;
 				break;
 			}
 			int level = (msg->params.list[0] - 1) / 2; // maps 1,2,3,4,5,6,7,8,9,10,11,12 -> 0,0,1,1,2,2,3,3,4,4,5,5
@@ -455,8 +486,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	case eUARTCommand_swsp:
 		if (! gIsGuiControlMode)
 		{
-			echoCommand = false;
-			TxIllegalCommandResponse();
+			illegalCommand = true;
 			break;
 		}
 		WaterPumpSensor((int)(msg->params.onOff.isOn));
@@ -468,7 +498,9 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		break;
 	default:
 	}
-	if (echoCommand == true)
+	if (illegalCommand) {
+		TxIllegalCommandResponse();
+	} else if (echoCommand)
 	{
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
 	}

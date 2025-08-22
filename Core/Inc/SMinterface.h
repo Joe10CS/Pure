@@ -63,6 +63,7 @@ void StartWaterPumpingTimer();
 void LedsOff(uint32_t leds);
 void FadeOutLeds(uint32_t leds);
 void FadeInLeds();
+void SetLevelLed();
 
 void FadeInAmbiantLight();
 void AmbiantLightOff();
