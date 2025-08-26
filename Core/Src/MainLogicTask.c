@@ -403,7 +403,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 
 void HandleStatusSend()
 {
-	if (gIsGuiControlMode && (gPeriodicStatusSendMask != 0)) // send is enabled
+	if (gPeriodicStatusSendMask != 0) // send is enabled
 	{
 		// check to need to send now
 		if (gPeriodicStatusSendLastTickSent + gPeriodicStatusSendInterval < HAL_GetTick())
