@@ -251,7 +251,7 @@ void MainLogicPeriodic() {
 	// DEBUG REMOVE
 	if (dbgCurrentState != mStateMachine.state_id)
 	{
-		uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_dbug], (uint32_t[]){dbgCurrentState, 0, mStateMachine.state_id}, 3,false);
+		uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, 0, mStateMachine.state_id}, 3,false);
 		dbgCurrentState = mStateMachine.state_id;
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 	}
@@ -273,7 +273,7 @@ void MainLogicPeriodic() {
 		// DEBUG REMOVE
 		if ((dbgCurrentState != mStateMachine.state_id) || (ev != SMSodaStreamPure_EventId_DO))
 		{
-			uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_dbug], (uint32_t[]){dbgCurrentState, ev, mStateMachine.state_id}, 3, false);
+			uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, ev, mStateMachine.state_id}, 3, false);
 			dbgCurrentState = mStateMachine.state_id;
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		}
@@ -311,7 +311,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	switch (msg->cmd)
 	{
 	case eUARTCommand_rver:
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_rver], (uint32_t[]){SWVERSION_MAJOR, SWVERSION_MINOR}, 2, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_rver, (uint32_t[]){SWVERSION_MAJOR, SWVERSION_MINOR}, 2, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
@@ -403,12 +403,12 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		}
 		break;
 	case eUARTCommand_tilt: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReplySigned((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_tilt], (int32_t[]){filtered_x, filtered_y, filtered_z}, 3, false);
+		msg_len = (uint8_t)BuildReplySigned((char*)gRawMsgForEcho, eUARTCommand_tilt, (int32_t[]){filtered_x, filtered_y, filtered_z}, 3, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
 	case eUARTCommand_wtrs: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_wtrs], (uint32_t[]){mReadWaterLevelADC}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_wtrs, (uint32_t[]){mReadWaterLevelADC}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
@@ -425,17 +425,17 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		}
 		break;
 	case eUARTCommand_uvla: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_uvla], (uint32_t[]){mReadUVCurrentADC}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_uvla, (uint32_t[]){mReadUVCurrentADC}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
 	case eUARTCommand_pmpa: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_pmpa], (uint32_t[]){mReadWaterPumpCurrentADC}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_pmpa, (uint32_t[]){mReadWaterPumpCurrentADC}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
 	case eUARTCommand_rrtc: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_rrtc], (uint32_t[]){FilterRTC_SecondsElapsed()}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_rrtc, (uint32_t[]){FilterRTC_SecondsElapsed()}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
@@ -465,7 +465,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			{
 				gCarbTimeTable[level][onOff][i] = msg->params.list[i+1];
 			}
-			msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_stbl], (uint32_t[]){msg->params.list[0]}, 1, true);
+			msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_stbl, (uint32_t[]){msg->params.list[0]}, 1, true);
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		}
 		break;
@@ -492,7 +492,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		WaterPumpSensor((int)(msg->params.onOff.isOn));
 		break;
 	case eUARTCommand_lptm:
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, &gCDMCommands[eUARTCommand_lptm], (uint32_t[]){mLastPumpTimeMSecs}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_lptm, (uint32_t[]){mLastPumpTimeMSecs}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
@@ -520,7 +520,7 @@ void HandleStatusSend()
 			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_STATEBUTS)
 			{
 				uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
-					&gCDMCommands[eUARTCommand_rsts],
+					eUARTCommand_rsts,
 					(uint32_t[]){PERIODIC_STATUS_SEND_MASK_STATEBUTS,
 					1,  // TODO add error states instead of 1
 					(HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin) == GPIO_PIN_RESET) ? 1 : 0,
@@ -534,8 +534,8 @@ void HandleStatusSend()
 			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_ADC)
 			{
 				uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
-					&gCDMCommands[eUARTCommand_rsts],
-					(uint32_t[]){PERIODIC_STATUS_SEND_MASK_ADC,mReadUVCurrentADC,mReadWaterPumpCurrentADC},
+					eUARTCommand_rsts,
+					(uint32_t[]){PERIODIC_STATUS_SEND_MASK_ADC,mReadWaterLevelADC,mReadUVCurrentADC,mReadWaterPumpCurrentADC},
 					4,
 					false);
 				COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
@@ -543,7 +543,7 @@ void HandleStatusSend()
 			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_RTCTILT)
 			{
 				uint8_t msg_len = (uint8_t)BuildReplySigned((char*)gRawMsgForEcho,
-					&gCDMCommands[eUARTCommand_rsts],
+					eUARTCommand_rsts,
 					(int32_t[]){PERIODIC_STATUS_SEND_MASK_RTCTILT,
 						(int32_t)FilterRTC_SecondsElapsed(),
 						filtered_x,filtered_y,filtered_z},
@@ -562,7 +562,7 @@ void HandleStatusSend()
 void SendDoneMessage(eDoneResults result)
 {
 	uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
-		&gCDMCommands[eUARTCommand_rsts],
+		eUARTCommand_rsts,
 		(uint32_t[]){result},
 		1,
 		false);

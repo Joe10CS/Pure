@@ -369,20 +369,25 @@ char* s32_to_str(char* dst, int32_t v) {
 // ok_suffix: pass true to append ",OK" (only for $STBL), else false
 // returns number of bytes written (excluding '\0')
 size_t BuildReply(char *dst,
-                         const sCommandDef *cmd,
-                         const uint32_t *nums,
-                         uint8_t nums_count,
-                         bool ok_suffix)
+		const eUARTCommandTypes cmd_id,
+        const uint32_t *nums,
+        uint8_t nums_count,
+        bool ok_suffix)
 {
     char *p = dst;
 
     *p++ = '$';
-    *p++ = cmd->command[0];
-    *p++ = cmd->command[1];
-    *p++ = cmd->command[2];
-    *p++ = cmd->command[3];
+    *p++ = gCDMCommands[cmd_id].command[0];
+    *p++ = gCDMCommands[cmd_id].command[1];
+    *p++ = gCDMCommands[cmd_id].command[2];
+    *p++ = gCDMCommands[cmd_id].command[3];
 
     if (nums_count || ok_suffix) *p++ = ' ';
+    if (cmd_id == eUARTCommand_rver)
+    {
+    	// add "Version"
+    	*p++ = 'V'; *p++ = 'e';*p++ = 'r'; *p++ = 's';*p++ = 'i'; *p++ = 'o';*p++ = 'n';*p++ = ' ';
+    }
 
     for (uint8_t i = 0; i < nums_count; i++) {
         p = u32_to_str(p, nums[i]);
@@ -402,18 +407,18 @@ size_t BuildReply(char *dst,
 }
 // signed version
 size_t BuildReplySigned(char *dst,
-                         const sCommandDef *cmd,
-                         const int32_t *nums,
-						 uint8_t nums_count,
-                         bool ok_suffix)
+		const eUARTCommandTypes cmd_id,
+        const int32_t *nums,
+		uint8_t nums_count,
+        bool ok_suffix)
 {
     char *p = dst;
 
     *p++ = '$';
-    *p++ = cmd->command[0];
-    *p++ = cmd->command[1];
-    *p++ = cmd->command[2];
-    *p++ = cmd->command[3];
+    *p++ = gCDMCommands[cmd_id].command[0];
+    *p++ = gCDMCommands[cmd_id].command[1];
+    *p++ = gCDMCommands[cmd_id].command[2];
+    *p++ = gCDMCommands[cmd_id].command[3];
 
     if (nums_count || ok_suffix) *p++ = ' ';
 
@@ -441,20 +446,20 @@ extern sCommandDef gCDMCommands[];
 uint8_t Make_RVER(char *out, uint32_t maj, uint32_t min)
 {
     uint32_t nums[2] = { maj, min };
-    BuildReply(out, &gCDMCommands[eUARTCommand_rver], nums, 2, false);
+    BuildReply(out, eUARTCommand_rver, nums, 2, false);
     return (uint8_t)strlen(out); // or track length in BuildReply if you want to avoid strlen
 }
 
 uint8_t Make_STBL(char *out, uint32_t nn)
 {
-    BuildReply(out, &gCDMCommands[eUARTCommand_stbl], &nn, 1, true);  // "$STBL nn,OK\r\n"
+    BuildReply(out, eUARTCommand_stbl, &nn, 1, true);  // "$STBL nn,OK\r\n"
     return (uint8_t)strlen(out);
 }
 
 // Generic for 1..4 numbers:
 uint8_t Make_GenericReply(char *out, eUARTCommandTypes cmd, const uint32_t *nums, uint8_t n)
 {
-    BuildReply(out, &gCDMCommands[cmd], nums, n, false);
+    BuildReply(out, cmd, nums, n, false);
     return (uint8_t)strlen(out);
 }
 */

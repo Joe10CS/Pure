@@ -175,8 +175,8 @@ void TxIllegalCommandResponse();
 void COMM_UART_SendNextTxQueue(void);
 void SendMessageToCDMDesktop(eUARTCommandTypes msgType, uint16_t value1, uint16_t value2);
 void CDMSendDoneMessage(eUartDoneStatus status);
-size_t BuildReply(char *dst, const sCommandDef *cmd, const uint32_t *nums, uint8_t nums_count, bool ok_suffix);
-size_t BuildReplySigned(char *dst, const sCommandDef *cmd, const int32_t *nums, uint8_t nums_count, bool ok_suffix);
+size_t BuildReply(char *dst, const eUARTCommandTypes cmd_id, const uint32_t *nums, uint8_t nums_count, bool ok_suffix);
+size_t BuildReplySigned(char *dst, const eUARTCommandTypes cmd_id, const int32_t *nums, uint8_t nums_count, bool ok_suffix);
 char* u32_to_str(char *dst, uint32_t val);
 char* s32_to_str(char* dst, int32_t v);
 #endif /* INC_RXTXMSGS_H_ */
