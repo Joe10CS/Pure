@@ -23,6 +23,9 @@ extern uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycle
 char dbgMsg[40];
 extern void DBGSendMessage(char *msg);
 
+extern volatile uint16_t mReadWaterLevelADC;
+extern uint16_t mWaterLevelSensorThreahsold;
+
 void StartCarbonation() {}
 void StopCarbonation() {}
 
@@ -39,6 +42,11 @@ void StopUVLed()
 void WaterPumpSensor(int isOn)
 {
 	HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+bool IsBottleFull()
+{
+	return (mReadWaterLevelADC >= mWaterLevelSensorThreahsold);
 }
 
 void InitCarbonationOnly()

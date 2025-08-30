@@ -54,9 +54,9 @@ bool gIsTilted = false;
 bool gAccelerometerIsPresent = false;
 bool gLP5009InitOK = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
-extern uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
-extern uint16_t mReadWaterPumpCurrentADC;
-extern uint16_t mReadUVCurrentADC;
+extern volatile uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
+extern volatile uint16_t mReadWaterPumpCurrentADC;
+extern volatile uint16_t mReadUVCurrentADC;
 extern uint32_t mLastPumpTimeMSecs;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
@@ -171,14 +171,11 @@ void MainLogicPeriodic() {
 	SMSodaStreamPure_dispatch_event(&mStateMachine, SMSodaStreamPure_EventId_DO);
 #ifdef DEBUG_STATE_MACHINE
 	// DEBUG REMOVE
-	if (dbgSMEnabled)
+	if (dbgCurrentState != mStateMachine.state_id)
 	{
-		if (dbgCurrentState != mStateMachine.state_id)
-		{
-			sprintf((char *)gRawMsgForEcho, "%d[0]%d\r\n",(int)dbgCurrentState, (int)mStateMachine.state_id);
-			dbgCurrentState = mStateMachine.state_id;
-			COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
-		}
+		sprintf((char *)gRawMsgForEcho, "%d[0]%d\r\n",(int)dbgCurrentState, (int)mStateMachine.state_id);
+		dbgCurrentState = mStateMachine.state_id;
+		COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 	}
 	// DEBUG REMOVE
 #endif
@@ -196,14 +193,11 @@ void MainLogicPeriodic() {
 		SMSodaStreamPure_dispatch_event(&mStateMachine, ev);
 #ifdef DEBUG_STATE_MACHINE
 		// DEBUG REMOVE
-		if (dbgSMEnabled)
+		if ((dbgCurrentState != mStateMachine.state_id) || (ev != SMSodaStreamPure_EventId_DO))
 		{
-			if ((dbgCurrentState != mStateMachine.state_id) || (ev != SMSodaStreamPure_EventId_DO))
-			{
-				sprintf((char *)gRawMsgForEcho, "%d[%d]%d\r\n",(int)dbgCurrentState, (int)ev, (int)mStateMachine.state_id);
-				dbgCurrentState = mStateMachine.state_id;
-				COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
-			}
+			sprintf((char *)gRawMsgForEcho, "%d[%d]%d\r\n",(int)dbgCurrentState, (int)ev, (int)mStateMachine.state_id);
+			dbgCurrentState = mStateMachine.state_id;
+			COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 		}
 		// DEBUG REMOVE
 #endif

@@ -38,6 +38,7 @@ void StopUVLed();
 
 void InitCarbonationOnly();
 void WaterPumpSensor(int isOn);
+bool IsBottleFull();
 void StartWaterPump();
 void StopWaterPump();
 void SendDonePumpOK();
@@ -46,6 +47,7 @@ void StartCarbStageTimer();
 bool CarbonationOffCycleExpired(uint16_t carbCycle);
 bool CarbonationOnCycleExpired(uint16_t carbCycle);
 bool IsCarbonationLastCycle(uint16_t carbCycle);
+void SetLevelLed();
 
 void StartWaterFilterLedSequence();
 void StartCarbonationLedSequance();

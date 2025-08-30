@@ -623,7 +623,7 @@ State_PowerOnInit --> State_PowerOn.(ChoicePoint)() : do
 
 State_Rinsing --> State_Ready : Event_AnyKeyPress
 
-State_Rinsing --> State_Ready : Event_BottleFullSensor
+State_Rinsing --> State_Ready : do [IsBottleFull()]
 
 State_Rinsing --> State_Ready : Event_WaterPumpingTimeout
 
@@ -631,7 +631,7 @@ State_ExitFilteringOnly --> State_Ready : do
 
 State_FilteringCarbonationAwait --> State_ExitFilteringOnly : Event_AnyKeyPress
 
-State_FilteringCarbonationAwait --> State_Carbonating : Event_BottleFullSensor
+State_FilteringCarbonationAwait --> State_Carbonating : do [IsBottleFull()]
 
 State_FilteringCarbonationAwait --> State_ExitFilteringOnly : Event_WaterPumpingTimeout
 
@@ -641,7 +641,7 @@ State_Filtering --> State_ExitFilteringOnly : Event_WaterPumpingTimeout
 
 State_Filtering --> State_ExitFilteringOnly : Event_ShortPressWaterFilter
 
-State_Filtering --> State_ExitFilteringOnly : Event_BottleFullSensor
+State_Filtering --> State_ExitFilteringOnly : do [IsBottleFull()]
 
 State_Filtering --> State_ExitFilteringOnly : Event_LongPressWaterFilter
 
@@ -693,7 +693,7 @@ State_GuiModeWaitCommands --> State_UVLedOn : Event_UVLedOn
 
 State_GuiModeWaitCommands --> State_UVLedOff : Event_UVLedOff
 
-State_GuiModeWaitCommands --> Stat_GUIControlMode.(ChoicePoint)() : Event_BottleFullSensor
+State_GuiModeWaitCommands --> Stat_GUIControlMode.(ChoicePoint)() : do [IsBottleFull()]
 
 State_GuiModeWaitCommands --> Stat_GUIControlMode.(ChoicePoint)() : Event_STOP
 
@@ -784,32 +784,31 @@ evaluateGuard = null;
     {
         DO : 0, // The `do` event is special. State event handlers do not consume this event (ancestors all get it too) unless a transition occurs.
         EVENT_ANYKEYPRESS : 1,
-        EVENT_BOTTLEFULLSENSOR : 2,
-        EVENT_CARBOFF : 3,
-        EVENT_CARBON : 4,
-        EVENT_CARBONATIONLEVELPRESSED : 5,
-        EVENT_ENTER_GUI_CONTROLLED_MODE : 6,
-        EVENT_EXIT_GUI_CONTROLLED_MODE : 7,
-        EVENT_HWWATCHDOG : 8,
-        EVENT_LONGPRESSWATERFILTER : 9,
-        EVENT_NOTTILTED : 10,
-        EVENT_READYTIMOUT : 11,
-        EVENT_SAFETYFAIL : 12,
-        EVENT_SHORTPRESSWATERFILTER : 13,
-        EVENT_SOLENDOIDPUMPPOWEROFF : 14,
-        EVENT_SOLENDOIDPUMPPOWERON : 15,
-        EVENT_STOP : 16,
-        EVENT_TILTDETECTED : 17,
-        EVENT_UVLEDOFF : 18,
-        EVENT_UVLEDON : 19,
-        EVENT_WAREPUMPON : 20,
-        EVENT_WATERPUMOONNOSENSOR : 21,
-        EVENT_WATERPUMPINGTIMEOUT : 22,
-        EVENT_WATERPUMPOFF : 23,
+        EVENT_CARBOFF : 2,
+        EVENT_CARBON : 3,
+        EVENT_CARBONATIONLEVELPRESSED : 4,
+        EVENT_ENTER_GUI_CONTROLLED_MODE : 5,
+        EVENT_EXIT_GUI_CONTROLLED_MODE : 6,
+        EVENT_HWWATCHDOG : 7,
+        EVENT_LONGPRESSWATERFILTER : 8,
+        EVENT_NOTTILTED : 9,
+        EVENT_READYTIMOUT : 10,
+        EVENT_SAFETYFAIL : 11,
+        EVENT_SHORTPRESSWATERFILTER : 12,
+        EVENT_SOLENDOIDPUMPPOWEROFF : 13,
+        EVENT_SOLENDOIDPUMPPOWERON : 14,
+        EVENT_STOP : 15,
+        EVENT_TILTDETECTED : 16,
+        EVENT_UVLEDOFF : 17,
+        EVENT_UVLEDON : 18,
+        EVENT_WAREPUMPON : 19,
+        EVENT_WATERPUMOONNOSENSOR : 20,
+        EVENT_WATERPUMPINGTIMEOUT : 21,
+        EVENT_WATERPUMPOFF : 22,
     }
     static { Object.freeze(this.EventId); }
     
-    static EventIdCount = 24;
+    static EventIdCount = 23;
     static { Object.freeze(this.EventIdCount); }
     
     static StateId = 
@@ -966,7 +965,7 @@ evaluateGuard = null;
                     case SMSodaStreamPure.EventId.EVENT_WATERPUMPOFF: this.#STATE_GUIMODEWAITCOMMANDS_event_waterpumpoff(); break;
                     case SMSodaStreamPure.EventId.EVENT_UVLEDON: this.#STATE_GUIMODEWAITCOMMANDS_event_uvledon(); break;
                     case SMSodaStreamPure.EventId.EVENT_UVLEDOFF: this.#STATE_GUIMODEWAITCOMMANDS_event_uvledoff(); break;
-                    case SMSodaStreamPure.EventId.EVENT_BOTTLEFULLSENSOR: this.#STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor(); break;
+                    case SMSodaStreamPure.EventId.DO: this.#STATE_GUIMODEWAITCOMMANDS_do(); break;
                     case SMSodaStreamPure.EventId.EVENT_STOP: this.#STATE_GUIMODEWAITCOMMANDS_event_stop(); break;
                     case SMSodaStreamPure.EventId.EVENT_HWWATCHDOG: this.#STAT_GUICONTROLMODE_event_hwwatchdog(); break; // First ancestor handler for this event
                     case SMSodaStreamPure.EventId.EVENT_SAFETYFAIL: this.#STAT_GUICONTROLMODE_event_safetyfail(); break; // First ancestor handler for this event
@@ -1200,7 +1199,7 @@ evaluateGuard = null;
                     case SMSodaStreamPure.EventId.EVENT_CARBONATIONLEVELPRESSED: this.#STATE_FILTERING_event_carbonationlevelpressed(); break;
                     case SMSodaStreamPure.EventId.EVENT_WATERPUMPINGTIMEOUT: this.#STATE_FILTERING_event_waterpumpingtimeout(); break;
                     case SMSodaStreamPure.EventId.EVENT_SHORTPRESSWATERFILTER: this.#STATE_FILTERING_event_shortpresswaterfilter(); break;
-                    case SMSodaStreamPure.EventId.EVENT_BOTTLEFULLSENSOR: this.#STATE_FILTERING_event_bottlefullsensor(); break;
+                    case SMSodaStreamPure.EventId.DO: this.#STATE_FILTERING_do(); break;
                     case SMSodaStreamPure.EventId.EVENT_LONGPRESSWATERFILTER: this.#STATE_FILTERING_event_longpresswaterfilter(); break;
                     case SMSodaStreamPure.EventId.EVENT_HWWATCHDOG: this.#STATE_AUTOMATICMODE_event_hwwatchdog(); break; // First ancestor handler for this event
                     case SMSodaStreamPure.EventId.EVENT_SAFETYFAIL: this.#STATE_AUTOMATICMODE_event_safetyfail(); break; // First ancestor handler for this event
@@ -1214,7 +1213,7 @@ evaluateGuard = null;
                 switch (eventId)
                 {
                     case SMSodaStreamPure.EventId.EVENT_ANYKEYPRESS: this.#STATE_FILTERINGCARBONATIONAWAIT_event_anykeypress(); break;
-                    case SMSodaStreamPure.EventId.EVENT_BOTTLEFULLSENSOR: this.#STATE_FILTERINGCARBONATIONAWAIT_event_bottlefullsensor(); break;
+                    case SMSodaStreamPure.EventId.DO: this.#STATE_FILTERINGCARBONATIONAWAIT_do(); break;
                     case SMSodaStreamPure.EventId.EVENT_WATERPUMPINGTIMEOUT: this.#STATE_FILTERINGCARBONATIONAWAIT_event_waterpumpingtimeout(); break;
                     case SMSodaStreamPure.EventId.EVENT_HWWATCHDOG: this.#STATE_AUTOMATICMODE_event_hwwatchdog(); break; // First ancestor handler for this event
                     case SMSodaStreamPure.EventId.EVENT_SAFETYFAIL: this.#STATE_AUTOMATICMODE_event_safetyfail(); break; // First ancestor handler for this event
@@ -1301,7 +1300,7 @@ evaluateGuard = null;
                 switch (eventId)
                 {
                     case SMSodaStreamPure.EventId.EVENT_ANYKEYPRESS: this.#STATE_RINSING_event_anykeypress(); break;
-                    case SMSodaStreamPure.EventId.EVENT_BOTTLEFULLSENSOR: this.#STATE_RINSING_event_bottlefullsensor(); break;
+                    case SMSodaStreamPure.EventId.DO: this.#STATE_RINSING_do(); break;
                     case SMSodaStreamPure.EventId.EVENT_WATERPUMPINGTIMEOUT: this.#STATE_RINSING_event_waterpumpingtimeout(); break;
                     case SMSodaStreamPure.EventId.EVENT_HWWATCHDOG: this.#STATE_AUTOMATICMODE_event_hwwatchdog(); break; // First ancestor handler for this event
                     case SMSodaStreamPure.EventId.EVENT_SAFETYFAIL: this.#STATE_AUTOMATICMODE_event_safetyfail(); break; // First ancestor handler for this event
@@ -1924,10 +1923,11 @@ evaluateGuard = null;
         this.stateId = SMSodaStreamPure.StateId.STAT_GUICONTROLMODE;
     }
     
-    #STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor()
+    #STATE_GUIMODEWAITCOMMANDS_do()
     {
         // State_GuiModeWaitCommands behavior
-        // uml: Event_BottleFullSensor / { this.tracer?.edgeTransition("edge53"); } TransitionTo(Stat_GUIControlMode.<ChoicePoint>())
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_GuiModeWaitCommands","do [IsBottleFull()] TransitionTo(Stat_GUIControlMode.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge53"); } TransitionTo(Stat_GUIControlMode.<ChoicePoint>())
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_GuiModeWaitCommands","do [IsBottleFull()] TransitionTo(Stat_GUIControlMode.<ChoicePoint>())"))
         {
             // Step 1: Exit states until we reach `Stat_GUIControlMode` state (Least Common Ancestor for transition).
             this.#STATE_GUIMODEWAITCOMMANDS_exit();
@@ -3658,10 +3658,11 @@ evaluateGuard = null;
         this.stateId = SMSodaStreamPure.StateId.STATE_AUTOMATICMODE;
     }
     
-    #STATE_FILTERING_event_bottlefullsensor()
+    #STATE_FILTERING_do()
     {
         // State_Filtering behavior
-        // uml: Event_BottleFullSensor / { this.tracer?.edgeTransition("edge27"); } TransitionTo(State_ExitFilteringOnly)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_Filtering","do [IsBottleFull()] TransitionTo(State_ExitFilteringOnly)")] / { this.tracer?.edgeTransition("edge27"); } TransitionTo(State_ExitFilteringOnly)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_Filtering","do [IsBottleFull()] TransitionTo(State_ExitFilteringOnly)"))
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_FILTERING_exit();
@@ -3820,6 +3821,29 @@ evaluateGuard = null;
         this.stateId = SMSodaStreamPure.StateId.STATE_AUTOMATICMODE;
     }
     
+    #STATE_FILTERINGCARBONATIONAWAIT_do()
+    {
+        // State_FilteringCarbonationAwait behavior
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_FilteringCarbonationAwait","do [IsBottleFull()] TransitionTo(State_Carbonating)")] / { this.tracer?.edgeTransition("edge22"); } TransitionTo(State_Carbonating)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_FilteringCarbonationAwait","do [IsBottleFull()] TransitionTo(State_Carbonating)"))
+        {
+            // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
+            this.#STATE_FILTERINGCARBONATIONAWAIT_exit();
+            
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge22");`.
+            this.tracer?.edgeTransition("edge22");
+            
+            // Step 3: Enter/move towards transition target `State_Carbonating`.
+            this.#STATE_CARBONATING_enter();
+            
+            // Finish transition by calling pseudo state transition function.
+            this.#State_Carbonating_InitialState_transition();
+            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+        } // end of behavior for State_FilteringCarbonationAwait
+        
+        // No ancestor handles this event.
+    }
+    
     #STATE_FILTERINGCARBONATIONAWAIT_event_anykeypress()
     {
         // State_FilteringCarbonationAwait behavior
@@ -3836,28 +3860,6 @@ evaluateGuard = null;
             
             // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
             return;
-        } // end of behavior for State_FilteringCarbonationAwait
-        
-        // No ancestor handles this event.
-    }
-    
-    #STATE_FILTERINGCARBONATIONAWAIT_event_bottlefullsensor()
-    {
-        // State_FilteringCarbonationAwait behavior
-        // uml: Event_BottleFullSensor / { this.tracer?.edgeTransition("edge22"); } TransitionTo(State_Carbonating)
-        {
-            // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
-            this.#STATE_FILTERINGCARBONATIONAWAIT_exit();
-            
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge22");`.
-            this.tracer?.edgeTransition("edge22");
-            
-            // Step 3: Enter/move towards transition target `State_Carbonating`.
-            this.#STATE_CARBONATING_enter();
-            
-            // Finish transition by calling pseudo state transition function.
-            this.#State_Carbonating_InitialState_transition();
-            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for State_FilteringCarbonationAwait
         
         // No ancestor handles this event.
@@ -4373,16 +4375,17 @@ evaluateGuard = null;
         this.stateId = SMSodaStreamPure.StateId.STATE_AUTOMATICMODE;
     }
     
-    #STATE_RINSING_event_anykeypress()
+    #STATE_RINSING_do()
     {
         // State_Rinsing behavior
-        // uml: Event_AnyKeyPress / { this.tracer?.edgeTransition("edge17"); } TransitionTo(State_Ready)
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_Rinsing","do [IsBottleFull()] TransitionTo(State_Ready)")] / { this.tracer?.edgeTransition("edge18"); } TransitionTo(State_Ready)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_Rinsing","do [IsBottleFull()] TransitionTo(State_Ready)"))
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_RINSING_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge17");`.
-            this.tracer?.edgeTransition("edge17");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge18");`.
+            this.tracer?.edgeTransition("edge18");
             
             // Step 3: Enter/move towards transition target `State_Ready`.
             this.#STATE_POWERON_enter();
@@ -4395,16 +4398,16 @@ evaluateGuard = null;
         // No ancestor handles this event.
     }
     
-    #STATE_RINSING_event_bottlefullsensor()
+    #STATE_RINSING_event_anykeypress()
     {
         // State_Rinsing behavior
-        // uml: Event_BottleFullSensor / { this.tracer?.edgeTransition("edge18"); } TransitionTo(State_Ready)
+        // uml: Event_AnyKeyPress / { this.tracer?.edgeTransition("edge17"); } TransitionTo(State_Ready)
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_RINSING_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge18");`.
-            this.tracer?.edgeTransition("edge18");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge17");`.
+            this.tracer?.edgeTransition("edge17");
             
             // Step 3: Enter/move towards transition target `State_Ready`.
             this.#STATE_POWERON_enter();
@@ -4490,7 +4493,6 @@ evaluateGuard = null;
         {
             case SMSodaStreamPure.EventId.DO: return "DO";
             case SMSodaStreamPure.EventId.EVENT_ANYKEYPRESS: return "EVENT_ANYKEYPRESS";
-            case SMSodaStreamPure.EventId.EVENT_BOTTLEFULLSENSOR: return "EVENT_BOTTLEFULLSENSOR";
             case SMSodaStreamPure.EventId.EVENT_CARBOFF: return "EVENT_CARBOFF";
             case SMSodaStreamPure.EventId.EVENT_CARBON: return "EVENT_CARBON";
             case SMSodaStreamPure.EventId.EVENT_CARBONATIONLEVELPRESSED: return "EVENT_CARBONATIONLEVELPRESSED";
@@ -4550,7 +4552,7 @@ evaluateGuard = null;
             center: true
         });
 
-        const diagramEventNamesArray = ['do', 'Event_AnyKeyPress', 'Event_BottleFullSensor', 'Event_CarbOff', 'Event_CarbOn', 'Event_CarbonationLevelPressed', 'Event_Enter_GUI_Controlled_Mode', 'Event_Exit_GUI_Controlled_Mode', 'Event_HWWatchdog', 'Event_LongPressWaterFilter', 'Event_NotTilted', 'Event_ReadyTimout', 'Event_SafetyFail', 'Event_ShortPressWaterFilter', 'Event_SolendoidPumpPowerOff', 'Event_SolendoidPumpPowerOn', 'Event_STOP', 'Event_TiltDetected', 'Event_UVLedOff', 'Event_UVLedOn', 'Event_WarePumpOn', 'Event_WaterPumoOnNoSensor', 'Event_WaterPumpingTimeout', 'Event_WaterPumpOff', ];
+        const diagramEventNamesArray = ['do', 'Event_AnyKeyPress', 'Event_CarbOff', 'Event_CarbOn', 'Event_CarbonationLevelPressed', 'Event_Enter_GUI_Controlled_Mode', 'Event_Exit_GUI_Controlled_Mode', 'Event_HWWatchdog', 'Event_LongPressWaterFilter', 'Event_NotTilted', 'Event_ReadyTimout', 'Event_SafetyFail', 'Event_ShortPressWaterFilter', 'Event_SolendoidPumpPowerOff', 'Event_SolendoidPumpPowerOn', 'Event_STOP', 'Event_TiltDetected', 'Event_UVLedOff', 'Event_UVLedOn', 'Event_WarePumpOn', 'Event_WaterPumoOnNoSensor', 'Event_WaterPumpingTimeout', 'Event_WaterPumpOff', ];
 
         // Mapping from state to available events
         const stateEventsMapping = {
@@ -4614,8 +4616,8 @@ evaluateGuard = null;
     "Event_TiltDetected"
   ],
   "State_Rinsing": [
+    "do",
     "Event_AnyKeyPress",
-    "Event_BottleFullSensor",
     "Event_Enter_GUI_Controlled_Mode",
     "Event_HWWatchdog",
     "Event_SafetyFail",
@@ -4630,8 +4632,8 @@ evaluateGuard = null;
     "Event_TiltDetected"
   ],
   "State_FilteringCarbonationAwait": [
+    "do",
     "Event_AnyKeyPress",
-    "Event_BottleFullSensor",
     "Event_Enter_GUI_Controlled_Mode",
     "Event_HWWatchdog",
     "Event_SafetyFail",
@@ -4639,7 +4641,7 @@ evaluateGuard = null;
     "Event_WaterPumpingTimeout"
   ],
   "State_Filtering": [
-    "Event_BottleFullSensor",
+    "do",
     "Event_CarbonationLevelPressed",
     "Event_Enter_GUI_Controlled_Mode",
     "Event_HWWatchdog",
@@ -4708,7 +4710,7 @@ evaluateGuard = null;
     "Event_SafetyFail"
   ],
   "State_GuiModeWaitCommands": [
-    "Event_BottleFullSensor",
+    "do",
     "Event_CarbOff",
     "Event_CarbOn",
     "Event_Exit_GUI_Controlled_Mode",
