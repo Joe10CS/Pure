@@ -33,6 +33,7 @@ void StartCarbonation();
 void StopCarbonation();
 
 
+void StopAllHW();
 void StartUVLEd();
 void StopUVLed();
 

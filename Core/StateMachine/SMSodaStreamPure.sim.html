@@ -307,6 +307,8 @@ state State_AutomaticMode {
 
                 State_PowerOnInit : enter / #123; LedsOff(LEDS_all)#59; #125;
 
+                State_PowerOnInit : enter / #123; StopAllHW()#59; #125;
+
         }
 
         State_Rinsing
@@ -486,6 +488,10 @@ state Stat_GUIControlMode {
         State_InitGuiMode : enter / #123; StopUVLed()#59; #125;
 
         State_InitGuiMode : enter / #123; LedsOff(LEDS_all)#59; #125;
+
+        State_InitGuiMode : enter / #123; SolenoidPumpUVPower(0)#59; #125;
+
+        State_InitGuiMode : enter / #123; SolenoidPump(0)#59; #125;
 
         State_GuiModeWaitCommands
 
@@ -2246,6 +2252,20 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsOff(LEDS_all);");`
             this.tracer?.log("⚡ FSM would execute action: " + "LedsOff(LEDS_all);");
+        } // end of behavior for State_InitGuiMode
+        
+        // State_InitGuiMode behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);");
+        } // end of behavior for State_InitGuiMode
+        
+        // State_InitGuiMode behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPump(0);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPump(0);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPump(0);");
         } // end of behavior for State_InitGuiMode
     }
     
@@ -4033,6 +4053,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsOff(LEDS_all);");`
             this.tracer?.log("⚡ FSM would execute action: " + "LedsOff(LEDS_all);");
+        } // end of behavior for State_PowerOnInit
+        
+        // State_PowerOnInit behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "StopAllHW();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "StopAllHW();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "StopAllHW();");
         } // end of behavior for State_PowerOnInit
     }
     

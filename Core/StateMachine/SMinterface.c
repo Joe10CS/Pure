@@ -29,6 +29,15 @@ extern uint16_t mWaterLevelSensorThreahsold;
 void StartCarbonation() {}
 void StopCarbonation() {}
 
+void StopAllHW()
+{
+	SolenoidPumpUVPower(0);
+	StopUVLed();
+	SolenoidPump(0);
+	mPumpStartTimeTick = 0;
+	WaterPumpSensor(0);
+	StopWaterPump();
+}
 
 void StartUVLEd()
 {
