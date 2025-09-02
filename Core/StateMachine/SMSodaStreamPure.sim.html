@@ -493,6 +493,8 @@ state Stat_GUIControlMode {
 
         State_InitGuiMode : enter / #123; SolenoidPump(0)#59; #125;
 
+        State_InitGuiMode : enter / #123; pumpStopsOnSensor = false#59; #125;
+
         State_GuiModeWaitCommands
 
         State_GuiModeWaitCommands : State_GuiModeWaitCommands
@@ -2266,6 +2268,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPump(0);");`
             this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPump(0);");
+        } // end of behavior for State_InitGuiMode
+        
+        // State_InitGuiMode behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "pumpStopsOnSensor = false;"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "pumpStopsOnSensor = false;");`
+            this.tracer?.log("⚡ FSM would execute action: " + "pumpStopsOnSensor = false;");
         } // end of behavior for State_InitGuiMode
     }
     
