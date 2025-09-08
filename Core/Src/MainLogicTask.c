@@ -12,6 +12,7 @@
 #include "RxTxMsgs.h"
 #include "LP5009.h"// TODO remove this on new Pure board
 #include "WS2811.h"
+#include "FRAM.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -120,6 +121,7 @@ void MainLogicInit(void) {
 	gLP5009InitOK = (st == HAL_OK);
 	// TODO [END] remove this on new Pure board
 
+//	SendFRAMDataMessage(); // DEBUG Remove
 #ifdef DEBUG_WS_LEDS
 	// Pure VDL LEds
 	WS_InitLeds();
@@ -444,6 +446,32 @@ void SendDoneMessage(eDoneResults result)
 	sprintf((char *)gRawMsgForEcho, "$DONE %04d\r\n",(int)result);
 	COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 }
+
+// DEBUG Remove
+uint8_t fram_buf[4];
+void SendFRAMDataMessage()
+{
+	fram_buf[0] = 0;
+	fram_buf[1] = 0;
+	fram_buf[2] = 0;
+	fram_buf[3] = 0;
+	HAL_StatusTypeDef stat = FRAM_Read(0, fram_buf, 4);
+	if (stat == HAL_OK) {
+		sprintf((char *)gRawMsgForEcho, "FRAM OK:%d,%d,%d,%d\r\n",(int)fram_buf[0],(int)fram_buf[1],(int)fram_buf[2],(int)fram_buf[3]);
+	} else {
+		sprintf((char *)gRawMsgForEcho, "FRAM ERROR: %d\r\n",(int)stat);
+	}
+	COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
+
+	fram_buf[0] = 12;
+	fram_buf[1] = 34;
+	fram_buf[2] = 56;
+	fram_buf[3] = 78;
+	stat = FRAM_Write(0, fram_buf, 4);
+
+}
+// DEBUG Remove
+
 
 void CheckHWAndGenerateEventsAsNeeded()
 {

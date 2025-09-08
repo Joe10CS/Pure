@@ -38,11 +38,10 @@ typedef enum {
 
 typedef enum {
 	eUartDoneStatus_OK = 0,
-	eUartDoneStatus_First_Pressure_Switch_Timeout = 100,
-	eUartDoneStatus_Pressure_Found_Before_Carbonation_Started = 101,
-	eUartDoneStatus_Pump_Failed = 102,
-	eUartDoneStatus_Total_Pressure_Switch_Cycles_Timeout = 110,
-	eUartDoneStatus_Engine_Error = 200,
+	eUartDoneStatus_process_interrupted_on_stop = 50,
+	eUartDoneStatus_Pump_Failed = 101,
+	eUartDoneStatus_UV_error = 111,
+	eUartDoneStatus_Solenoid_Error = 121,
 }eUartDoneStatus;
 
 // commands from PC
