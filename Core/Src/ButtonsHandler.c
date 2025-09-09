@@ -54,14 +54,17 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 		}
 
 		break;
-	case GPIO_PIN_14: // BTN2 - Level Low
+	case GPIO_PIN_14: // TODO STAM  -  Assuming that this is the carbonation level single button that toggles the levels
 		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
 			gLastKeyPressTick = HAL_GetTick();
 			//COMM_UART_QueueTxMessage((uint8_t *)"$BTN2Low falling\r\n", 18);
 			if (gButtonsFunction)
 			{
-				gCarbonationLevel = eLevel_Low;
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBONATIONLEVELPRESSED);
+				gCarbonationLevel++;
+				if (gCarbonationLevel == eLevel_number_of_levels) {
+					gCarbonationLevel = eLevel_off;
+				}
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELPRESSED);
 				return;
 			}
 			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
@@ -74,7 +77,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 			if (gButtonsFunction)
 			{
 				gCarbonationLevel = eLevel_medium;
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBONATIONLEVELPRESSED);
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELPRESSED);
 				return;
 			}
 			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
@@ -87,7 +90,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 			if (gButtonsFunction)
 			{
 				gCarbonationLevel = eLevel_high;
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBONATIONLEVELPRESSED);
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELPRESSED);
 				return;
 			}
 			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
@@ -103,11 +106,13 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 		//COMM_UART_QueueTxMessage((uint8_t *)"$Filter released\r\n", 18);
 		// Act upon release
 		if (gButtonsFunction && !gIgnoreFilterRelease) {
-			if (gFilterWaterPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_LONGPRESSWATERFILTER);
-			} else {
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_SHORTPRESSWATERFILTER);
-			}
+			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
+			// todo - handle filter short/long press
+//			if (gFilterWaterPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
+//				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_LONGPRESSWATERFILTER);
+//			} else {
+//				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_SHORTPRESSWATERFILTER);
+//			}
 		}
 		break;
 	}

@@ -4,7 +4,7 @@
  *  Created on: May 21, 2025
  *      Author: yossi
  */
-
+#if 0
 #include "LP5009.h"
 
 //static const uint8_t lp5009_brightness_regs[3] = {
@@ -147,3 +147,4 @@ HAL_StatusTypeDef LP5009_RGB_EnableGroups(I2C_HandleTypeDef *hi2c)  // call befo
     s = HAL_I2C_Mem_Write(hi2c, LP5009_I2C_ADDR, LP5009_REG_LED2_BRIGHTNESS, 1, &full, 1, HAL_MAX_DELAY); if (s) return s;
     return HAL_OK;
 }
+#endif

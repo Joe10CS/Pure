@@ -8,7 +8,7 @@
 #include "main.h"
 #include "SMinterface.h"
 #include "SMSodaStreamPure.h"
-#include "LP5009.h"// TODO remove this on new Pure board
+// TODO replace this with WS2811 as needed #include "LP5009.h"// TODO remove this on new Pure board
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
 uint32_t mCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
@@ -16,7 +16,12 @@ uint32_t mPumpStartTimeTick = 0;
 uint32_t mLastPumpTimeMSecs = 0;
 eBottleSize mLastDetectedBottleSize = eBottle_1_Litter; // default
 bool gButtonsFunction = false;
-
+extern uint32_t gPumpTimoutMsecs;
+extern volatile uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
+extern volatile uint16_t mReadWaterPumpCurrentADC;
+extern volatile uint16_t mReadUVCurrentADC;
+extern uint16_t mWaterLevelSensorThreahsold;
+extern bool gIsTilted;
 
 extern SMSodaStreamPure mStateMachine;
 extern uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS];
@@ -41,13 +46,16 @@ void WaterPumpSensor(int isOn)
 	HAL_GPIO_WritePin(WaterLVL_CMD_GPIO_Port, WaterLVL_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
-void InitCarbonationOnly()
+bool IsBottleFull()
 {
-	mLastDetectedBottleSize = eBottle_1_Litter;
-	mLastPumpTimeMSecs = 0;
-	mPumpStartTimeTick = 0;
+	return (mReadWaterLevelADC >= mWaterLevelSensorThreahsold);
 }
-
+bool Tilted()
+{
+	// TODO uncomment!!
+	//return gIsTilted
+	return false;
+}
 void StartWaterPump()
 {
 	mPumpStartTimeTick = HAL_GetTick();
@@ -83,7 +91,7 @@ void StopWaterPump()
 			mLastDetectedBottleSize = eBottle_1_Litter;
 		} else {
 			mLastDetectedBottleSize = eBottle_0_5_Litter;
-			LP5009_SetLed(&hi2c1, (uint8_t)(3), 0);
+			//// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(3), 0);
 		}
 		mPumpStartTimeTick = 0;
 	}
@@ -91,6 +99,27 @@ void StopWaterPump()
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
 }
 
+bool WaterPumpTimerExpired()
+{
+	// Check for water pump timout
+	if (mPumpStartTimeTick > 0) { // need to monitor water pump time
+		if (mPumpStartTimeTick + gPumpTimoutMsecs < HAL_GetTick()){
+			return true;
+		}
+	}
+	return false;
+}
+
+void LedsSequence(eLedsSequence seq)
+{
+	// TODO start the leds sequence
+	// Note that sometimes sequences are played in parallel - as in filter status and splash
+}
+
+bool CarbonationEnabled()
+{
+	return (gCarbonationLevel != eLevel_off);
+}
 void SendDonePumpOK()
 {
 	SendDoneMessage(eDone_OK);
@@ -137,24 +166,24 @@ bool IsCarbonationLastCycle(uint16_t carbCycle)
 }
 void SetLevelLed()
 {
-	LP5009_SetLed(&hi2c1, (uint8_t)(gCarbonationLevel), 0);
+	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(gCarbonationLevel), 0);
 }
 void StartWaterFilterLedSequence()
 {
 	// B G R
-	LP5009_RGB(&hi2c1,(uint8_t)(250),(uint8_t)(0),(uint8_t)(0));
+	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(250),(uint8_t)(0),(uint8_t)(0));
 }
 void StartCarbonationLedSequance() {}
 void StartMalfunctionLedsSequence() {}
 void StartRinsingLedSequence()
 {
 	// B G R
-	LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(255),(uint8_t)(0));
+	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(255),(uint8_t)(0));
 }
 void StopRinsingLedSequence()
 {
 	// B G R
-	LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
+	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
 }
 void WaterLedOrangeToBlue() {}
 
@@ -168,15 +197,16 @@ bool FilterLifeTimeExpired()
 	return FilterRTC_IsDue();
 }
 void StartReadyTimer() {}
+bool ReadyTimerExpired() {return false;}
 void StartWaterPumpingTimer() {}
 
 void LedsOff(uint32_t leds)
 {
-	LP5009_SetLed(&hi2c1, (uint8_t)(0), 100);
-	LP5009_SetLed(&hi2c1, (uint8_t)(1), 100);
-	LP5009_SetLed(&hi2c1, (uint8_t)(2), 100);
-	LP5009_SetLed(&hi2c1, (uint8_t)(3), 100);
-	LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
+	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(0), 100);
+	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(1), 100);
+	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(2), 100);
+	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(3), 100);
+	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
 }
 void FadeOutLeds(uint32_t leds) {}
 void FadeInLeds()

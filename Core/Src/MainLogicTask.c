@@ -52,7 +52,7 @@ bool gIsGuiControlMode = false;
 bool gIsUVLEdOn = false;
 bool gIsTilted = false;
 bool gAccelerometerIsPresent = false;
-bool gLP5009InitOK = false;
+//bool gLP5009InitOK = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
 extern uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
 extern uint16_t mReadWaterPumpCurrentADC;
@@ -116,8 +116,8 @@ void MainLogicInit(void) {
 
 	// TODO [START] remove this on new Pure board
 	// Initialize the LED chip LP5009
-	HAL_StatusTypeDef st = LP5009_Init(&hi2c1);
-	gLP5009InitOK = (st == HAL_OK);
+	//HAL_StatusTypeDef st = LP5009_Init(&hi2c1);
+	//gLP5009InitOK = (st == HAL_OK);
 	// TODO [END] remove this on new Pure board
 
 #ifdef DEBUG_WS_LEDS
@@ -258,13 +258,6 @@ void MainLogicPeriodic() {
 	// DEBUG REMOVE
 #endif
 
-	// Check for water pump timout
-	if (mPumpStartTimeTick > 0) { // need to monitor water pump time
-		if (mPumpStartTimeTick + gPumpTimoutMsecs < HAL_GetTick()){
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_WATERPUMPINGTIMEOUT);
-		}
-	}
-
 	// dispatch queued events from the ring buffer (if any)
 	SMSodaStreamPure_EventId ev;
 	while (SMEventQueue_Take(&ev)) {
@@ -333,35 +326,35 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		}
 		break;
 	case eUARTCommand_sled:
-		if (gLP5009InitOK)
-		{
-			if ((msg->params.sled.ledNumber < 1) || (msg->params.sled.ledNumber > 5) || (msg->params.sled.intensity > 100))
-			{
-				illegalCommand = true;
-				break;
-			}
-			LP5009_SetLed(&hi2c1, (uint8_t)(msg->params.sled.ledNumber - 1), 100 - (uint8_t)(msg->params.sled.intensity));
-		}
+//		if (gLP5009InitOK)
+//		{
+//			if ((msg->params.sled.ledNumber < 1) || (msg->params.sled.ledNumber > 5) || (msg->params.sled.intensity > 100))
+//			{
+//				illegalCommand = true;
+//				break;
+//			}
+//			LP5009_SetLed(&hi2c1, (uint8_t)(msg->params.sled.ledNumber - 1), 100 - (uint8_t)(msg->params.sled.intensity));
+//		}
 		break;
 	case eUARTCommand_srgb:
-		if (gLP5009InitOK) {
-			if ((msg->params.srgb.valueR > 255) ||(msg->params.srgb.valueG > 255) || (msg->params.srgb.valueB > 255)) {
-				illegalCommand = true;
-				break;
-			}
-			if ((msg->params.srgb.valueR == 0) && (msg->params.srgb.valueG == 0) && (msg->params.srgb.valueB == 0)) {
-				LP5009_SetLedOff(&hi2c1);
-				//LP5009_RGB_Off(&hi2c1);
-			} else {
-				LP5009_RGB_EnableGroups(&hi2c1);
-
-				// Blue and Red switched
-				LP5009_RGB(&hi2c1,(uint8_t)(msg->params.srgb.valueB),(uint8_t)(msg->params.srgb.valueG),(uint8_t)(msg->params.srgb.valueR));
-				// // Red and green are reverese
-				// LP5009_RGB(&hi2c1,(uint8_t)(msg->params.srgb.valueG),(uint8_t)(msg->params.srgb.valueR),(uint8_t)(msg->params.srgb.valueB));
-			}
-
-		}
+//		if (gLP5009InitOK) {
+//			if ((msg->params.srgb.valueR > 255) ||(msg->params.srgb.valueG > 255) || (msg->params.srgb.valueB > 255)) {
+//				illegalCommand = true;
+//				break;
+//			}
+//			if ((msg->params.srgb.valueR == 0) && (msg->params.srgb.valueG == 0) && (msg->params.srgb.valueB == 0)) {
+//				LP5009_SetLedOff(&hi2c1);
+//				//LP5009_RGB_Off(&hi2c1);
+//			} else {
+//				LP5009_RGB_EnableGroups(&hi2c1);
+//
+//				// Blue and Red switched
+//				LP5009_RGB(&hi2c1,(uint8_t)(msg->params.srgb.valueB),(uint8_t)(msg->params.srgb.valueG),(uint8_t)(msg->params.srgb.valueR));
+//				// // Red and green are reverese
+//				// LP5009_RGB(&hi2c1,(uint8_t)(msg->params.srgb.valueG),(uint8_t)(msg->params.srgb.valueR),(uint8_t)(msg->params.srgb.valueB));
+//			}
+//
+//		}
 		break;
 	case eUARTCommand_pump:
 		if (gIsGuiControlMode){
@@ -575,21 +568,7 @@ void CheckHWAndGenerateEventsAsNeeded()
 	// check for tilt and set event if needed
 	if (gAccelerometerIsPresent)
 	{
-		// This need to be called periodcally to read the X,Y,Z
-		if (IsSlanted())
-		{
-//			if (! gIsTilted) // just became tilted
-//			{
-//				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_TILTDETECTED);
-//			}
-//			gIsTilted = true;
-//
-//		}
-//		else if (gIsTilted) // if was tilted before and not tilted anymore
-//		{
-//			gIsTilted = false;
-//			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_NOTTILTED);
-		}
+		gIsTilted = IsSlanted();
 	}
 	//if (gWaterLevelIsActive)
 	{

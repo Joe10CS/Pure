@@ -10,9 +10,10 @@
 
 
 typedef enum {
-	eLevel_Low,
-	eLevel_medium,
-	eLevel_high,
+	eLevel_off = 0,
+	eLevel_Low = 1,
+	eLevel_medium = 2,
+	eLevel_high = 3,
 
 	eLevel_number_of_levels
 }eCarbonationLevel;

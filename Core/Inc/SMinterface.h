@@ -25,6 +25,12 @@ typedef enum
 	eLEDS_AmbiandLight = 0x20,
 }eLEDs;
 
+typedef enum
+{
+	LEDS_Splash,
+	LEDS_FilterState,
+	LEDS_Rinsing
+}eLedsSequence;
 void StartMalfunctionLedsSequence();
 void FadeOutAmbiantLight();
 
@@ -36,7 +42,6 @@ void StopCarbonation();
 void StartUVLEd();
 void StopUVLed();
 
-void InitCarbonationOnly();
 void WaterPumpSensor(int isOn);
 void StartWaterPump();
 void StopWaterPump();
@@ -58,6 +63,7 @@ void ResetFilterLifetimeTimer();
 bool IsFirstPowerON();
 bool FilterLifeTimeExpired();
 void StartReadyTimer();
+bool ReadyTimerExpired();
 void StartWaterPumpingTimer();
 
 void LedsOff(uint32_t leds);
@@ -74,4 +80,10 @@ void SolenoidPumpUVPower(int itOn);
 void StartStatusTransmit();
 void StopStatusTransmit();
 
+// Added for pure 2
+bool WaterPumpTimerExpired();
+void LedsSequence(eLedsSequence seq);
+bool CarbonationEnabled();
+bool IsBottleFull();
+bool Tilted();
 #endif /* INC_SMINTERFACE_H_ */
