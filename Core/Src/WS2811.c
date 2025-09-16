@@ -161,7 +161,7 @@ static void WS_TIM1_DMA_Error(DMA_HandleTypeDef *hdma)
 }
 
 // ============================================================================
-// Encoding helpers — GRB order, MSB‑first per byte
+// Encoding helpers — GRB order, MSB first per byte
 // ============================================================================
 
 static inline uint8_t pct_to_byte(uint8_t p)

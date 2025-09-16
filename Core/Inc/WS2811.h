@@ -28,7 +28,8 @@
 
 // ===== User configuration =====
 #ifndef NUMBER_OF_WS2811_DEVICES
-#define NUMBER_OF_WS2811_DEVICES      6      // physical ICs in chain
+//#define NUMBER_OF_WS2811_DEVICES      6      // physical ICs in chain
+#define NUMBER_OF_WS2811_DEVICES      8      // TODO DEBUG REMOVE
 #endif
 
 #ifndef WS2811_LEDS_PER_DEVICE
