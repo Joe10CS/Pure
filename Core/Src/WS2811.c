@@ -53,7 +53,7 @@ volatile uint16_t gLedsCountTxCountDown = 0;
 // Enough for reset preamble + all bits of the largest frame you send.
 // NUMBER_OF_LEDS = devices * 3 (channels); bits = 8*NUMBER_OF_LEDS.
 // Add WS_RESET_SLOTS of preamble.
-static uint16_t s_ccr_stream[WS_PREAMBLE_SLOTS + 8 * NUMBER_OF_LEDS];
+static uint16_t s_ccr_stream[WS_PREAMBLE_SLOTS + 8 * NUMBER_OF_LEDS + WS_TAIL_SLOTS];
 
 // Forward decls
 static inline uint8_t pct_to_byte(uint8_t p);
@@ -89,20 +89,17 @@ void WS_InitLeds(void)
 bool WS_IsBusy(void) { return gLedsWSBusyTxing; }
 
 
-HAL_StatusTypeDef WS_SetLeds(const uint8_t *grb_bytes, uint16_t num_to_set_channels)
+HAL_StatusTypeDef WS_SetLeds(const uint8_t *grb_bytes, uint16_t num_of_leds)
 {
     if (gLedsWSBusyTxing)                        return HAL_BUSY;
     if (!grb_bytes)                       return HAL_ERROR;
-    if (num_to_set_channels == 0)         return HAL_ERROR;
-    if (num_to_set_channels > NUMBER_OF_LEDS)
-        num_to_set_channels = NUMBER_OF_LEDS;
 
-    if ((num_to_set_channels % 3u) != 0u) return HAL_ERROR;
+    if ((num_of_leds % 3u) != 0u) return HAL_ERROR;
 
     // Build [reset preamble + data] into s_ccr_stream
     uint16_t *w = s_ccr_stream;
     encode_preamble(&w);
-    encode_first_n_channels_raw(&w, grb_bytes, num_to_set_channels);
+    encode_first_n_channels_raw(&w, grb_bytes, num_of_leds);
     // Append LOW tail (WS_TAIL_SLOTS periods of CCR=0)
     for (uint16_t i = 0; i < WS_TAIL_SLOTS; ++i) { *w++ = 0; }
     uint16_t total_entries = (uint16_t)(w - s_ccr_stream);

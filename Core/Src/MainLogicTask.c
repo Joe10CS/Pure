@@ -68,6 +68,8 @@ uint16_t gPeriodicStatusSendInterval = 0;
 uint16_t gPeriodicStatusSendMask = 0;
 uint32_t gPeriodicStatusSendLastTickSent = 0;
 
+extern void PlayLedsPeriodic();
+
 // Defines the state of the pin at home position, default is 1 (SET)
 /* Private function prototypes -----------------------------------------------*/
 void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t rawMessageLen);
@@ -150,7 +152,7 @@ void MainLogicPeriodic() {
 	if (gFirstTime)
 	{
 #ifdef DEBUG_WS_LEDS
-		WS_SetLeds(mLedsp, 3); // TODO debug remove
+//		WS_SetLeds(mLedsp, 3); // TODO debug remove
 #endif
 		gFirstTime = false;
 		// Start reading from the UART
@@ -160,7 +162,7 @@ void MainLogicPeriodic() {
 		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
 		StartADCConversion();
 	}
-	//playl();
+	PlayLedsPeriodic();
 
 	CheckHWAndGenerateEventsAsNeeded();
 
@@ -260,7 +262,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			illegalCommand = true;
 			break;
 		}
-		mLedsp[msg->params.sled.ledNumber - 1] = msg->params.sled.intensity / 100 * 255;
+		mLedsp[msg->params.sled.ledNumber - 1] = msg->params.sled.intensity * 255  / 100 ;
 		WS_SetLeds(mLedsp, NUMBER_OF_LEDS);
 		break;
 	case eUARTCommand_srgb:
