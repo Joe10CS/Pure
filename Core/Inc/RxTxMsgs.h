@@ -11,7 +11,7 @@
 #define TX_BUFFER_PTR			txBuffer
 
 #define MAX_TX_BUFFER_LEN       (30)  // longest message can be "$RVER version 111.000\r\n"
-#define MAX_TX_QUEUE_SIZE       (20)
+#define MAX_TX_QUEUE_SIZE       (10)
 
 #define RX_BUFFER_PTR			rxBuffer
 #define MAX_RX_BUFFER_LEN       (256)
@@ -68,6 +68,7 @@ typedef enum {
 	eUARTCommand_swsp,
 	eUARTCommand_lptm,
 	eUARTCommand_done, // just for replay
+	eUARTCommand_anim,
 	eUARTCommand_dbug, // debug messages
 
 
@@ -139,6 +140,12 @@ typedef struct {
 	uint16_t homePinState;
 } sHomeParams;
 
+typedef struct {
+    uint16_t isStart; // 1 - start, 0 - stop
+    uint16_t animationNum; // if start: eAnimations if stop: 0 - immediate, 1 - let loop end
+} sAnimationParams;
+
+
 typedef union {
 	sOnOffParams onOff;
 	sPumpParams pump;
@@ -147,6 +154,7 @@ typedef union {
 	sConfigureParams config;
 	sSetRGBLEdParams srgb;
 	sSetLEdParams sled;
+	sAnimationParams animation;
 
 	// !@#!@#  CDM stuff below
 

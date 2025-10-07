@@ -12,6 +12,7 @@
 #include "RxTxMsgs.h"
 #include "LP5009.h"// TODO remove this on new Pure board
 #include "WS2811.h"
+#include "LedsPlayer.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -161,6 +162,8 @@ void MainLogicPeriodic() {
 		glb_last_RxMessage.cmd = eUARTCommand_rver;
 		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
 		StartADCConversion();
+
+		StartAnimation(eAnimation_MakeADrinkProgress);
 	}
 	PlayLedsPeriodic();
 
@@ -405,6 +408,17 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			break;
 		}
 		break;
+	case eUARTCommand_anim:
+	    if (! gIsGuiControlMode) {
+            illegalCommand = true;
+            break;
+        }
+	    if (msg->params.animation.isStart == 1) {
+            StartAnimation((eAnimations)msg->params.animation.animationNum);
+	    } else {
+	        StopCurrentAnimation(msg->params.animation.animationNum == 1);
+	    }
+	    break;
 	case eUARTCommand_swsp:
 		if (! gIsGuiControlMode)
 		{
