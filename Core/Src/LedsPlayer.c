@@ -62,7 +62,7 @@ sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
         {eLEd_Circle2B, 448, 255,   0, 13, 128, eLedEase_InOutQuad},
         {eLEd_Circle3B, 448,   0, 255,  6,  64, eLedEase_InOutQuad}
 };
-#define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (512)
+#define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (64)
 
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
 const sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
@@ -80,18 +80,18 @@ sLedsStep stepsRingSuccessInnerLoop[LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS] = {
         {eLEd_Circle1B | eLEd_Circle5B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle3B | eLEd_Circle7B,   0, 255,   0, 6, 64, eLedEase_InOutQuad},
         {eLEd_Circle1B | eLEd_Circle5B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle3B | eLEd_Circle7B,  64,   0,   0, 6, 64, eLEdEase_constant},
         {eLEd_Circle1B | eLEd_Circle5B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle3B | eLEd_Circle7B, 128,   0, 255, 6, 64, eLedEase_OutExpo},
-        {eLEd_Circle1B | eLEd_Circle5B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle3B | eLEd_Circle7B, 192,   0,   0, 6, 64, eLEdEase_constant}
+        {eLEd_Circle1B | eLEd_Circle5B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle3B | eLEd_Circle7B, 192, 255, 255, 6, 64, eLEdEase_constant}
 };
 #define LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT (3)
 
 #define LEDFLOW_RING_SUCCESS_SEQUENCE_LEN (7)
 sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
         { 1, 360, (const sLedsStep[]){ {eLEd_Circle1B | eLEd_Circle5B, 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-        { 1, 420, (const sLedsStep[]){ {eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle2B | eLEd_Circle4B, 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
+        { 1, 420, (const sLedsStep[]){ {eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle8B | eLEd_Circle6B, 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
         { 1, 480, (const sLedsStep[]){ {eLEd_Circle3B | eLEd_Circle7B , 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
         { LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS, 840, stepsRingSuccessInnerLoop, LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT, 0 },
         { 1, 2296, (const sLedsStep[]){ {eLEd_Circle1B | eLEd_Circle5B, 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-        { 1, 2356, (const sLedsStep[]){ {eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle2B | eLEd_Circle4B, 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
+        { 1, 2356, (const sLedsStep[]){ {eLEd_Circle2B | eLEd_Circle4B | eLEd_Circle8B | eLEd_Circle6B, 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
         { 1, 2416, (const sLedsStep[]){ {eLEd_Circle3B | eLEd_Circle7B , 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
 };
 
@@ -138,7 +138,6 @@ sLedsFlowDef ledsFlowMakeADrinkSuccess[LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN] = {
 uint8_t gLeds[NUMBER_OF_LEDS] = {0};
 uint32_t gAnimationStartingMS = 0;
 uint8_t gCurrentFlowStep = 0;
-uint32_t rel_now = 0;
 uint16_t gCurrentFlowLoopEntryMS[MAX_NUMBER_OF_SUBSEQ] = {0};
 bool gStopRequested = false;
 
@@ -176,6 +175,7 @@ void StartAnimation(eAnimations animation)
     gStopRequested = false;
 
     if (pCurrentFlow != NULL) {
+        gCurrentFlowStep = 0;
         gAnimationStartingMS = HAL_GetTick();
         SetCurrentFlowLoopEntryMSValues(pCurrentFlow[0].seq, pCurrentFlow[0].length);
     }
@@ -193,7 +193,7 @@ void StopCurrentAnimation(bool letLoopEnd)
     }
 
 }
-
+uint32_t ddd = 0;
 void PlayLedsPeriodic(void)
 {
     if (pCurrentFlow == NULL)
@@ -222,9 +222,12 @@ void PlayLedsPeriodic(void)
                 if ((elapsed >= seq->delayMS) && // already time to play it
                         ((seq->loop == ENDLESS_LOOP) || (elapsed < seq->delayMS + (seq->loop) * gCurrentFlowLoopEntryMS[sq]))) { // not yet finished all loops
                     currentFlowIsDone = false; // at least one sequence still active
-                    uint16_t offset_in_loop = (elapsed - seq->delayMS) % gCurrentFlowLoopEntryMS[sq];
+                    uint16_t offset_in_loop = (elapsed - seq->delayMS) % (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
                     // Go over the loop elements
                     for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
+                        if ((ssi == 14) && offset_in_loop > 500) {
+                            ddd++;
+                        }
                         stp = &seq->subSeq[ssi];
                         if ((offset_in_loop >= stp->delayMS) && (offset_in_loop <= (stp->delayMS + stp->totalMs))) {
                             uint8_t val = EaseLUT_PlaySegment(stp->easeFunc,
@@ -241,13 +244,58 @@ void PlayLedsPeriodic(void)
                             }
                         }
                     }
+                    // if loop is overlapping itself, check if previous iteration should still play
+                    if (offset_in_loop < seq->overlappingLoop) { // we are in the overlapping time
+                        uint16_t offset_in_prev_loop = offset_in_loop + (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
+                        // we are in the overlapping time, so play the last steps that are in that time
+                        for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
+                            stp = &seq->subSeq[ssi];
+                            if ((offset_in_prev_loop >= stp->delayMS) && (offset_in_prev_loop <= (stp->delayMS + stp->totalMs))) {
+                                uint8_t val = EaseLUT_PlaySegment(stp->easeFunc,
+                                        (offset_in_prev_loop - stp->delayMS) / 10,
+                                        stp->totalSteps10ms,
+                                        stp->startPercent,
+                                        stp->endPercent);
+
+                                uint32_t mask = 1;
+                                for (j = 0; j < NUMBER_OF_LEDS; j++) {
+                                    if (stp->ledIdMask & mask)
+                                        gLeds[j] = val; // or blend logic
+                                    mask <<= 1;
+                                }
+                            }
+                        }
+}
+                    // if loop is overlapping itself, check if next iteration should start
+                    if (offset_in_loop > (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop)) { // we are in the overlapping time
+                        uint16_t offset_in_next_loop = offset_in_loop - (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
+                        // we are in the overlapping time, so play the first steps that are in that time
+                        for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
+                            stp = &seq->subSeq[ssi];
+                            if ((offset_in_next_loop >= stp->delayMS) && (offset_in_next_loop <= (stp->delayMS + stp->totalMs))) {
+                                uint8_t val = EaseLUT_PlaySegment(stp->easeFunc,
+                                        (offset_in_next_loop - stp->delayMS) / 10,
+                                        stp->totalSteps10ms,
+                                        stp->startPercent,
+                                        stp->endPercent);
+
+                                uint32_t mask = 1;
+                                for (j = 0; j < NUMBER_OF_LEDS; j++) {
+                                    if (stp->ledIdMask & mask)
+                                        gLeds[j] = val; // or blend logic
+                                    mask <<= 1;
+                                }
+                            }
+                        }
+
+                    }
                 }
             } else {
                 stp = &seq->subSeq[st];
                 if ((elapsed >= stp->delayMS) && (elapsed <= stp->delayMS + stp->totalMs)) {
                     currentFlowIsDone = false; // at least one sequence still active
                     uint8_t val = EaseLUT_PlaySegment(stp->easeFunc,
-                            (rel_now - stp->delayMS)/10,
+                            (elapsed - stp->delayMS)/10,
                             stp->totalSteps10ms,
                             stp->startPercent,
                             stp->endPercent);
@@ -274,6 +322,7 @@ void PlayLedsPeriodic(void)
             // finished all flows
             pCurrentFlow = NULL;
             gCurrentFlowTotalSteps = 0;
+            gCurrentFlowStep = 0;
         } else {
             // prepare next flow entry
             gAnimationStartingMS = now;
@@ -286,10 +335,10 @@ void PlayLedsPeriodic(void)
 void SetCurrentFlowLoopEntryMSValues(const sLedsSequence *seq, uint8_t len)
 {
     for (uint8_t i = 0; i < len; i++)	{
-        uint8_t max = 0;
+        uint16_t max = 0;
         // calculate only for loop entries
         if (seq[i].loop > 0) {
-            for (uint8_t j = 0; j < seq[i].loop; j++) {
+            for (uint8_t j = 0; j < seq[i].sequenceLen; j++) {
                 uint16_t ms = seq[i].subSeq[j].delayMS + seq[i].subSeq[j].totalMs;
                 if (max < ms) {
                     max = ms;
@@ -300,51 +349,6 @@ void SetCurrentFlowLoopEntryMSValues(const sLedsSequence *seq, uint8_t len)
     }
 }
 
-/*
-void PlayLedsPeriodic1()
-{
-
-	if (pCurrentFlow == NULL)
-	{
-		return;
-	}
-
-	if (gFirstAnimationCall)
-	{
-		gFirstAnimationCall = false;
-		gAnimationStartingMS = HAL_GetTick();
-	}
-
-	rel_now = HAL_GetTick() - gAnimationStartingMS;
-	if (rel_now > 704)
-	{
-		rel_now = 0;
-		gAnimationStartingMS = HAL_GetTick();
-	}
-	for (i = 0; i < gCurrentFlowTotalSteps; i++)
-	{
-		if ((rel_now >= pCurrentFlow[i].delayMS) && (rel_now <= pCurrentFlow[i].delayMS + pCurrentFlow[i].totalMs))
-		{
-
-			uint8_t val = EaseLUT_PlaySegment(pCurrentFlow[i].easeFunc,
-					(rel_now - pCurrentFlow[i].delayMS)/10,
-					pCurrentFlow[i].totalSteps10ms,
-					pCurrentFlow[i].startPercent,
-					pCurrentFlow[i].endPercent);
-			uint32_t mask = 1;
-			for (j = 0; j < NUMBER_OF_LEDS; j++)
-			{
-				if (pCurrentFlow[i].ledIdMask & mask)
-				{
-					gLeds[j] = val;
-				}
-				mask <<= 1;
-			}
-		}
-	}
-	WS_SetLeds(gLeds, NUMBER_OF_LEDS);
-}
- */
 
 uint16_t lutIndex = 0;
 uint8_t EaseLUT_PlaySegment(
@@ -354,15 +358,24 @@ uint8_t EaseLUT_PlaySegment(
         uint8_t startPct,         // start percent of LUT (0..255)
         uint8_t endPct)           // end percent of LUT (0..255)
 {
+
     if (easeFunc >= eLedEase_num_of_ease || totalSteps < 2) {
         return 0; // simple guard against invalid enum or divide by zero
+    }
+    if (easeFunc == eLEdEase_constant) {
+        return startPct * 255 / 100; // no transition
     }
     int32_t delta = (int32_t)endPct - (int32_t)startPct;
     int32_t lutIndex = (int32_t)startPct + (delta * step) / (int32_t)(totalSteps - 1);
 
     // clip to valid LUT range [0..LEDS_EASE_VECTOR_SIZE-1]
-    if (lutIndex < 0) lutIndex = 0;
-    if (lutIndex >= LEDS_EASE_VECTOR_SIZE) {
+    if ((lutIndex < 0)  ||
+        ((step >= (totalSteps - 1)) && (startPct > endPct)))
+            {
+        lutIndex = 0;
+    }
+    if ((lutIndex >= LEDS_EASE_VECTOR_SIZE) ||
+       ((step >= (totalSteps - 1))&&(startPct < endPct))) {
         lutIndex = LEDS_EASE_VECTOR_SIZE - 1;
     }
     return gLedEaseData[easeFunc][lutIndex];

@@ -163,7 +163,7 @@ void MainLogicPeriodic() {
 		ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
 		StartADCConversion();
 
-		StartAnimation(eAnimation_MakeADrinkProgress);
+	//	StartAnimation(eAnimation_MakeADrinkProgress);
 	}
 	PlayLedsPeriodic();
 

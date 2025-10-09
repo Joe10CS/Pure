@@ -54,11 +54,12 @@ typedef enum {
 
 
 typedef enum {
-	eLEdEase_constant, // when there is no transition
 	eLedEase_InOutQuad,
 	eLedEase_OutExpo,
 
-	eLedEase_num_of_ease
+	eLedEase_num_of_ease, // up to here - real ease functions with entries in gLedEaseData
+
+    eLEdEase_constant, // when there is no transition
 }eLedEaseFuncs;
 
 // Step is a single led step fade in or out or staying constant
@@ -83,8 +84,9 @@ typedef struct {
 	uint16_t delayMS;        // MSecs to wait before starting the sequence
 	const sLedsStep *subSeq; // pointer to that sequence (array of steps)
 	uint8_t loop;            // 0 = play once, n = repeat n times, 0xFF = endless
-	// in case the loop is overlapping itself, what is the overlapping time i.e. at what point of time to start the next iteration of the loop while the previous is still playing
-	// 0 - no overlapping, N - start again at the N's ms (relative to loop's length)
+	// in case the loop is overlapping itself, what is the overlapping period
+	// i.e. total iteration time - overlappingLoop = time when next iteration starts
+	// 0 - no overlapping, N - the preriod
 	uint16_t overlappingLoop;
 
 } sLedsSequence;
