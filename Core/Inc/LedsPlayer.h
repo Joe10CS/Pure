@@ -39,9 +39,31 @@ typedef enum {
 	eLEd_Circle8R = 0x200000,
 	eLEd_Circle8G = 0x400000,
 	eLEd_Circle8B = 0x800000,
-}eLedIds;
+}eLedIdsDebug;
 
 // DEBUG REMOVE / CHANGE
+
+typedef enum {
+    eLED_Circle1 = eLEd_Circle1B,
+    eLED_Circle2 = eLEd_Circle8B,
+    eLED_Circle3 = eLEd_Circle7B,
+    eLED_Circle4 = eLEd_Circle6B,
+    eLED_Circle5 = eLEd_Circle5B,
+    eLED_Circle6 = eLEd_Circle4B,
+    eLED_Circle7 = eLEd_Circle3B,
+    eLED_Circle8 = eLEd_Circle2B,
+    eLED_LevelNoneWhite = 0x800001,  // TODO Stam value - update to real
+    eLED_LevelNoneOrange = 0x800002,
+    eLED_Level1White = 0x800003,
+    eLED_Level1Orange = 0x800004,
+    eLED_Level2White = 0x800005,
+    eLED_Level2Orange = 0x800006,
+    eLED_Level3White = 0x800007,
+    eLED_Level3Orange = 0x800008,
+    eLED_FilterWhite = 0x800009,
+    eLED_FilterOrange = 0x80000A
+}eLedIds;
+
 
 typedef enum {
 	eAnimation_none,
@@ -82,7 +104,7 @@ typedef struct {
 typedef struct {
 	uint8_t sequenceLen;     // number of steps in subSeq[]
 	uint16_t delayMS;        // MSecs to wait before starting the sequence
-	const sLedsStep *subSeq; // pointer to that sequence (array of steps)
+	sLedsStep *subSeq;       // pointer to that sequence (array of steps)
 	uint8_t loop;            // 0 = play once, n = repeat n times, 0xFF = endless
 	// in case the loop is overlapping itself, what is the overlapping period
 	// i.e. total iteration time - overlappingLoop = time when next iteration starts
@@ -93,17 +115,14 @@ typedef struct {
 
 // Flow is a list sequences played one after the other
 typedef struct {
-	const sLedsSequence *seq;
+	sLedsSequence *seq;
 	uint8_t length;
 } sLedsFlowDef;
 
 
 uint8_t EaseLUT_PlaySegment(
-    eLedEaseFuncs easeFunc,   // which LUT to use
-    uint16_t step,            // current step, from 0..totalSteps-1
-    uint16_t totalSteps,      // number of steps in the animation
-    uint8_t startPct,         // start percent of LUT (0..255)
-    uint8_t endPct);           // end percent of LUT (0..255)
+    sLedsStep *StepInfo, // pointer to the step info
+    uint16_t step);            // current step, from 0..totalSteps-1
 
 void StartAnimation(eAnimations animation);
 void StopCurrentAnimation(bool letLoopEnd);
