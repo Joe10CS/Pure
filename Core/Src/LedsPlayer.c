@@ -256,9 +256,7 @@ void PlayLedsPeriodic(void)
                     for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
                         stp = &seq->subSeq[ssi];
                         if ((offset_in_loop >= stp->delayMS) && (offset_in_loop <= (stp->delayMS + stp->totalMs))) {
-
                             uint8_t val = EaseLUT_PlaySegment(stp, (offset_in_loop - stp->delayMS) / 10);
-
                             uint32_t mask = 1;
                             for (j = 0; j < NUMBER_OF_LEDS; j++) {
                                 if (stp->ledIdMask & mask) {
@@ -268,7 +266,6 @@ void PlayLedsPeriodic(void)
                             }
                         }
                     }
-
                     if ((seq->overlappingLoop) && // loop is overlapping itself
                         (offset_in_loop <= seq->overlappingLoop) && // previous iteration should still play
                         (elapsed > (seq->delayMS + (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop)))) { // not the first iteration
@@ -291,7 +288,6 @@ void PlayLedsPeriodic(void)
                             }
                         }
                     }
-
                 }
             }
             else {
@@ -382,7 +378,7 @@ uint8_t EaseLUT_PlaySegment(
         return StepInfo->startPercent; // no transition
     }
 
-    if (StepInfo->easeFunc >= eLedEase_num_of_ease || StepInfo->totalSteps10ms < 2) {
+    if (StepInfo->easeFunc >= eLedEase_num_of_ease || StepInfo->totalSteps10ms < 1) {
         return 0; // simple guard against invalid enum or divide by zero
     }
     // if we are at the last step just return the endPercent
@@ -397,7 +393,7 @@ uint8_t EaseLUT_PlaySegment(
     // Delta can be negative
     int32_t delta = (int32_t)StepInfo->endPercent - (int32_t)StepInfo->startPercent;
     // Calculate the index in the LUT (0..255)
-    uint32_t lutIndex = (int32_t)StepInfo->startPercent + (delta * step) / (int32_t)(StepInfo->totalSteps10ms - 1);
+    uint32_t lutIndex = (int32_t)StepInfo->startPercent + (delta * step) / (int32_t)(StepInfo->totalSteps10ms);
 
     // also clip if we are at the end and going up
     if (lutIndex >= LEDS_EASE_VECTOR_SIZE) {
