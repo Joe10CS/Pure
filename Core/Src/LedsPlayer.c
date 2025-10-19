@@ -2,7 +2,9 @@
  * LedsPlayer.c
  */
 #include "LedsPlayer.h"
+#ifndef _MSC_VER
 #include "WS2811.h"
+#endif
 
 void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
 
@@ -195,14 +197,18 @@ void StopCurrentAnimation(bool letLoopEnd)
 
 }
 
-uint32_t ddie = 0;
-uint32_t ddoe[100];
-uint32_t ddve[100];
-uint32_t ddsq = 0;
-
+//uint32_t ddii = 0;
+//uint32_t ddolt[32];
+//uint32_t ddnt[32];
+//uint32_t ddoplt[32];
+//
+//uint32_t ddsq = 0;
 
 uint16_t offset_in_loop = 0;
+uint16_t offset_in_prev_loop = 0;
+uint16_t sqlen = 0;
 
+uint32_t ddd = 0;
 void PlayLedsPeriodic(void)
 {
     if (pCurrentFlow == NULL)
@@ -220,84 +226,115 @@ void PlayLedsPeriodic(void)
 
     // Loop over the sequences of the current flow element
     for (uint8_t sq = 0; sq < fseqLen; sq++) {
-        ddsq = sq;
+        //ddsq = sq;
         sLedsSequence *seq = &fseq[sq];
-        uint8_t sqlen = seq->sequenceLen;
+        sqlen = seq->sequenceLen;
         sLedsStep *stp;
         uint8_t j;
-        for (uint8_t st = 0; st < sqlen; st++) {
+        //for (uint8_t st = 0; st < sqlen; st++) {
             // Handle loops
             if (seq->loop > 0) {  // loop
                 // if we are inside of it
                 if ((elapsed >= seq->delayMS) && // already time to play it
-                        ((seq->loop == ENDLESS_LOOP) || (elapsed < seq->delayMS + (seq->loop) * gCurrentFlowLoopEntryMS[sq]))) { // not yet finished all loops
+                        ((seq->loop == ENDLESS_LOOP) || (elapsed <= seq->delayMS + (seq->loop) * gCurrentFlowLoopEntryMS[sq]))) { // not yet finished all loops
                     currentFlowIsDone = false; // at least one sequence still active
                     /*uint16_t*/ offset_in_loop = (elapsed - seq->delayMS)
                             % (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
                     // Go over the loop elements
+#ifdef _MSC_VER
+                    // DEBUG Remove
+					bool need_newline = false;
+					extern uint32_t winElapsedTime;
+                    // DEBUG Remove
+#endif
                     for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
                         stp = &seq->subSeq[ssi];
                         if ((offset_in_loop >= stp->delayMS) && (offset_in_loop <= (stp->delayMS + stp->totalMs))) {
+                            if ((4 == ((offset_in_loop - stp->delayMS) / 10)) &&
+                                (stp->startPercent > stp->endPercent))
+                            {
+                                ddd = 1;
+                            }
                             uint8_t val = EaseLUT_PlaySegment(stp, (offset_in_loop - stp->delayMS) / 10);
 
                             uint32_t mask = 1;
                             for (j = 0; j < NUMBER_OF_LEDS; j++) {
-                                if (stp->ledIdMask & mask)
+                                if (stp->ledIdMask & mask) {
+#ifdef _MSC_VER
+                                    if (j == 23) {
+                                        // DEBUG Remove
+                                        if ((stp->startPercent > stp->endPercent) && (val == 4))// && (winElapsedTime > 1800) && (winElapsedTime < 1860))
+                                        {
+                                            need_newline = true;
+                                            printf("%d %d/%d: %d, ", winElapsedTime, offset_in_loop, (offset_in_loop - stp->delayMS) / 10, val);
+                                        }
+                                        // DEBUG Remove
+                                    }
+#endif
                                     gLeds[j] = val; // or blend logic
+                                }
                                 mask <<= 1;
                             }
                         }
                     }
+#ifdef _MSC_VER
+                    // DEBUG Remove
+                    if (need_newline)
+                    {
+                        printf("\n");
+                    }
+                    // DEBUG Remove
+#endif
 
-                    // if loop is overlapping itself, check if previous iteration should still play
-                    // first check we are in the overlapping time but not the first iteration
-                    if ((offset_in_loop < seq->overlappingLoop) && (elapsed > (seq->delayMS + (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop)))) {
-                        uint16_t offset_in_prev_loop = offset_in_loop + (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
+                    if ((seq->overlappingLoop) && // loop is overlapping itself
+                        (offset_in_loop <= seq->overlappingLoop) && // previous iteration should still play
+                        (elapsed > (seq->delayMS + (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop)))) { // not the first iteration
+                        offset_in_prev_loop = offset_in_loop + (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
                         // we are in the overlapping time, so play the last steps that are in that time
                         for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
                             stp = &seq->subSeq[ssi];
                             if ((offset_in_prev_loop >= stp->delayMS) && (offset_in_prev_loop <= (stp->delayMS + stp->totalMs))) {
+
+//                                ddii++;
+//                                //if ((ddii > 10) && (ddii < 32)) {
+//                                if (ddii < 32) {
+//                                    ddolt[ddii] = offset_in_loop;
+//                                    ddnt[ddii] = now;
+//                                    ddoplt[ddii] = offset_in_prev_loop;
+//                                }
+//
+//                                if (elapsed > 800) {
+//                                    ddsq = st;
+//                                }
+//
                                 uint8_t val = EaseLUT_PlaySegment(stp, (offset_in_prev_loop - stp->delayMS) / 10);
 
                                 uint32_t mask = 1;
                                 for (j = 0; j < NUMBER_OF_LEDS; j++) {
-                                    if (stp->ledIdMask & mask) {
-                                        gLeds[j] = val; // or blend logic
-                                    }
-                                    mask <<= 1;
-                                }
-                            }
-                        }
-                    }
 
-                    // if loop is overlapping itself, check if next iteration should start
-                    if (offset_in_loop > (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop)) { // we are in the overlapping time
-                        uint16_t offset_in_next_loop = offset_in_loop - (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
-                        // we are in the overlapping time, so play the first steps that are in that time
-                        for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
-                            stp = &seq->subSeq[ssi];
-                            if ((offset_in_next_loop >= stp->delayMS) && (offset_in_next_loop <= (stp->delayMS + stp->totalMs))) {
-                                uint8_t val = EaseLUT_PlaySegment(stp, (offset_in_next_loop - stp->delayMS) / 10);
-
-                                uint32_t mask = 1;
-                                for (j = 0; j < NUMBER_OF_LEDS; j++) {
                                     if (stp->ledIdMask & mask) {
-                                        if (ddie < 100) {
-                                            ddoe[ddie] = offset_in_next_loop;
-                                            ddve[ddie] = val;
-                                            ddie++;
+#ifdef _MSC_VER
+                                        if (j == 23) {
+                                            // DEBUG Remove
+                                            if ((stp->startPercent > stp->endPercent) && (val == 4) && (winElapsedTime > 1800) && (winElapsedTime < 1860))
+                                            {
+                                                need_newline = true;
+                                                printf("%d/%d: %d, ", offset_in_loop, (offset_in_loop - stp->delayMS) / 10, val);
+                                            }
+                                            // DEBUG Remove
                                         }
+#endif
                                         gLeds[j] = val; // or blend logic
                                     }
-                                    mask <<= 1;
+                                     mask <<= 1;
                                 }
                             }
                         }
-
                     }
+
                 }
             } else {
-                stp = &seq->subSeq[st];
+                stp = &seq->subSeq[sq];
                 if ((elapsed >= stp->delayMS) && (elapsed <= stp->delayMS + stp->totalMs)) {
                     currentFlowIsDone = false; // at least one sequence still active
                     uint8_t val = EaseLUT_PlaySegment(stp, (elapsed - stp->delayMS)/10);
@@ -312,7 +349,7 @@ void PlayLedsPeriodic(void)
                     }
                 }
             }
-        }
+        //}
     }
     // Set the LEDs
     WS_SetLeds(gLeds, NUMBER_OF_LEDS);
@@ -355,7 +392,7 @@ void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len)
         gCurrentFlowLoopEntryMS[i] = max;
     }
 }
-
+//uint8_t dd = 0;
 uint8_t EaseLUT_PlaySegment(
     sLedsStep *StepInfo, // pointer to the step info
     uint16_t step)            // current step, from 0..totalSteps-1
@@ -368,13 +405,17 @@ uint8_t EaseLUT_PlaySegment(
     }
     // if we are at the last step just return the endPercent
     if (step >= (StepInfo->totalSteps10ms - 1)) {
+    //  if ((StepInfo->totalMs - (step * 10)) < 10)  {
+    //      if  ((StepInfo->totalMs - (step * 10)) > 7) {
+    //          int dd = 1;
+		  //}
         return StepInfo->endPercent;
     }
 
     // Delta can be negative
     int32_t delta = (int32_t)StepInfo->endPercent - (int32_t)StepInfo->startPercent;
     // Calculate the index in the LUT (0..255)
-    uint32_t lutIndex = (int32_t) + (delta * step) / (int32_t)(StepInfo->totalSteps10ms - 1);
+    uint32_t lutIndex = (int32_t)StepInfo->startPercent + (delta * step) / (int32_t)(StepInfo->totalSteps10ms - 1);
 
     // also clip if we are at the end and going up
     if (lutIndex >= LEDS_EASE_VECTOR_SIZE) {

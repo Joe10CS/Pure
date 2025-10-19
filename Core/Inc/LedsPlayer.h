@@ -6,7 +6,13 @@
 #ifndef INC_LEDSPLAYER_H_
 #define INC_LEDSPLAYER_H_
 
+#ifndef _MSC_VER
 #include "main.h"
+#else
+#include <stdint.h>
+#include <stdbool.h>
+#define NUMBER_OF_LEDS 24
+#endif
 
 #define LEDS_EASE_VECTOR_SIZE (256)
 
