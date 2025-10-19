@@ -47,8 +47,9 @@ typedef enum {
 	eLEd_Circle8B = 0x800000,
 }eLedIdsDebug;
 
-// DEBUG REMOVE / CHANGE
 
+// The values here should be bits corresponding to the actual LED hardware
+// DEBUG all the values here are temporary for test hardware - need to be updated to real hardware LED mapping
 typedef enum {
     eLED_Circle1 = eLEd_Circle1B,
     eLED_Circle2 = eLEd_Circle8B,
@@ -132,5 +133,7 @@ uint8_t EaseLUT_PlaySegment(
 
 void StartAnimation(eAnimations animation);
 void StopCurrentAnimation(bool letLoopEnd);
+bool IsAnimationActive(void);
+
 
 #endif /* INC_LEDSPLAYER_H_ */
