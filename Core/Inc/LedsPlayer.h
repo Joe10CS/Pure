@@ -16,10 +16,54 @@
 
 #define LEDS_EASE_VECTOR_SIZE (256)
 
+// This the actual Pure VDL LEDs mapping based on the Schematics
+// Where the order of the WS2811 devices is as follows (order starting from the PWM output and on to the chain):
+// U13 R - LED1 - 0x00001
+// U13 G - LED2 - 0x00002
+// U13 B - LED3 - 0x00004
+// U14 R - LED4 - 0x00008
+// U14 G - LED5 - 0x00010
+// U14 B - LED6 - 0x00020
+// U15 R - LED7 - 0x00040
+// U15 G - LED8 - 0x00080
+// U15 B - LED9 - Hw - Carbonation Level High white led - 0x00100
+// U16 R - LED10 - Ho - Carbonation Level High orange led - 0x00200
+// U16 G - LED11 - Rw - Filter Replace white led - 0x00400
+// U16 B - LED12 - Ro - Filter Replace orange led - 0x00800
+// U18 R - LED13 - Nw - No carbonation white led - 0x01000
+// U18 G - LED14 - No - No carbonation orange led - 0x02000
+// U18 B - LED15 - Lw - Carbonation Level Low white led - 0x04000
+// U17 R - LED16 - Lo - Carbonation Level Low orange led - 0x08000
+// U17 G - LED17 - Mw - Carbonation Level Medium white led - 0x10000
+// U17 B - LED18 - Mo - Carbonation Level Medium orange led - 0x20000
 
-// DEBUG REMOVE / CHANGE
+typedef enum {
+    eLEd_LED1 = 0x01,
+    eLEd_LED2 = 0x02,
+    eLEd_LED3 = 0x04,
+    eLEd_LED4 = 0x08,
+    eLEd_LED5 = 0x10,
+    eLEd_LED6 = 0x20,
+    eLEd_LED7 = 0x40,
+    eLEd_LED8 = 0x80,
+    eLEd_LED9 = 0x100,
+    eLEd_LED10 = 0x200,
+    eLEd_LED11 = 0x400,
+    eLEd_LED12 = 0x800,
+    eLEd_LED13 = 0x1000,
+    eLEd_LED14 = 0x2000,
+    eLEd_LED15 = 0x4000,
+    eLEd_LED16 = 0x8000,
+    eLEd_LED17 = 0x10000,
+    eLEd_LED18 = 0x20000
+}eLedMappings;
+
+#define USE_DEBUG_LEDS_MAPPING
+#ifdef USE_DEBUG_LEDS_MAPPING
+#warning "Using debug LED mapping - for test hardware only"
+#define ALL_LEDS_MASK (eLEd_Circle1B|eLEd_Circle2B|eLEd_Circle3B|eLEd_Circle4B|eLEd_Circle5B|eLEd_Circle6B|eLEd_Circle7B|eLEd_Circle8B)
+// DEBUG REMOVE
 // THIS DEFINITION IS FOR THE TEST HARDWARE WITH A CIRCLE OF 8 RGB LEDs
-
 typedef enum {
 	eLEd_Circle1R = 0x01,
 	eLEd_Circle1G = 0x02,
@@ -46,6 +90,7 @@ typedef enum {
 	eLEd_Circle8G = 0x400000,
 	eLEd_Circle8B = 0x800000,
 }eLedIdsDebug;
+// DEBUG REMOVE
 
 
 // The values here should be bits corresponding to the actual LED hardware
@@ -61,15 +106,52 @@ typedef enum {
     eLED_Circle8 = eLEd_Circle2B,
     eLED_LevelNoneWhite = 0x800001,  // TODO Stam value - update to real
     eLED_LevelNoneOrange = 0x800002,
-    eLED_Level1White = 0x800003,
-    eLED_Level1Orange = 0x800004,
-    eLED_Level2White = 0x800005,
-    eLED_Level2Orange = 0x800006,
-    eLED_Level3White = 0x800007,
-    eLED_Level3Orange = 0x800008,
+    eLED_LevelLowWhite = 0x800003,
+    eLED_LevellowOrange = 0x800004,
+    eLED_LevelMedWhite = 0x800005,
+    eLED_LevelMedrange = 0x800006,
+    eLED_LevelHighWhite = 0x800007,
+    eLED_LevelHighOrange = 0x800008,
     eLED_FilterWhite = 0x800009,
-    eLED_FilterOrange = 0x80000A
+    eLED_FilterOrange = 0x80000A,
+    eLED_ALL_LEDS = ALL_LEDS_MASK
 }eLedIds;
+#else
+#define ALL_RING_LEDS_MASK (0xFF)
+#define ALL_LEDS_MASK (0x3FFFF)
+// The values here should be bits corresponding to the actual LED hardware
+typedef enum {
+    eLED_Circle1 = eLEd_LED1,
+    eLED_Circle2 = eLEd_LED2,
+    eLED_Circle3 = eLEd_LED3,
+    eLED_Circle4 = eLEd_LED4,
+    eLED_Circle5 = eLEd_LED5,
+    eLED_Circle6 = eLEd_LED6,
+    eLED_Circle7 = eLEd_LED7,
+    eLED_Circle8 = eLEd_LED8,
+    eLED_LevelNoneWhite = eLEd_LED13,
+    eLED_LevelNoneOrange = eLEd_LED14,
+    eLED_LevelLowWhite = eLEd_LED15,
+    eLED_LevellowOrange = eLEd_LED16,
+    eLED_LevelMedWhite = eLEd_LED17,
+    eLED_LevelMedrange = eLEd_LED18,
+    eLED_LevelHighWhite = eLEd_LED9,
+    eLED_LevelHighOrange = eLEd_LED10,
+    eLED_FilterWhite = eLEd_LED11,
+    eLED_FilterOrange = eLEd_LED12,
+    eLED_ALL_LEDS = ALL_LEDS_MASK
+}eLedIds;
+#endif
+// U15 B - LED9 - Hw - Carbonation Level High white led - 0x00100
+// U16 R - LED10 - Ho - Carbonation Level High orange led - 0x00200
+// U16 G - LED11 - Rw - Filter Replace white led - 0x00400
+// U16 B - LED12 - Ro - Filter Replace orange led - 0x00800
+// U18 R - LED13 - Nw - No carbonation white led - 0x01000
+// U18 G - LED14 - No - No carbonation orange led - 0x02000
+// U18 B - LED15 - Lw - Carbonation Level Low white led - 0x04000
+// U17 R - LED16 - Lo - Carbonation Level Low orange led - 0x08000
+// U17 G - LED17 - Mw - Carbonation Level Medium white led - 0x10000
+// U17 B - LED18 - Mo - Carbonation Level Medium orange led - 0x20000
 
 
 typedef enum {

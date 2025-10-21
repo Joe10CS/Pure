@@ -108,6 +108,9 @@ uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_
  */
 void MainLogicInit(void) {
 
+    // Initialize the FRAM Storage
+
+
 	// Initialize the state machine
 	SMSodaStreamPure_ctor(&mStateMachine);
 	SMSodaStreamPure_start(&mStateMachine);

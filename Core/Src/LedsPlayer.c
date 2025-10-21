@@ -35,15 +35,42 @@ typedef struct {
 }sLedsStep;
  */
 
-#define LEDFLOW_RING_STARTUP_STEPS (5)
-sLedsStep stepsRingStartup[LEDFLOW_RING_STARTUP_STEPS] = {
-        {eLED_Circle7,   0,   0, 255, 16, 160, eLedEase_InOutQuad},
+// this is a generick blinking sequence, when playing, the ledIdMask is set dynamically
+#define LEDFLOW_BLINKING_LOOP_STEPS (4)
+sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
+        {eLED_FilterOrange,   0,   0, 0, 12, 120, eLEdEase_constant},
+        {eLED_FilterOrange,   120,   0, 255, 6, 64, eLedEase_OutExpo},
+        {eLED_FilterOrange,   184,   255, 255, 12, 120, eLEdEase_constant},
+        {eLED_FilterOrange,   184,   255, 0, 6, 64, eLedEase_OutExpo}
+};
+
+//#define LEDFLOW_RING_STARTUP_STEPS (5)
+//sLedsStep stepsRingStartup[LEDFLOW_RING_STARTUP_STEPS] = {
+//        {eLED_Circle7,   0,   0, 255, 16, 160, eLedEase_InOutQuad},
+//        {eLED_Circle8 | eLED_Circle6,  80,   0, 255, 16, 160, eLedEase_InOutQuad},
+//        {eLED_Circle1 | eLED_Circle5, 160,   0, 255, 16, 160, eLedEase_InOutQuad},
+//        {eLED_Circle2 | eLED_Circle4, 240,   0, 255, 16, 160, eLedEase_InOutQuad},
+//        {eLED_Circle3, 320,   0, 255, 16, 160, eLedEase_InOutQuad}
+//};
+
+#define LEDFLOW_STARTUP_STEPS (11)
+sLedsStep stepsStartup[LEDFLOW_STARTUP_STEPS] = {
+        // Steps of "RING Strtup
+        {eLED_Circle7,          0,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle8 | eLED_Circle6,  80,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle1 | eLED_Circle5, 160,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle2 | eLED_Circle4, 240,   0, 255, 16, 160, eLedEase_InOutQuad},
-        {eLED_Circle3, 320,   0, 255, 16, 160, eLedEase_InOutQuad}
-};
+        {eLED_Circle3,        320,   0, 255, 16, 160, eLedEase_InOutQuad},
+        // Steps of "Startup (Splash)"
+        {eLED_LevelNoneWhite, 480,   0, 255, 10, 100, eLedEase_OutExpo},
+        {eLED_LevelLowWhite,  580,   0, 255, 10, 100, eLedEase_OutExpo},
+        {eLED_LevelMedWhite,  680,   0, 255, 10, 100, eLedEase_OutExpo},
+        {eLED_LevelHighWhite, 780,   0, 255, 10, 100, eLedEase_OutExpo},
+        {eLED_FilterWhite,    880,   0, 255, 10, 100, eLedEase_OutExpo},
+        //  { hidden delay of 400ms (delay 980 to 1380) where all leds are on... }
+        {eLED_ALL_LEDS,      1380, 255,   0, 10, 100, eLedEase_OutExpo},
 
+};
 
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
 sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
@@ -65,6 +92,7 @@ sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
         {eLED_Circle3, 448,   0, 255,  6,  64, eLedEase_InOutQuad}
 };
 #define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (64)
+
 
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
 sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
@@ -98,33 +126,11 @@ sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
 };
 
 
-//#define LEDFLOW_RING_OUT_STEPS (1)
-//sLedsSequence ledsFlow_RingOut[LEDFLOW_RING_OUT_STEPS] = {
-//	//   len delay                     led          delay start% end%  10ms  totalms  ease               repeat
-//	    { 1, 0, (sLedsStep[]){ {eLED_Circle1, 0,   0,       0,  36,    360,   eLEdEase_constant}}, 0 }, // this is just a dummy sequence for the delay
-//};
-
-
-//#define LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS (4)
-//sLedsStep ledsFlow_RingSuccessInnerLoop[LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS] = {
-//	{eLED_Circle1 | eLED_Circle5 | eLED_Circle2 | eLED_Circle4 | eLED_Circle2 | eLED_Circle4 | eLED_Circle3 | eLED_Circle7,   0, 255,   0, 6, 64, eLedEase_InOutQuad},
-//	{eLED_Circle1 | eLED_Circle5 | eLED_Circle2 | eLED_Circle4 | eLED_Circle2 | eLED_Circle4 | eLED_Circle3 | eLED_Circle7,  64,   0,   0, 6, 64, eLEdEase_constant},
-//	{eLED_Circle1 | eLED_Circle5 | eLED_Circle2 | eLED_Circle4 | eLED_Circle2 | eLED_Circle4 | eLED_Circle3 | eLED_Circle7, 128,   0, 255, 6, 64, eLedEase_OutExpo},
-//	{eLED_Circle1 | eLED_Circle5 | eLED_Circle2 | eLED_Circle4 | eLED_Circle2 | eLED_Circle4 | eLED_Circle3 | eLED_Circle7, 192,   0,   0, 6, 64, eLEdEase_constant}
-//}
-//#define LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT (3)
-//
-//#define LEDFLOW_RING_SUCCESS_STEPS (7)
-//sLedsSequence ledsFlow_RingSuccess[LEDFLOW_RING_SUCCESS_STEPS] = {
-//	    { 1, 360, (sLedsStep[]){ {eLED_Circle1 | eLED_Circle5, 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-//	    { 1, 420, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle4 | eLED_Circle2 | eLED_Circle4, 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-//	    { 1, 480, (sLedsStep[]){ {eLED_Circle3 | eLED_Circle7 , 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-//		{ LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS, 840, ledsFlow_RingSuccessInnerLoop, LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT, 0 },
-//	    { 1, 360, (sLedsStep[]){ {eLED_Circle1 | eLED_Circle5, 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-//	    { 1, 420, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle4 | eLED_Circle2 | eLED_Circle4, 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-//	    { 1, 480, (sLedsStep[]){ {eLED_Circle3 | eLED_Circle7 , 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-//};
-
+// ////////////////////////////////////////////////////////  MAIN FLOWS  ////////////////////////////////////////////////////////
+#define LEDS_FLOW_STARTUP_LEN (1)
+sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
+        {stepsStartup, LEDFLOW_STARTUP_STEPS},
+};
 
 #define LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN (1)
 sLedsFlowDef ledsFlowMakeADrinkProgrees[LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN] = {
@@ -137,6 +143,8 @@ sLedsFlowDef ledsFlowMakeADrinkSuccess[LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN] = {
         {sequenceRingSuccess, LEDFLOW_RING_SUCCESS_SEQUENCE_LEN},
 };
 
+
+
 uint8_t gLeds[NUMBER_OF_LEDS] = {0};
 uint32_t gAnimationStartingMS = 0;
 uint8_t gCurrentFlowStep = 0;
@@ -145,9 +153,11 @@ bool gStopRequested = false;
 
 uint16_t gCurrentFlowTotalSteps = 0;
 sLedsFlowDef *pCurrentFlow = NULL;  // A flow of sequences
+eAnimations gCurrentAnimation = eAnimation_none;
 
 void StartAnimation(eAnimations animation)
 {
+    gCurrentAnimation = animation;
     switch(animation)
     {
     case eAnimation_InitalSetup:
@@ -156,6 +166,8 @@ void StartAnimation(eAnimations animation)
         break;
 
     case eAnimation_StartUp:
+        pCurrentFlow = ledsFlowStartup;
+        gCurrentFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
         break;
 
     case eAnimation_MakeADrinkProgress:

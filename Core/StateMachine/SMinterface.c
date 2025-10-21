@@ -116,6 +116,11 @@ void LedsSequence(eLedsSequence seq)
 	// Note that sometimes sequences are played in parallel - as in filter status and splash
 }
 
+void SetCarbonationLevel(eCarbonationLevel level)
+{
+    gCarbonationLevel = level;
+}
+
 bool CarbonationEnabled()
 {
 	return (gCarbonationLevel != eLevel_off);
@@ -164,10 +169,7 @@ bool IsCarbonationLastCycle(uint16_t carbCycle)
 	return false;
 
 }
-void SetLevelLed()
-{
-	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(gCarbonationLevel), 0);
-}
+
 void StartWaterFilterLedSequence()
 {
 	// B G R
@@ -214,10 +216,9 @@ void FadeInLeds()
 	LedsOff(0);
 }
 
-void FadeInAmbiantLight() {}
-void FadeOutAmbiantLight() {}
-void AmbiantLightOff() {}
+void SetLevelLeds() {/* TODO implement */}
 
+void RestartCO2Counter(){/* TODO implement */}
 
 bool IsGuiControlMode()
 {

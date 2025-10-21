@@ -23,11 +23,16 @@
 
 /* Private macro -------------------------------------------------------------*/
 #define DEBOUNCE_BUTTONS_PERIOD_MSEC (300)
-#define LONG_PRESS_PERIOD_MSEC (1000)
+#define LONG_PRESS_PERIOD_MSEC (3000)
 /* Private variables ---------------------------------------------------------*/
 uint32_t gLastKeyPressTick = 0;
-uint32_t gFilterWaterPressTick = 0;
-bool gIgnoreFilterRelease = false;
+
+uint32_t gFilterButtonPressTick = 0;
+bool gIgnoreFilterButtonRelease = false;
+
+uint32_t gCarbonationLevelPressTick = 0;
+bool gIgnoreCarbonationLevelRelease = true;
+
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
@@ -37,85 +42,87 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 	case GPIO_PIN_8: // Pump_WD_FDBK - error on 1
 //		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG);
 		break;
-	case GPIO_PIN_13: // BTN1 - Filter Water
-		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
-			gLastKeyPressTick = HAL_GetTick();
-			//COMM_UART_QueueTxMessage((uint8_t *)"$Filter pressed\r\n", 17);
-			if (gButtonsFunction)
-			{
-				gIgnoreFilterRelease = false;
-				gFilterWaterPressTick = HAL_GetTick();
-				return;
-			}
-			gIgnoreFilterRelease = true;
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-		} else { // if debounced the press, debounce the release too
-			gIgnoreFilterRelease = true;
-		}
 
-		break;
-	case GPIO_PIN_14: // TODO STAM  -  Assuming that this is the carbonation level single button that toggles the levels
+    case GPIO_PIN_3: // BTN1 - Main button
+        if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
+            gLastKeyPressTick = HAL_GetTick();
+            //COMM_UART_QueueTxMessage((uint8_t *)"$BTN4 High falling\r\n", 20);
+            if (gButtonsFunction)
+            {
+                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_PRIMARYBUTTONPRESSED);
+                return;
+            }
+            SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+        }
+        break;
+
+    case GPIO_PIN_14: // BTN2 (PB14) - carbonation level single button that toggles the levels
+	                  // Short press - cycle through levels
+	                  // Long press - restarts the CO2 count-down
 		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
 			gLastKeyPressTick = HAL_GetTick();
-			//COMM_UART_QueueTxMessage((uint8_t *)"$BTN2Low falling\r\n", 18);
 			if (gButtonsFunction)
 			{
-				gCarbonationLevel++;
-				if (gCarbonationLevel == eLevel_number_of_levels) {
-					gCarbonationLevel = eLevel_off;
-				}
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELPRESSED);
-				return;
+			    gIgnoreCarbonationLevelRelease = false;
+			    gCarbonationLevelPressTick = HAL_GetTick();
+                return;
 			}
+			gIgnoreCarbonationLevelRelease = true;
 			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
 		}
 		break;
-	case GPIO_PIN_15: // BTN3 - Level Medium
-		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
-			gLastKeyPressTick = HAL_GetTick();
-			//COMM_UART_QueueTxMessage((uint8_t *)"$BTN3 Med falling\r\n", 19);
-			if (gButtonsFunction)
-			{
-				gCarbonationLevel = eLevel_medium;
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELPRESSED);
-				return;
-			}
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-		}
-		break;
-	case GPIO_PIN_3: // BTN4 - Level High
-		if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
-			gLastKeyPressTick = HAL_GetTick();
-			//COMM_UART_QueueTxMessage((uint8_t *)"$BTN4 High falling\r\n", 20);
-			if (gButtonsFunction)
-			{
-				gCarbonationLevel = eLevel_high;
-				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELPRESSED);
-				return;
-			}
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-		}
-		break;
+
+    case GPIO_PIN_15: // BTN3 - Filter Button
+        if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
+            gLastKeyPressTick = HAL_GetTick();
+            if (gButtonsFunction)
+            {
+                gIgnoreFilterButtonRelease = false;
+                gFilterButtonPressTick = HAL_GetTick();
+                return;
+            }
+            gIgnoreFilterButtonRelease = true;
+            SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+        } else { // if debounced the press, debounce the release too
+            gIgnoreFilterButtonRelease = true;
+        }
+        break;
 	}
 }
 
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin) {
-	case GPIO_PIN_13: // BTN1 - Filter Water
+	case GPIO_PIN_15: // BTN3 - Filter Button
 		//COMM_UART_QueueTxMessage((uint8_t *)"$Filter released\r\n", 18);
 		// Act upon release
-		if (gButtonsFunction && !gIgnoreFilterRelease) {
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
-			// todo - handle filter short/long press
-//			if (gFilterWaterPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
-//				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_LONGPRESSWATERFILTER);
-//			} else {
-//				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_SHORTPRESSWATERFILTER);
-//			}
+		if (gButtonsFunction && !gIgnoreFilterButtonRelease) {
+			// Handle filter short/long press
+			if (gFilterButtonPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
+				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
+			} else {
+			    // Short press - has no specific action
+			    SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+			}
 		}
 		break;
+
+	case GPIO_PIN_14: // BTN2 - Carbonation level button
+        // Act upon release
+        if (gButtonsFunction && !gIgnoreCarbonationLevelRelease) {
+          gIgnoreCarbonationLevelRelease = true;
+          if (gIgnoreCarbonationLevelRelease + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
+              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);  // TODO (future...if CO2 level is detected): SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
+          } else {
+              gCarbonationLevel++;
+              if (gCarbonationLevel == eLevel_number_of_levels) {
+                  gCarbonationLevel = eLevel_off;
+              }
+              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);
+              return;
+          }
+        }
+        break;
 	}
 }
-
 

@@ -27,8 +27,10 @@ typedef enum
 
 typedef enum
 {
-	LEDS_Splash,
-	LEDS_FilterState,
+	LEDS_Splash, // Power up or wakup
+	LEDS_FilterState, // Show folter sate
+	LEDS_StartMakeDring, // Start making drink
+	LEDS_DoneMakeDring, // Done making drink
 	LEDS_Rinsing
 }eLedsSequence;
 void StartMalfunctionLedsSequence();
@@ -69,10 +71,9 @@ void StartWaterPumpingTimer();
 void LedsOff(uint32_t leds);
 void FadeOutLeds(uint32_t leds);
 void FadeInLeds();
-void SetLevelLed();
+void SetLevelLeds();
 
-void FadeInAmbiantLight();
-void AmbiantLightOff();
+void RestartCO2Counter();
 
 bool IsGuiControlMode();
 void SolenoidPump(int itOn);
