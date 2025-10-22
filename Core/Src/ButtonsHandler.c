@@ -24,14 +24,20 @@
 /* Private macro -------------------------------------------------------------*/
 #define DEBOUNCE_BUTTONS_PERIOD_MSEC (300)
 #define LONG_PRESS_PERIOD_MSEC (3000)
+
+// TODO future...if CO2 level is detected
+//#define CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
+
 /* Private variables ---------------------------------------------------------*/
 uint32_t gLastKeyPressTick = 0;
 
 uint32_t gFilterButtonPressTick = 0;
 bool gIgnoreFilterButtonRelease = false;
 
+#ifdef CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
 uint32_t gCarbonationLevelPressTick = 0;
 bool gIgnoreCarbonationLevelRelease = true;
+#endif
 
 /* Private function prototypes -----------------------------------------------*/
 
@@ -43,7 +49,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 //		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG);
 		break;
 
-    case GPIO_PIN_3: // BTN1 - Main button
+    case GPIO_PIN_13: // BTN1 - Main button
         if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
             gLastKeyPressTick = HAL_GetTick();
             //COMM_UART_QueueTxMessage((uint8_t *)"$BTN4 High falling\r\n", 20);
@@ -63,11 +69,21 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 			gLastKeyPressTick = HAL_GetTick();
 			if (gButtonsFunction)
 			{
+#ifdef CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
 			    gIgnoreCarbonationLevelRelease = false;
 			    gCarbonationLevelPressTick = HAL_GetTick();
+#else
+	              gCarbonationLevel++;
+	              if (gCarbonationLevel == eLevel_number_of_levels) {
+	                  gCarbonationLevel = eLevel_off;
+	              }
+	              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);
+#endif
                 return;
 			}
+#ifdef CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
 			gIgnoreCarbonationLevelRelease = true;
+#endif
 			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
 		}
 		break;
@@ -109,10 +125,12 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 
 	case GPIO_PIN_14: // BTN2 - Carbonation level button
         // Act upon release
+#ifdef CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
         if (gButtonsFunction && !gIgnoreCarbonationLevelRelease) {
           gIgnoreCarbonationLevelRelease = true;
+          // TODO (future...if CO2 level is detected):
           if (gIgnoreCarbonationLevelRelease + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
-              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);  // TODO (future...if CO2 level is detected): SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
+              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
           } else {
               gCarbonationLevel++;
               if (gCarbonationLevel == eLevel_number_of_levels) {
@@ -122,6 +140,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
               return;
           }
         }
+#endif
         break;
 	}
 }

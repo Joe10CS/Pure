@@ -1,6 +1,6 @@
 <mxfile host="Electron" scale="1.2" border="0" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.5 Chrome/138.0.7204.251 Electron/37.6.1 Safari/537.36" version="28.2.5" pages="3">
   <diagram name="design" id="ahwWs56YI2XBYRBzwlqw">
-    <mxGraphModel dx="5706" dy="3718" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="5090" dy="3511" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -245,10 +245,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-33" value="State_Rinsing" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;" parent="qZF7NaJGXNpq08xq_DYa-5" vertex="1">
-          <mxGeometry x="1266" y="365" width="320" height="190" as="geometry" />
+          <mxGeometry x="1266" y="365" width="320" height="200" as="geometry" />
         </mxCell>
-        <mxCell id="qZF7NaJGXNpq08xq_DYa-34" value="enter / ButtonsFunction(false);&#xa;enter / FadeOutLeds(LEDS_AllCarbonation);&#xa;enter / LedsSequence(LEDS_Rinsing);&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / StartWaterPump();&#xa;enter / ResetFilterLifetimeTimer();&#xa;enter / StartWaterPumpingTimer();&#xa;enter / StartUVLEd();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-33" vertex="1" connectable="0">
-          <mxGeometry y="30" width="320" height="160" as="geometry" />
+        <mxCell id="qZF7NaJGXNpq08xq_DYa-34" value="enter / ButtonsFunction(false);&#xa;enter / LedsSequence(LEDS_Rinsing);&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / StartWaterPump();&#xa;enter / ResetFilterLifetimeTimer();&#xa;enter / StartWaterPumpingTimer();&#xa;enter / StartUVLEd();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-33" vertex="1" connectable="0">
+          <mxGeometry y="30" width="280" height="160" as="geometry" />
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-41" value="State_ExitFilteringOnly" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;points=[[0,0,0,0,0],[0,0.25,0,0,0],[0,0.5,0,0,0],[0,0.75,0,0,0],[0,1,0,0,0],[0.25,0,0,0,0],[0.25,1,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.75,0,0,0,0],[0.75,1,0,0,0],[0.88,0.99,0,0,0],[1,0,0,0,0],[1,0.25,0,0,0],[1,0.5,0,0,0],[1,0.75,0,0,0],[1,1,0,0,0]];" parent="qZF7NaJGXNpq08xq_DYa-5" vertex="1">
           <mxGeometry x="1346" y="799" width="250" height="107" as="geometry" />
@@ -382,8 +382,8 @@
         <mxCell id="Ziy2RvUZ8rSOBJYL170Z-7" value="Sate_Exit_Carbonating" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#FAFAFA;fillColor=#545454;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;" parent="qZF7NaJGXNpq08xq_DYa-5" vertex="1">
           <mxGeometry x="956" y="1277.5" width="250" height="93" as="geometry" />
         </mxCell>
-        <mxCell id="Ziy2RvUZ8rSOBJYL170Z-8" value="enter / StopCarbonation();&#xa;enter / FadeInLeds();&#xa;enter / SolenoidPumpUVPower(0);" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="Ziy2RvUZ8rSOBJYL170Z-7" vertex="1" connectable="0">
-          <mxGeometry y="30" width="250" height="60" as="geometry" />
+        <mxCell id="Ziy2RvUZ8rSOBJYL170Z-8" value="enter / StopCarbonation();&#xa;enter / SolenoidPumpUVPower(0);" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="Ziy2RvUZ8rSOBJYL170Z-7" vertex="1" connectable="0">
+          <mxGeometry y="30" width="250" height="40" as="geometry" />
         </mxCell>
         <mxCell id="Ziy2RvUZ8rSOBJYL170Z-21" value="" style="endArrow=classic;html=1;rounded=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=4;entryX=0;entryY=0.5;entryDx=0;entryDy=0;curved=0;" parent="qZF7NaJGXNpq08xq_DYa-5" source="Ziy2RvUZ8rSOBJYL170Z-13" target="Ziy2RvUZ8rSOBJYL170Z-7" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
@@ -412,10 +412,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-47" value="State_Filtering" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;" parent="qZF7NaJGXNpq08xq_DYa-5" vertex="1">
-          <mxGeometry x="935" y="920" width="360" height="160" as="geometry" />
+          <mxGeometry x="916" y="906" width="344" height="190" as="geometry" />
         </mxCell>
-        <mxCell id="qZF7NaJGXNpq08xq_DYa-48" value="enter / LedsSequence(LEDS_StartMakeDring);&#xa;enter / StartWaterFilterLedSequence();&#xa;enter / StartUVLEd();&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / StartWaterPump();&#xa;enter / StartWaterPumpingTimer();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-47" vertex="1" connectable="0">
-          <mxGeometry y="30" width="330" height="130" as="geometry" />
+        <mxCell id="qZF7NaJGXNpq08xq_DYa-48" value="enter / ButtonsFunction(false);&#xa;enter / LedsSequence(LEDS_StartMakeDring);&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / StartWaterFilterLedSequence();&#xa;enter / StartUVLEd();&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / StartWaterPump();&#xa;enter / StartWaterPumpingTimer();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-47" vertex="1" connectable="0">
+          <mxGeometry y="30" width="330" height="160" as="geometry" />
         </mxCell>
         <mxCell id="khHdp5hJ9GrJobth_fdo-1" value="$choice" style="fontFamily=Lucida Console;align=center;verticalAlign=middle;shape=rhombus;rotatable=0;labelPosition=center;verticalLabelPosition=top;strokeWidth=1;fillColor=#FFFFFF;gradientColor=#d4d4d4cc;noLabel=1;" parent="qZF7NaJGXNpq08xq_DYa-5" vertex="1">
           <mxGeometry x="836" y="858" width="40" height="40" as="geometry" />
@@ -526,13 +526,13 @@
             <Array as="points" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="pBLEr4rbXQKCEIYwNwm8-1" value="State_MakeDrinkDone" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;points=[[0,0,0,0,0],[0,0.25,0,0,0],[0,0.5,0,0,0],[0,0.75,0,0,0],[0,1,0,0,0],[0.25,0,0,0,0],[0.25,1,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.75,0,0,0,0],[0.75,1,0,0,0],[0.88,0.99,0,0,0],[1,0,0,0,0],[1,0.25,0,0,0],[1,0.5,0,0,0],[1,0.75,0,0,0],[1,1,0,0,0]];" vertex="1" parent="qZF7NaJGXNpq08xq_DYa-5">
+        <mxCell id="pBLEr4rbXQKCEIYwNwm8-1" value="State_MakeDrinkDone" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;points=[[0,0,0,0,0],[0,0.25,0,0,0],[0,0.5,0,0,0],[0,0.75,0,0,0],[0,1,0,0,0],[0.25,0,0,0,0],[0.25,1,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.75,0,0,0,0],[0.75,1,0,0,0],[0.88,0.99,0,0,0],[1,0,0,0,0],[1,0.25,0,0,0],[1,0.5,0,0,0],[1,0.75,0,0,0],[1,1,0,0,0]];" parent="qZF7NaJGXNpq08xq_DYa-5" vertex="1">
           <mxGeometry x="1311" y="662" width="320" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="pBLEr4rbXQKCEIYwNwm8-2" value="enter / LedsSequence(LEDS_DoneMakeDring);&#xa;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" vertex="1" connectable="0" parent="pBLEr4rbXQKCEIYwNwm8-1">
+        <mxCell id="pBLEr4rbXQKCEIYwNwm8-2" value="enter / LedsSequence(LEDS_DoneMakeDring);&#xa;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="pBLEr4rbXQKCEIYwNwm8-1" vertex="1" connectable="0">
           <mxGeometry y="30" width="320" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="pBLEr4rbXQKCEIYwNwm8-3" value="" style="endArrow=classic;html=1;rounded=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=4;curved=0;entryX=0.87;entryY=1;entryDx=0;entryDy=3;entryPerimeter=0;exitPerimeter=0;" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="pBLEr4rbXQKCEIYwNwm8-1" target="6c4m0HjgKQ5P56z9gCcW-11">
+        <mxCell id="pBLEr4rbXQKCEIYwNwm8-3" value="" style="endArrow=classic;html=1;rounded=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeWidth=4;curved=0;entryX=0.87;entryY=1;entryDx=0;entryDy=3;entryPerimeter=0;exitPerimeter=0;" parent="qZF7NaJGXNpq08xq_DYa-5" source="pBLEr4rbXQKCEIYwNwm8-1" target="6c4m0HjgKQ5P56z9gCcW-11" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="1321" y="2282" as="sourcePoint" />
             <mxPoint x="1116" y="1549" as="targetPoint" />

@@ -333,11 +333,11 @@ state State_AutomaticMode {
 
         State_Rinsing : enter / #123; ButtonsFunction(false)#59; #125;
 
-        State_Rinsing : enter / #123; FadeOutLeds(LEDS_AllCarbonation)#59; #125;
-
         State_Rinsing : enter / #123; LedsSequence(LEDS_Rinsing)#59; #125;
 
         State_Rinsing : enter / #123; pumpStopsOnSensor = true#59; #125;
+
+        State_Rinsing : enter / #123; SolenoidPumpUVPower(1)#59; #125;
 
         State_Rinsing : enter / #123; StartWaterPump()#59; #125;
 
@@ -409,15 +409,17 @@ state State_AutomaticMode {
 
         Sate_Exit_Carbonating : enter / #123; StopCarbonation()#59; #125;
 
-        Sate_Exit_Carbonating : enter / #123; FadeInLeds()#59; #125;
-
         Sate_Exit_Carbonating : enter / #123; SolenoidPumpUVPower(0)#59; #125;
 
         State_Filtering
 
         State_Filtering : State_Filtering
 
+        State_Filtering : enter / #123; ButtonsFunction(false)#59; #125;
+
         State_Filtering : enter / #123; LedsSequence(LEDS_StartMakeDring)#59; #125;
+
+        State_Filtering : enter / #123; SolenoidPumpUVPower(1)#59; #125;
 
         State_Filtering : enter / #123; StartWaterFilterLedSequence()#59; #125;
 
@@ -1769,13 +1771,6 @@ evaluateGuard = null;
         } // end of behavior for Sate_Exit_Carbonating
         
         // Sate_Exit_Carbonating behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "FadeInLeds();"); }
-        {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "FadeInLeds();");`
-            this.tracer?.log("⚡ FSM would execute action: " + "FadeInLeds();");
-        } // end of behavior for Sate_Exit_Carbonating
-        
-        // Sate_Exit_Carbonating behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);");`
@@ -2235,10 +2230,24 @@ evaluateGuard = null;
         } // end of behavior for State_Filtering
         
         // State_Filtering behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(false);");
+        } // end of behavior for State_Filtering
+        
+        // State_Filtering behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_StartMakeDring);"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_StartMakeDring);");`
             this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_StartMakeDring);");
+        } // end of behavior for State_Filtering
+        
+        // State_Filtering behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");
         } // end of behavior for State_Filtering
         
         // State_Filtering behavior
@@ -3104,13 +3113,6 @@ evaluateGuard = null;
         } // end of behavior for State_Rinsing
         
         // State_Rinsing behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "FadeOutLeds(LEDS_AllCarbonation);"); }
-        {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "FadeOutLeds(LEDS_AllCarbonation);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "FadeOutLeds(LEDS_AllCarbonation);");
-        } // end of behavior for State_Rinsing
-        
-        // State_Rinsing behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Rinsing);"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Rinsing);");`
@@ -3122,6 +3124,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "pumpStopsOnSensor = true;");`
             this.tracer?.log("⚡ FSM would execute action: " + "pumpStopsOnSensor = true;");
+        } // end of behavior for State_Rinsing
+        
+        // State_Rinsing behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");
         } // end of behavior for State_Rinsing
         
         // State_Rinsing behavior
