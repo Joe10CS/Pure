@@ -62,7 +62,7 @@ extern uint32_t mLastPumpTimeMSecs;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
 
-uint32_t gPumpTimoutMsecs = 30000;
+uint32_t gPumpTimoutMsecs = 120000;//30000;
 uint32_t gBottleSizeThresholdmSecs = 15000;
 
 uint16_t gPeriodicStatusSendInterval = 0;
