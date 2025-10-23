@@ -238,14 +238,24 @@ bool CheckAndProcessUartMessage(sUartMessage *newMsg, uint8_t* msgPtr, uint32_t 
 		}
 		idx++;
 		int param_counter = 0;
+		if (cmd_idx == eUARTCommand_conf)  {
+			newMsg->params.config.configurationParamID = 0;
+			newMsg->params.config.value = 0;
+		}
 		while (param_counter < gCDMCommands[cmd_idx].num_params)
 		{
-			newMsg->params.list[param_counter] = 0;
+			if (cmd_idx != eUARTCommand_conf)  {
+				newMsg->params.list[param_counter] = 0;
+			}
 			while ((idx < msgSize) && (msgPtr[idx] != ',') && (msgPtr[idx] != COMMAND_PRE_END_MARKER)) // look for end of param
 			{
 				if (! ISDIGIT(msgPtr[idx])) { gIllegalCommands++; return false; }
-				if ((cmd_idx == eUARTCommand_conf) && (param_counter == 1)) { // configuration parameters are 32 bits so cannot use params.list
-					newMsg->params.config.value = newMsg->params.config.value * 10 + DIGITCHAR_2_VAL(msgPtr[idx]);
+				if (cmd_idx == eUARTCommand_conf)  { // configuration parameters are 32 bits so cannot use params.list
+					if  (param_counter == 0) { // param id
+						newMsg->params.config.configurationParamID = newMsg->params.config.configurationParamID * 10 + DIGITCHAR_2_VAL(msgPtr[idx]);
+					} else if  (param_counter == 1) { // value
+						newMsg->params.config.value = newMsg->params.config.value * 10 + DIGITCHAR_2_VAL(msgPtr[idx]);
+					}
 				} else {
  				    newMsg->params.list[param_counter] = newMsg->params.list[param_counter] * 10 + DIGITCHAR_2_VAL(msgPtr[idx]);
 				}

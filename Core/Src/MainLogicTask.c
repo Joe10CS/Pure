@@ -26,7 +26,7 @@
 #define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
 #define DEBUG_WS_LEDS
-#define DEBUG_STATE_MACHINE
+//#define DEBUG_STATE_MACHINE
 
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,9 +55,9 @@ bool gIsTilted = false;
 bool gAccelerometerIsPresent = false;
 //bool gLP5009InitOK = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
-extern uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
-extern uint16_t mReadWaterPumpCurrentADC;
-extern uint16_t mReadUVCurrentADC;
+extern volatile uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
+extern volatile uint16_t mReadWaterPumpCurrentADC;
+extern volatile uint16_t mReadUVCurrentADC;
 extern uint32_t mLastPumpTimeMSecs;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
@@ -501,7 +501,7 @@ void HandleStatusSend()
 void SendDoneMessage(eDoneResults result)
 {
 	uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
-		eUARTCommand_rsts,
+	        eUARTCommand_done,
 		(uint32_t[]){result},
 		1,
 		false);
