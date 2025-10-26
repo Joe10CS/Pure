@@ -161,6 +161,12 @@ typedef enum {
 	eAnimation_MakeADrinkSuccess,
 	eAnimation_StartUp,
 	eAnimation_MakeADrink,
+
+	// special animation to clear leds from last value -
+	// i.e if led is not at 100% it will go down from the last value it was
+	// This can be a pending animation too so it will just take the leds from their last value
+	// and turn them off smoothly
+    eAnimation_ClearLedsFromLastValue,
 }eAnimations;
 
 
@@ -213,7 +219,7 @@ uint8_t EaseLUT_PlaySegment(
     sLedsStep *StepInfo, // pointer to the step info
     uint16_t step);            // current step, from 0..totalSteps-1
 
-void StartAnimation(eAnimations animation);
+void StartAnimation(eAnimations animation, bool forceStopPrevious);
 void StopCurrentAnimation(bool letLoopEnd);
 bool IsAnimationActive(void);
 

@@ -25,8 +25,9 @@
 #define DEBOUNCE_BUTTONS_PERIOD_MSEC (300)
 #define LONG_PRESS_PERIOD_MSEC (3000)
 
-// TODO future...if CO2 level is detected
-//#define CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
+// This is used only for the first ever reset (OOTB)
+// in the future: if CO2 level is detected - can be used to reset the CO2 countdown
+#define CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
 
 /* Private variables ---------------------------------------------------------*/
 uint32_t gLastKeyPressTick = 0;
@@ -72,6 +73,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 #ifdef CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
 			    gIgnoreCarbonationLevelRelease = false;
 			    gCarbonationLevelPressTick = HAL_GetTick();
+                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELDOWN);
 #else
 	              gCarbonationLevel++;
 	              if (gCarbonationLevel == eLevel_number_of_levels) {
@@ -95,6 +97,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
             {
                 gIgnoreFilterButtonRelease = false;
                 gFilterButtonPressTick = HAL_GetTick();
+                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERDOWN);
                 return;
             }
             gIgnoreFilterButtonRelease = true;
@@ -128,7 +131,6 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 #ifdef CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
         if (gButtonsFunction && !gIgnoreCarbonationLevelRelease) {
           gIgnoreCarbonationLevelRelease = true;
-          // TODO (future...if CO2 level is detected):
           if (gIgnoreCarbonationLevelRelease + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
               SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
           } else {

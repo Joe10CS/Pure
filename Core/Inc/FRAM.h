@@ -38,18 +38,20 @@
 #define FRAM_MAGIC_NUMBER    (0xDEADBEEF)
 typedef struct {
     uint32_t magicNumber;
-    uint8_t firstTimeSetupRequired;
+    uint32_t firstTimeSetupRequired;
     uint32_t lastCarbonationLevel;
 }sFRAMStorageData;
 
 #define DEFAULT_MAGIC_NUMBER           (FRAM_MAGIC_NUMBER)
-#define DEFAULT_firstTimeSetupRequired (1)
-#define DEFAULT_lastCarbonationLevel   (1)
+#define DEFAULT_isfirstTimeSetupRequired (1)
+#define DEFAULT_isCO2OOTBResetRequired (1)
+#define DEFAULT_lastCarbonationLevel   (3)
 
 typedef enum
 {
     eFRAM_magicNumber = 0,
-    eFRAM_firstTimeSetupRequired,
+    eFRAM_firstTimeSetupRequired, // Is first time setup required (OOTB)
+    eFRAM_isCO2OOTBResetRequired, // Is CO2 status out-of-the-box (OOTB) reset required
     eFRAM_lastCarbonationLevel,
     eFRAM_MAX
 } eFRAM_Element;

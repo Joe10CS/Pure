@@ -417,7 +417,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
             break;
         }
 	    if (msg->params.animation.isStart == 1) {
-            StartAnimation((eAnimations)msg->params.animation.animationNum);
+            StartAnimation((eAnimations)msg->params.animation.animationNum, msg->params.animation.forceStopPrev == 1);
 	    } else {
 	        StopCurrentAnimation(msg->params.animation.animationNum == 1);
 	    }

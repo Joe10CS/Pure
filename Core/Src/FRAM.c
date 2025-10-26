@@ -22,12 +22,14 @@ void FRAM_Init(void)
     {
         // Fill with defaults
         data.magicNumber = FRAM_MAGIC_NUMBER;
+        data.firstTimeSetupRequired = DEFAULT_firstTimeSetupRequired;
         data.lastCarbonationLevel = DEFAULT_lastCarbonationLevel;
 
         // Write back defaults
         FRAM_Write(0, (uint8_t*)&data, sizeof(data));
     }
 }
+
 HAL_StatusTypeDef FRAM_WriteElement(eFRAM_Element elem, uint32_t value)
 {
     uint16_t addr = gFRAMElementOffset[elem];

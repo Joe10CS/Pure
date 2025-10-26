@@ -57,7 +57,8 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		{4, {'L','P','T','M'}, 0},  // eUARTCommand_lptm
 		{4, {'D','O','N','E'}, 0},  // eUARTCommand_done,  just for replay
 
-		{4, {'A','N','I','M'}, 2},  // eUARTCommand_anim
+		// extra commands for for debugging and testing
+		{4, {'A','N','I','M'}, 3},  // eUARTCommand_anim
         {4, {'D','B','U','G'}, 2},  // eUARTCommand_dbug
 };
 

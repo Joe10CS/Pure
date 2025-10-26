@@ -6,8 +6,6 @@
 #include "WS2811.h"
 #endif
 
-void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
-
 uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
         { // eLedEase_InOutQuad
                 0,0,0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,3,3,3,3,4,4,5,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,13,13,14,15,15,16,17,17,18,19,20,20,21,22,23,24,25,25,26,27,28,29,30,31,
@@ -35,6 +33,11 @@ typedef struct {
 }sLedsStep;
  */
 
+
+sLedsStep clearAllLedsStep = {
+        eLED_ALL_LEDS,   0, 255, 0, 10, 100, eLedEase_OutExpo
+};
+
 // this is a generick blinking sequence, when playing, the ledIdMask is set dynamically
 #define LEDFLOW_BLINKING_LOOP_STEPS (4)
 sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
@@ -53,23 +56,34 @@ sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
 //        {eLED_Circle3, 320,   0, 255, 16, 160, eLedEase_InOutQuad}
 //};
 
-#define LEDFLOW_STARTUP_STEPS (11)
-sLedsStep stepsStartup[LEDFLOW_STARTUP_STEPS] = {
+#define LEDFLOW_STARTUP_CIRCLE_STEPS (5)
+sLedsStep stepsStartupCircle[LEDFLOW_STARTUP_CIRCLE_STEPS] = {
         // Steps of "RING Strtup
         {eLED_Circle7,          0,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle8 | eLED_Circle6,  80,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle1 | eLED_Circle5, 160,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle2 | eLED_Circle4, 240,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle3,        320,   0, 255, 16, 160, eLedEase_InOutQuad},
-        // Steps of "Startup (Splash)"
-        {eLED_LevelNoneWhite, 480,   0, 255, 10, 100, eLedEase_OutExpo},
-        {eLED_LevelLowWhite,  580,   0, 255, 10, 100, eLedEase_OutExpo},
-        {eLED_LevelMedWhite,  680,   0, 255, 10, 100, eLedEase_OutExpo},
-        {eLED_LevelHighWhite, 780,   0, 255, 10, 100, eLedEase_OutExpo},
-        {eLED_FilterWhite,    880,   0, 255, 10, 100, eLedEase_OutExpo},
-        //  { hidden delay of 400ms (delay 980 to 1380) where all leds are on... }
-        {eLED_ALL_LEDS,      1380, 255,   0, 10, 100, eLedEase_OutExpo},
+};
 
+#define LEDFLOW_STARTUP_CARB_LEVEL_STEPS (4)
+sLedsStep stepsStartupCarbLevel[LEDFLOW_STARTUP_CARB_LEVEL_STEPS] = {
+        // Steps of "Startup (Splash)"
+        {eLED_LevelNoneWhite,   0,   0, 255, 10, 100, eLedEase_OutExpo},
+        {eLED_LevelLowWhite,  100,   0, 255, 10, 100, eLedEase_OutExpo},
+        {eLED_LevelMedWhite,  200,   0, 255, 10, 100, eLedEase_OutExpo},
+        {eLED_LevelHighWhite, 300,   0, 255, 10, 100, eLedEase_OutExpo},
+};
+
+#define LEDFLOW_STARTUP_FILTER_STEPS (1)
+sLedsStep stepsStartupFilter[LEDFLOW_STARTUP_STEPS] = {
+        {eLED_FilterWhite,    0,   0, 255, 10, 100, eLedEase_OutExpo},
+};
+
+#define LEDFLOW_INTERSTITIAL_STEPS (1)
+sLedsStep stepsInterstitial[LEDFLOW_INTERSTITIAL_STEPS] = {
+        //  { hidden delay of 400ms (delay 980 to 1380) where all leds are on... }
+        {eLED_ALL_LEDS,      400, 255,   0, 10, 100, eLedEase_OutExpo},
 };
 
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
@@ -127,9 +141,12 @@ sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
 
 
 // ////////////////////////////////////////////////////////  MAIN FLOWS  ////////////////////////////////////////////////////////
-#define LEDS_FLOW_STARTUP_LEN (1)
+#define LEDS_FLOW_STARTUP_LEN (4)
 sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
-        {stepsStartup, LEDFLOW_STARTUP_STEPS},
+    {stepsStartupCircle, LEDFLOW_STARTUP_CIRCLE_STEPS},
+    {stepsStartupCarbLevel, LEDFLOW_STARTUP_CARB_LEVEL_STEPS},
+    {stepsStartupFilter, LEDFLOW_STARTUP_STEPS},    // TODO consider defining stepsStartupFilter inline here
+    {stepsInterstitial, LEDFLOW_INTERSTITIAL_STEPS} // TODO consider defining stepsInterstitial inline here
 };
 
 #define LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN (1)
@@ -151,12 +168,57 @@ uint8_t gCurrentFlowStep = 0;
 uint16_t gCurrentFlowLoopEntryMS[MAX_NUMBER_OF_SUBSEQ] = {0};
 bool gStopRequested = false;
 
+
+// Current playing animation
 uint16_t gCurrentFlowTotalSteps = 0;
 sLedsFlowDef *pCurrentFlow = NULL;  // A flow of sequences
 eAnimations gCurrentAnimation = eAnimation_none;
 
-void StartAnimation(eAnimations animation)
+// Pending animation to start after the current one ends
+uint16_t gPendingFlowTotalSteps = 0;
+sLedsFlowDef *pPendingFlow = NULL;  // A flow of sequences
+eAnimations gPendingAnimation = eAnimation_none;
+
+
+void ZeroGlobalAnimationParams(bool zeroCurrent, bool zeroPendingToo);
+void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
+bool IsPendingAnimation(void);
+
+
+void StartAnimation(eAnimations animation, bool forceStopPrevious)
 {
+    if (IsAnimationActive() && !forceStopPrevious) {
+        // queue as pending
+        gPendingAnimation = animation;
+        switch(animation)
+        {
+        case eAnimation_InitalSetup:
+            pPendingFlow = NULL;
+            gPendingFlowTotalSteps = 0;
+            break;
+
+        case eAnimation_StartUp:
+            pPendingFlow = ledsFlowStartup;
+            gPendingFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
+            break;
+
+        case eAnimation_MakeADrinkProgress:
+            pPendingFlow = ledsFlowMakeADrinkProgrees;
+            gPendingFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN;
+            break;
+
+        case eAnimation_MakeADrinkSuccess:
+            pPendingFlow = ledsFlowMakeADrinkSuccess;
+            gPendingFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN;
+            break;
+
+        default: // also for eAnimation_none and eAnimation_ClearLedsFromLastValue
+            pPendingFlow = NULL;
+            gPendingFlowTotalSteps = 0;
+            break;
+        }
+        return;
+    }
     gCurrentAnimation = animation;
     switch(animation)
     {
@@ -189,28 +251,36 @@ void StartAnimation(eAnimations animation)
 
     gStopRequested = false;
 
+    gCurrentFlowStep = 0;
+    gAnimationStartingMS = HAL_GetTick();
     if (pCurrentFlow != NULL) {
-        gCurrentFlowStep = 0;
-        gAnimationStartingMS = HAL_GetTick();
         SetCurrentFlowLoopEntryMSValues(pCurrentFlow[0].seq, pCurrentFlow[0].length);
     }
 
 }
 
+// This will stop the current animation and optionally let it end the current loop
+// If there is a pending animation, it will CANCEL it !!
 void StopCurrentAnimation(bool letLoopEnd)
 {
+    // cancel pending animation
+    ZeroGlobalAnimationParams(false, true);
+
     if (letLoopEnd) {
         gStopRequested = true;
     } else {
         // immediate stop
-        pCurrentFlow = NULL;
-        gCurrentFlowTotalSteps = 0;
+        ZeroGlobalAnimationParams(true, false); // the second param is not needed as pending is already cleared above
     }
 
 }
 bool IsAnimationActive(void)
 {
-    return (pCurrentFlow != NULL);
+    return (gCurrentAnimation != eAnimation_none);
+}
+bool IsPendingAnimation(void)
+{
+    return (gPendingAnimation != eAnimation_none);
 }
 
 //uint32_t ddii = 0;
@@ -228,15 +298,41 @@ uint16_t sqlen = 0;
 uint32_t ddd = 0;
 void PlayLedsPeriodic(void)
 {
+    uint32_t now = HAL_GetTick();
+    uint32_t elapsed = now - gAnimationStartingMS;
+    uint8_t j;
+
+    // Handle special animations
+
+    // Clear leds from last value
+    if (gCurrentAnimation == eAnimation_ClearLedsFromLastValue) {
+        uint8_t val = 0;
+        if (elapsed >= clearAllLedsStep.totalMs) {
+            gCurrentAnimation = eAnimation_none;
+        }
+        else {
+            val = EaseLUT_PlaySegment(&clearAllLedsStep, elapsed / 10);
+        }
+        uint32_t mask = 1;
+        for (j = 0; j < NUMBER_OF_LEDS; j++) {
+            // this is the "trick" - setting value only id smaller then previous (and member of the mask)
+            if ((clearAllLedsStep.ledIdMask & mask) && (val < gLeds[j])){
+                gLeds[j] = val; // or blend logic
+            }
+            mask <<= 1;
+        }
+        // Set the LEDs
+        WS_SetLeds(gLeds, NUMBER_OF_LEDS);
+        return;
+    }
+
     if (pCurrentFlow == NULL)
         return;
 
-    uint32_t now = HAL_GetTick();
 
     // Get the current Flow element
     sLedsSequence *fseq = pCurrentFlow[gCurrentFlowStep].seq;
     uint8_t fseqLen = pCurrentFlow[gCurrentFlowStep].length;
-    uint32_t elapsed = now - gAnimationStartingMS;
     // This assume: (1) done, unless a sequence is still active
     // (2) at lease one sequence is starting from the beginning of the flow element (otherwise we need to track that not all are before delayMS)
     bool currentFlowIsDone = true;
@@ -255,7 +351,6 @@ void PlayLedsPeriodic(void)
         sLedsSequence *seq = &fseq[sq];
         sqlen = seq->sequenceLen;
         sLedsStep *stp;
-        uint8_t j;
         // Handle loops
         if (seq->loop > 0) {  // loop
             // if we are inside of it
@@ -345,10 +440,19 @@ void PlayLedsPeriodic(void)
     // move to next flow element if all sequences done
     if (gStopRequested) {
         // finished all flows
-        pCurrentFlow = NULL;
-        gCurrentFlowTotalSteps = 0;
+        // If there is a pending animation, start it now
+        if (IsPendingAnimation()) {
+            pCurrentFlow = pPendingFlow;
+            gCurrentFlowTotalSteps = gPendingFlowTotalSteps;
+            gCurrentAnimation = gPendingAnimation;
+            // this must be done after copying the pending to current
+            ZeroGlobalAnimationParams(false, true);
+            SetCurrentFlowLoopEntryMSValues(pCurrentFlow[0].seq, pCurrentFlow[0].length);
+        } else {
+            // no pending animation, just stop
+            ZeroGlobalAnimationParams(true, true); // The second true is redundant here (no pending) but just in case
+        }
         gCurrentFlowStep = 0;
-
     } else if (currentFlowIsDone) {
         gCurrentFlowStep++;
         if (gCurrentFlowStep >= gCurrentFlowTotalSteps) {
@@ -364,6 +468,24 @@ void PlayLedsPeriodic(void)
     }
 }
 
+void ZeroGlobalAnimationParams(bool zeroCurrent, bool zeroPendingToo)
+{
+    gStopRequested = false;
+    if (zeroCurrent)
+    {
+        gCurrentAnimation = eAnimation_none;
+        pCurrentFlow = NULL;
+        gCurrentFlowTotalSteps = 0;
+        gCurrentFlowStep = 0;
+        gAnimationStartingMS = 0;
+    }
+    if (zeroPendingToo)
+    {
+        gPendingAnimation = eAnimation_none;
+        pPendingFlow = NULL;
+        gPendingFlowTotalSteps = 0;
+    }
+}
 
 void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len)
 {

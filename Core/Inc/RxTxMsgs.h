@@ -68,6 +68,8 @@ typedef enum {
 	eUARTCommand_swsp,
 	eUARTCommand_lptm,
 	eUARTCommand_done, // just for replay
+
+    // extra commands for for debugging and testing
 	eUARTCommand_anim,
 	eUARTCommand_dbug, // debug messages
 
@@ -141,8 +143,9 @@ typedef struct {
 } sHomeParams;
 
 typedef struct {
-    uint16_t isStart; // 1 - start, 0 - stop
     uint16_t animationNum; // if start: eAnimations if stop: 0 - immediate, 1 - let loop end
+    uint16_t isStart; // 1 - start, 0 - stop
+    uint16_t forceStopPrev; // 1 - force, 0 - pending animation until previous ends
 } sAnimationParams;
 
 
