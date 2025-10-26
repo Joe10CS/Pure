@@ -76,7 +76,7 @@ sLedsStep stepsStartupCarbLevel[LEDFLOW_STARTUP_CARB_LEVEL_STEPS] = {
 };
 
 #define LEDFLOW_STARTUP_FILTER_STEPS (1)
-sLedsStep stepsStartupFilter[LEDFLOW_STARTUP_STEPS] = {
+sLedsStep stepsStartupFilter[LEDFLOW_STARTUP_FILTER_STEPS] = {
         {eLED_FilterWhite,    0,   0, 255, 10, 100, eLedEase_OutExpo},
 };
 
@@ -106,7 +106,6 @@ sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
         {eLED_Circle3, 448,   0, 255,  6,  64, eLedEase_InOutQuad}
 };
 #define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (64)
-
 
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
 sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
@@ -142,13 +141,18 @@ sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
 
 // ////////////////////////////////////////////////////////  MAIN FLOWS  ////////////////////////////////////////////////////////
 #define LEDS_FLOW_STARTUP_LEN (4)
+//sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
+//    {stepsStartupCircle, LEDFLOW_STARTUP_CIRCLE_STEPS},
+//    {stepsStartupCarbLevel, LEDFLOW_STARTUP_CARB_LEVEL_STEPS},
+//    {stepsStartupFilter, LEDFLOW_STARTUP_FILTER_STEPS},    // TODO consider defining stepsStartupFilter inline here
+//    {stepsInterstitial, LEDFLOW_INTERSTITIAL_STEPS} // TODO consider defining stepsInterstitial inline here
+//};
 sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
-    {stepsStartupCircle, LEDFLOW_STARTUP_CIRCLE_STEPS},
-    {stepsStartupCarbLevel, LEDFLOW_STARTUP_CARB_LEVEL_STEPS},
-    {stepsStartupFilter, LEDFLOW_STARTUP_STEPS},    // TODO consider defining stepsStartupFilter inline here
-    {stepsInterstitial, LEDFLOW_INTERSTITIAL_STEPS} // TODO consider defining stepsInterstitial inline here
+    { (sLedsSequence[]){{LEDFLOW_STARTUP_CIRCLE_STEPS, 0, stepsStartupCircle, 0, 0 }}, 1},
+    { (sLedsSequence[]){{LEDFLOW_STARTUP_CARB_LEVEL_STEPS, 0, stepsStartupCarbLevel, 0, 0}}, 1},
+    { (sLedsSequence[]){{LEDFLOW_STARTUP_FILTER_STEPS, 0, stepsStartupFilter, 0, 0 }}, 1 },
+    { (sLedsSequence[]){{LEDFLOW_INTERSTITIAL_STEPS, 0, stepsInterstitial, 0, 0 }}, 1 }
 };
-
 #define LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN (1)
 sLedsFlowDef ledsFlowMakeADrinkProgrees[LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN] = {
         {sequenceRingProgress, LEDFLOW_RING_PROGRESS_SEQUENCE_LEN},

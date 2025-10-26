@@ -9,7 +9,9 @@ extern I2C_HandleTypeDef hi2c1;
 static const uint16_t gFRAMElementOffset[eFRAM_MAX] =
 {
     [eFRAM_magicNumber]           = offsetof(sFRAMStorageData, magicNumber),
-    [eFRAM_firstTimeSetupRequired] = offsetof(sFRAMStorageData, firstTimeSetupRequired),
+    [eFRAM_isFirstTimeSetupRequired] = offsetof(sFRAMStorageData, isFirstTimeSetupRequired),
+    [eFRAM_isCO2OOTBResetRequired] = offsetof(sFRAMStorageData, isCO2OOTBResetRequired),
+    [eFRAM_isFilterOOTBResetRequired] = offsetof(sFRAMStorageData, isFilterOOTBResetRequired),
     [eFRAM_lastCarbonationLevel]  = offsetof(sFRAMStorageData, lastCarbonationLevel)
 };
 
@@ -22,7 +24,9 @@ void FRAM_Init(void)
     {
         // Fill with defaults
         data.magicNumber = FRAM_MAGIC_NUMBER;
-        data.firstTimeSetupRequired = DEFAULT_firstTimeSetupRequired;
+        data.isFirstTimeSetupRequired = DEFAULT_isFirstTimeSetupRequired;
+        data.isCO2OOTBResetRequired = DEFAULT_isCO2OOTBResetRequired;
+        data.isFilterOOTBResetRequired = DEFAULT_isFilterOOTBResetRequired;
         data.lastCarbonationLevel = DEFAULT_lastCarbonationLevel;
 
         // Write back defaults

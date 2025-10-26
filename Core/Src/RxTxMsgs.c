@@ -60,6 +60,7 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		// extra commands for for debugging and testing
 		{4, {'A','N','I','M'}, 3},  // eUARTCommand_anim
         {4, {'D','B','U','G'}, 2},  // eUARTCommand_dbug
+        {4, {'F','D','A','Y'}, 2},  // eUARTCommand_fday
 };
 
 /* Extern Variables ---------------------------------------------------*/

@@ -60,7 +60,9 @@ typedef enum {
 
 #define USE_DEBUG_LEDS_MAPPING
 #ifdef USE_DEBUG_LEDS_MAPPING
+#ifndef _MSC_VER
 #warning "Using debug LED mapping - for test hardware only"
+#endif
 #define ALL_LEDS_MASK (eLEd_Circle1B|eLEd_Circle2B|eLEd_Circle3B|eLEd_Circle4B|eLEd_Circle5B|eLEd_Circle6B|eLEd_Circle7B|eLEd_Circle8B)
 // DEBUG REMOVE
 // THIS DEFINITION IS FOR THE TEST HARDWARE WITH A CIRCLE OF 8 RGB LEDs
@@ -222,6 +224,7 @@ uint8_t EaseLUT_PlaySegment(
 void StartAnimation(eAnimations animation, bool forceStopPrevious);
 void StopCurrentAnimation(bool letLoopEnd);
 bool IsAnimationActive(void);
+bool IsPendingAnimation(void);
 
 
 #endif /* INC_LEDSPLAYER_H_ */

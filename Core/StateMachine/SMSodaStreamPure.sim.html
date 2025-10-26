@@ -287,6 +287,8 @@ state State_AutomaticMode {
 
         State_Rinsing : exit / #123; StopUVLed()#59; #125;
 
+        State_Rinsing : exit / #123; RestartFilterTimer()#59; #125;
+
         State_ExitFilteringOnly
 
         State_ExitFilteringOnly : State_ExitFilteringOnly
@@ -3798,6 +3800,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "StopUVLed();");`
             this.tracer?.log("⚡ FSM would execute action: " + "StopUVLed();");
+        } // end of behavior for State_Rinsing
+        
+        // State_Rinsing behavior
+        // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "RestartFilterTimer();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "RestartFilterTimer();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "RestartFilterTimer();");
         } // end of behavior for State_Rinsing
         
         // State_Rinsing behavior

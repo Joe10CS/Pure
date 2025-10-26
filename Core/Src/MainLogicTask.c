@@ -13,6 +13,8 @@
 #include "LP5009.h"// TODO remove this on new Pure board
 #include "WS2811.h"
 #include "LedsPlayer.h"
+#include "FRAM.h"
+#include "RTC.h"
 /* Private includes ----------------------------------------------------------*/
 
 /* Private typedef -----------------------------------------------------------*/
@@ -109,6 +111,7 @@ uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_
 void MainLogicInit(void) {
 
     // Initialize the FRAM Storage
+    FRAM_Init();
 
 
 	// Initialize the state machine
@@ -435,6 +438,18 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
+	case eUARTCommand_fday:
+	    if (msg->params.fday.isSet == 1) {
+            // set
+	        SetDaysSinceLastFilterReplacement(msg->params.fday.days);
+        } else {
+            // get days since last filter replacemeent
+            uint32_t secondsElapsed = FilterRTC_SecondsElapsed();
+            msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_fday, (uint32_t[]){FILTER_LIFETIME_DAYS - GetFilterDaysLeft(),FILTER_LIFETIME_DAYS,FILTER_WARNING_DAYS}, 3, false);
+            COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+            echoCommand = false;
+        }
+        break;
 	default:
 	}
 	if (illegalCommand) {

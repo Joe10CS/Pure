@@ -31,7 +31,15 @@ typedef enum
 	LEDS_FilterState, // Show folter sate
 	LEDS_StartMakeDring, // Start making drink
 	LEDS_DoneMakeDring, // Done making drink
-	LEDS_Rinsing
+	LEDS_Rinsing,
+
+	LEDS_StartUpCO2,
+	LEDS_OOTBCO2Down,
+	LEDS_DisplayStatus,
+	LEDS_OOTBFilterDown,
+	LEDS_FIlterWarning,
+	LEDS_CO2Warning,
+	LEDS_allOff
 }eLedsSequence;
 void StartMalfunctionLedsSequence();
 void FadeOutAmbiantLight();
@@ -87,4 +95,10 @@ void LedsSequence(eLedsSequence seq);
 bool CarbonationEnabled();
 bool IsBottleFull();
 bool Tilted();
+
+
+bool IsOOTBState();
+bool IsLedsSequencePlaying();
+void ClearCO2OOTBFlag();
+void ClearFilterOOTBFlag();
 #endif /* INC_SMINTERFACE_H_ */

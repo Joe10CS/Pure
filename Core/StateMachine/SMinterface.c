@@ -8,6 +8,9 @@
 #include "main.h"
 #include "SMinterface.h"
 #include "SMSodaStreamPure.h"
+#include "FRAM.h"
+#include "LedsPlayer.h"
+#include "RTC.h"
 // TODO replace this with WS2811 as needed #include "LP5009.h"// TODO remove this on new Pure board
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
@@ -56,6 +59,31 @@ bool Tilted()
 	//return gIsTilted
 	return false;
 }
+
+
+bool IsOOTBState()
+{
+    uint32_t val = 0;
+    if (HAL_OK == FRAM_ReadElement(eFRAM_isFirstTimeSetupRequired, &val)) {
+        return (val != 0);
+    }
+    return false; // in case of error - assume not OOTB
+}
+bool IsLedsSequencePlaying()
+{
+    return (IsAnimationActive() || IsPendingAnimation());
+}
+void ClearCO2OOTBFlag()
+{
+    uint32_t val = 0;
+    FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired, val);
+}
+void ClearFilterOOTBFlag()
+{
+    uint32_t val = 0;
+    FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, val);
+}
+
 void StartWaterPump()
 {
 	mPumpStartTimeTick = HAL_GetTick();

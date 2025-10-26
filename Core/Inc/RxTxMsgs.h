@@ -72,6 +72,7 @@ typedef enum {
     // extra commands for for debugging and testing
 	eUARTCommand_anim,
 	eUARTCommand_dbug, // debug messages
+    eUARTCommand_fday, // Get or set the number of days since last filter change
 
 
 	eUARTCommand_num_commands,
@@ -148,6 +149,10 @@ typedef struct {
     uint16_t forceStopPrev; // 1 - force, 0 - pending animation until previous ends
 } sAnimationParams;
 
+typedef struct {
+    uint16_t isSet; // 1 - set, 0 - get
+    uint16_t days; //  n - for set, don't care for get
+} sFilterDaysParams;
 
 typedef union {
 	sOnOffParams onOff;
@@ -158,6 +163,7 @@ typedef union {
 	sSetRGBLEdParams srgb;
 	sSetLEdParams sled;
 	sAnimationParams animation;
+	sFilterDaysParams fday;
 
 	// !@#!@#  CDM stuff below
 
