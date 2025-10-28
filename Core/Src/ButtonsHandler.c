@@ -28,11 +28,15 @@
 
 #define RESET_TO_OOTB_MSEC (5000)
 
+#define MAIN_BUTTON_SUSPENSION_TIME_MSEC (30)
+
+#define IS_MAIN_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN1_GPIO_Port, BTN1_Pin) == GPIO_PIN_RESET)
+
 #define IS_FILTER_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin) == GPIO_PIN_RESET)
 #define IS_CARB_LEVEL_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin) == GPIO_PIN_RESET)
 
 /* Private variables ---------------------------------------------------------*/
-uint32_t gLastKeyPressTick = 0;
+uint32_t gLastMainButtonKeyPressTick = 0;
 
 uint32_t gLastFilterKeyPressTick = 0;
 bool gIgnoreFilterButtonRelease = false;
@@ -40,6 +44,7 @@ bool gIgnoreFilterButtonRelease = false;
 uint32_t gCarbonationLevelPressTick = 0;
 bool gIgnoreCarbonationLevelRelease = true;
 
+bool gIgnoreMainButtonRelease = true;
 /* Private function prototypes -----------------------------------------------*/
 
 /* Private user code ---------------------------------------------------------*/
@@ -52,14 +57,15 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 		break;
 
     case GPIO_PIN_13: // BTN1 - Main button
-        if (gLastKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
-            gLastKeyPressTick = HAL_GetTick();
+        if (gLastMainButtonKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
+            gLastMainButtonKeyPressTick = HAL_GetTick();
             //COMM_UART_QueueTxMessage((uint8_t *)"$BTN4 High falling\r\n", 20);
             if (gButtonsFunction)
             {
-                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_PRIMARYBUTTONPRESSED);
+                gIgnoreMainButtonRelease = false;
                 return;
             }
+            gIgnoreMainButtonRelease = true;
             SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
         }
         break;
@@ -101,6 +107,16 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin) {
+    case GPIO_PIN_13: // BTN1 - CMain button
+        // Act upon release
+        if (gButtonsFunction && !gIgnoreMainButtonRelease) {
+            gIgnoreMainButtonRelease = true;
+          if (gLastMainButtonKeyPressTick + MAIN_BUTTON_SUSPENSION_TIME_MSEC < HAL_GetTick()) { // Not too Short press
+              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_PRIMARYBUTTONPRESSED);
+              return;
+          }
+        }
+        break;
 	case GPIO_PIN_14: // BTN2 - Carbonation level button
         // Act upon release
         if (gButtonsFunction && !gIgnoreCarbonationLevelRelease) {
@@ -126,8 +142,8 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
             }
         }
         break;
-
 	}
+
 }
 
 void CheckLongPressButtonsPeriodic()
