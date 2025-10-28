@@ -139,7 +139,37 @@ sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
 };
 
 
-// ////////////////////////////////////////////////////////  MAIN FLOWS  ////////////////////////////////////////////////////////
+//--------------------- Ring Loader Steps (Rinsing/Filtering) -------------------
+#define LEDFLOW_RING_LOADER_LOOP_STEPS (4)
+sLedsStep stepsRingLoaderLoop[LEDFLOW_RING_LOADER_LOOP_STEPS] = {
+    {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255,   0, 32, 320, eLedEase_InOutQuad},
+    {eLED_Circle1 | eLED_Circle5,   0,  0, 255, 32, 320, eLedEase_InOutQuad},
+    {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 320,   0, 255, 32, 320, eLedEase_InOutQuad},
+    {eLED_Circle1 | eLED_Circle5, 320, 255,  0, 32, 640, eLedEase_InOutQuad},
+};
+
+#define LEDFLOW_RING_LOADER_START_SEQUENCE_LEN (2)
+sLedsSequence sequenceRingLoaderStart[LEDFLOW_RING_LOADER_START_SEQUENCE_LEN] = {
+        { 1,   0, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0,   0, 255, 32, 320, eLedEase_InOutQuad}}, 0, 0 },
+        { LEDFLOW_RING_LOADER_LOOP_STEPS, 320, stepsRingLoaderLoop, ENDLESS_LOOP, 0 },
+};
+
+#define LEDFLOW_RING_LOADER_END_SEQUENCE_LEN (1)
+sLedsSequence sequenceRingLoaderEnd[LEDFLOW_RING_LOADER_END_SEQUENCE_LEN] = {
+        { 1,   0, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255, 0, 32, 320, eLedEase_InOutQuad}}, 0, 0 },
+};
+
+
+//--------------------- Display status of CO2 and Filter  -------------------
+
+#define LEDFLOW_DISPLAY_STATUS_STEPS (2)
+sLedsSequence sequenceDisplayStatus[LEDFLOW_DISPLAY_STATUS_STEPS] = {
+        { 1,   0, (sLedsStep[]){ {eLED_LevelNoneWhite,   0,   0, 255, 100, 100, eLedEase_OutExpo}}, 0, 0 },
+        { LEDFLOW_RING_LOADER_LOOP_STEPS, 320, stepsRingLoaderLoop, ENDLESS_LOOP, 0 },
+};
+
+
+// ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
 #define LEDS_FLOW_STARTUP_LEN (4)
 //sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
 //    {stepsStartupCircle, LEDFLOW_STARTUP_CIRCLE_STEPS},
@@ -164,8 +194,22 @@ sLedsFlowDef ledsFlowMakeADrinkSuccess[LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN] = {
         {sequenceRingSuccess, LEDFLOW_RING_SUCCESS_SEQUENCE_LEN},
 };
 
+#define LEDS_FLOW_START_LOADER_LEN (1)
+sLedsFlowDef ledsFlowStartLoader[LEDS_FLOW_START_LOADER_LEN] = {
+        {sequenceRingLoaderStart, LEDFLOW_RING_LOADER_START_SEQUENCE_LEN}
+};
 
+#define LEDS_FLOW_END_LOADER_LEN (1)
+sLedsFlowDef ledsFlowEndLoader[LEDS_FLOW_END_LOADER_LEN] = {
+        {sequenceRingLoaderEnd, LEDFLOW_RING_LOADER_END_SEQUENCE_LEN}
+};
 
+#define LEDS_FLOW_DISPLAY_STATUS_LEN (1)
+sLedsFlowDef ledsFlowDisplayStatus[LEDS_FLOW_DISPLAY_STATUS_LEN] = {
+        {sequenceDisplayStatus, LEDFLOW_DISPLAY_STATUS_STEPS}
+};
+
+///--- Global Animation Parameters ----------------------------------------------------------------------------------------
 uint8_t gLeds[NUMBER_OF_LEDS] = {0};
 uint32_t gAnimationStartingMS = 0;
 uint8_t gCurrentFlowStep = 0;
@@ -214,6 +258,16 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         case eAnimation_MakeADrinkSuccess:
             pPendingFlow = ledsFlowMakeADrinkSuccess;
             gPendingFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN;
+            break;
+
+        case eAnimation_RingLoaderStart:
+            pPendingFlow = ledsFlowStartLoader;
+            gPendingFlowTotalSteps = LEDS_FLOW_START_LOADER_LEN;
+            break;
+
+        case eAnimation_RingLoaderEnd:
+            pPendingFlow = ledsFlowEndLoader;
+            gPendingFlowTotalSteps = LEDS_FLOW_END_LOADER_LEN;
             break;
 
         default: // also for eAnimation_none and eAnimation_ClearLedsFromLastValue
@@ -441,8 +495,7 @@ void PlayLedsPeriodic(void)
     // Set the LEDs
     WS_SetLeds(gLeds, NUMBER_OF_LEDS);
 
-    // move to next flow element if all sequences done
-    if (gStopRequested) {
+    if ((gStopRequested) || ((currentFlowIsDone) && ((gCurrentFlowStep+1) >= gCurrentFlowTotalSteps))){  // Stop requested or entire all flows are done
         // finished all flows
         // If there is a pending animation, start it now
         if (IsPendingAnimation()) {
@@ -457,7 +510,7 @@ void PlayLedsPeriodic(void)
             ZeroGlobalAnimationParams(true, true); // The second true is redundant here (no pending) but just in case
         }
         gCurrentFlowStep = 0;
-    } else if (currentFlowIsDone) {
+    } else if (currentFlowIsDone) { // move to next flow entry
         gCurrentFlowStep++;
         if (gCurrentFlowStep >= gCurrentFlowTotalSteps) {
             // finished all flows

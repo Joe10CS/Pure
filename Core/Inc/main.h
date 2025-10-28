@@ -70,10 +70,10 @@ bool AccelerometerIsPresent(void);
 HAL_StatusTypeDef StartADCConversion();
 
 // Filter RTC
-void FilterRTCTimer_Init(void);
-void FilterRTC_Replaced_StartTimer(void);
-bool FilterRTC_IsDue(void);
-uint32_t FilterRTC_SecondsElapsed(void);
+//void FilterRTCTimer_Init(void);
+//void FilterRTC_Replaced_StartTimer(void);
+//bool FilterRTC_IsDue(void);
+//uint32_t FilterRTC_SecondsElapsed(void);
 
 void WS_InitLeds(void);
 

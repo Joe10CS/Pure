@@ -14,19 +14,23 @@
 // TODO replace this with WS2811 as needed #include "LP5009.h"// TODO remove this on new Pure board
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
-uint32_t mCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
-uint32_t mPumpStartTimeTick = 0;
-uint32_t mLastPumpTimeMSecs = 0;
-eBottleSize mLastDetectedBottleSize = eBottle_1_Litter; // default
+uint32_t gCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
+uint32_t gPumpStartTimeTick = 0;
+uint32_t gLastPumpTimeMSecs = 0;
+eBottleSize gLastDetectedBottleSize = eBottle_1_Litter; // default
 bool gButtonsFunction = false;
+
+uint32_t gReadyTimerStartTick = 0;
+uint32_t gFilterToCarbDelayStartTick = 0;
+
 extern uint32_t gPumpTimoutMsecs;
-extern volatile uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
-extern volatile uint16_t mReadWaterPumpCurrentADC;
-extern volatile uint16_t mReadUVCurrentADC;
-extern uint16_t mWaterLevelSensorThreahsold;
+extern volatile uint16_t gReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
+extern volatile uint16_t gReadWaterPumpCurrentADC;
+extern volatile uint16_t gReadUVCurrentADC;
+extern uint16_t gWaterLevelSensorThreahsold;
 extern bool gIsTilted;
 
-extern SMSodaStreamPure mStateMachine;
+extern SMSodaStreamPure gStateMachine;
 extern uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS];
 char dbgMsg[40];
 extern void DBGSendMessage(char *msg);
@@ -51,7 +55,7 @@ void WaterPumpSensor(int isOn)
 
 bool IsBottleFull()
 {
-	return (mReadWaterLevelADC >= mWaterLevelSensorThreahsold);
+	return (gReadWaterLevelADC >= gWaterLevelSensorThreahsold);
 }
 bool Tilted()
 {
@@ -86,15 +90,15 @@ void ClearFilterOOTBFlag()
 
 void StartWaterPump()
 {
-	mPumpStartTimeTick = HAL_GetTick();
-	mLastPumpTimeMSecs = 0;
-	mLastDetectedBottleSize = eBottle_1_Litter; // set to default
+	gPumpStartTimeTick = HAL_GetTick();
+	gLastPumpTimeMSecs = 0;
+	gLastDetectedBottleSize = eBottle_1_Litter; // set to default
 	// if auto mode - start pump sensor (based on pumpStopsOnSensor)
 	// in GUI mode the sensor controlled by command
 	// to allow reading the sensor value even when the pump is not working
 	if (! gIsGuiControlMode)
 	{
-		if (mStateMachine.vars.pumpStopsOnSensor)
+		if (gStateMachine.vars.pumpStopsOnSensor)
 		{
 			WaterPumpSensor(1);
 		}
@@ -108,20 +112,20 @@ void StopWaterPump()
 	// if auto mode - stop pump sensor (based on pumpStopsOnSensor)
 	// in GUI mode the sensor is enabled all the time
 	// to allow reading the sensor value even when the pump is not working
-	if ((! IsGuiControlMode()) && mStateMachine.vars.pumpStopsOnSensor) {
+	if ((! IsGuiControlMode()) && gStateMachine.vars.pumpStopsOnSensor) {
 		WaterPumpSensor(0);
 	}
-	if (mPumpStartTimeTick > 0)
+	if (gPumpStartTimeTick > 0)
 	{
-		mLastPumpTimeMSecs = HAL_GetTick() - mPumpStartTimeTick;
+		gLastPumpTimeMSecs = HAL_GetTick() - gPumpStartTimeTick;
 
-		if (mLastPumpTimeMSecs >= gBottleSizeThresholdmSecs) {
-			mLastDetectedBottleSize = eBottle_1_Litter;
+		if (gLastPumpTimeMSecs >= gBottleSizeThresholdmSecs) {
+			gLastDetectedBottleSize = eBottle_1_Litter;
 		} else {
-			mLastDetectedBottleSize = eBottle_0_5_Litter;
+			gLastDetectedBottleSize = eBottle_0_5_Litter;
 			//// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(3), 0);
 		}
-		mPumpStartTimeTick = 0;
+		gPumpStartTimeTick = 0;
 	}
 
 	HAL_GPIO_WritePin(WaterPMP_CMD_GPIO_Port, WaterPMP_CMD_Pin, GPIO_PIN_RESET);
@@ -130,8 +134,8 @@ void StopWaterPump()
 bool WaterPumpTimerExpired()
 {
 	// Check for water pump timout
-	if (mPumpStartTimeTick > 0) { // need to monitor water pump time
-		if (mPumpStartTimeTick + gPumpTimoutMsecs < HAL_GetTick()){
+	if (gPumpStartTimeTick > 0) { // need to monitor water pump time
+		if (gPumpStartTimeTick + gPumpTimoutMsecs < HAL_GetTick()){
 			return true;
 		}
 	}
@@ -140,8 +144,53 @@ bool WaterPumpTimerExpired()
 
 void LedsSequence(eLedsSequence seq)
 {
-	// TODO start the leds sequence
-	// Note that sometimes sequences are played in parallel - as in filter status and splash
+    switch (seq)
+    {
+    case LEDS_Splash:
+        StartAnimation(eAnimation_StartUp, true);
+        break;
+    case LEDS_FilterState:
+        // TODO Set the sequence based on time left to filter change
+        //StartAnimation(eAnimation_StartUp, true);
+        break;
+    case LEDS_StartMakeDring:
+        StartAnimation(eAnimation_MakeADrinkProgress, true);
+        break;
+    case LEDS_DoneMakeDring:
+        StartAnimation(eAnimation_MakeADrinkSuccess, true);
+        break;
+    case LEDS_RinsingStart:
+        StartAnimation(eAnimation_RingLoaderStart, true);
+        break;
+    case LEDS_RinsingEnd:
+        StartAnimation(eAnimation_RingLoaderEnd, true);
+        break;
+    case LEDS_StartUpCO2:
+        StartAnimation(eAnimation_StartUpCO2, true);
+        break;
+    case LEDS_OOTBCO2Down:
+        StartAnimation(eAnimation_OOTBCO2Down, true);
+        break;
+    case LEDS_DisplayStatus:
+        StartAnimation(eAnimation_Status, true);
+        break;
+    case LEDS_OOTBFilterDown:
+        StartAnimation(eAnimation_OOTBFilterDown, true);
+        break;
+    case LEDS_FIlterWarning:
+        StartAnimation(eAnimation_FilterWarning, true);
+        break;
+    case LEDS_CO2Warning:
+        StartAnimation(eAnimation_CO2Warning, true);
+        break;
+    case LEDS_allOff:
+        StartAnimation(eAnimation_ClearLedsFromLastValue, true);
+        break;
+    case LEDS_Malfunction:
+        // TODO turning all leds off is cirrect for tilt mode - need to check what about HW or Security faults
+        StartAnimation(eAnimation_ClearLedsFromLastValue, true);
+        break;
+    }
 }
 
 void SetCarbonationLevel(eCarbonationLevel level)
@@ -164,13 +213,13 @@ void ButtonsFunction(bool isFunctioning)
 
 void StartCarbStageTimer()
 {
-	mCarbCycleTickStart = HAL_GetTick();
+	gCarbCycleTickStart = HAL_GetTick();
 }
 
 bool CarbonationOffCycleExpired(uint16_t carbCycle)
 {
-	int row_index = gCarbonationLevel + ((mLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
-	if (mCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_off][carbCycle] < HAL_GetTick())
+	int row_index = gCarbonationLevel + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	if (gCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_off][carbCycle] < HAL_GetTick())
 	{
 		return true;
 	}
@@ -179,8 +228,8 @@ bool CarbonationOffCycleExpired(uint16_t carbCycle)
 
 bool CarbonationOnCycleExpired(uint16_t carbCycle)
 {
-	int row_index = gCarbonationLevel + ((mLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
-	if (mCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_on][carbCycle] < HAL_GetTick())
+	int row_index = gCarbonationLevel + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	if (gCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_on][carbCycle] < HAL_GetTick())
 	{
 		return true;
 	}
@@ -189,7 +238,7 @@ bool CarbonationOnCycleExpired(uint16_t carbCycle)
 
 bool IsCarbonationLastCycle(uint16_t carbCycle)
 {
-	int row_index = gCarbonationLevel + ((mLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	int row_index = gCarbonationLevel + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
 	if (gCarbTimeTable[row_index][eCycle_on][carbCycle] == 0)
 	{
 		return true;
@@ -205,29 +254,16 @@ void StartWaterFilterLedSequence()
 }
 void StartCarbonationLedSequance() {}
 void StartMalfunctionLedsSequence() {}
-void StartRinsingLedSequence()
-{
-	// B G R
-	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(255),(uint8_t)(0));
-}
-void StopRinsingLedSequence()
-{
-	// B G R
-	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
-}
 void WaterLedOrangeToBlue() {}
 
-void ResetFilterLifetimeTimer()
+void StartReadyTimer()
 {
-	FilterRTC_Replaced_StartTimer();
+    gReadyTimerStartTick = HAL_GetTick();
 }
-bool IsFirstPowerON() {return false;}
-bool FilterLifeTimeExpired()
+bool ReadyTimerExpired()
 {
-	return FilterRTC_IsDue();
+    return (gReadyTimerStartTick + READY_STATE_TIMEOUT_MSECS < HAL_GetTick());
 }
-void StartReadyTimer() {}
-bool ReadyTimerExpired() {return false;}
 void StartWaterPumpingTimer() {}
 
 void LedsOff(uint32_t leds)
@@ -263,3 +299,14 @@ void SolenoidPumpUVPower(int isOn)
 }
 void StartStatusTransmit() {}
 void StopStatusTransmit() {}
+
+void StartFilterToCarbDelay()
+{
+    gFilterToCarbDelayStartTick = HAL_GetTick();
+}
+
+bool FilterToCarbDelayDone()
+{
+    return (gFilterToCarbDelayStartTick + FILTER_TO_CARBONATION_DELAY_MSECS < HAL_GetTick());
+}
+

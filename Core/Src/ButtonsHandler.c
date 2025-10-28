@@ -131,7 +131,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 #ifdef CARBONATION_LEVEL_BUTTON_SUPPORT_LONG_PRESS
         if (gButtonsFunction && !gIgnoreCarbonationLevelRelease) {
           gIgnoreCarbonationLevelRelease = true;
-          if (gIgnoreCarbonationLevelRelease + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
+          if (gCarbonationLevelPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
               SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
           } else {
               gCarbonationLevel++;

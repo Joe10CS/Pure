@@ -31,7 +31,8 @@ typedef enum
 	LEDS_FilterState, // Show folter sate
 	LEDS_StartMakeDring, // Start making drink
 	LEDS_DoneMakeDring, // Done making drink
-	LEDS_Rinsing,
+	LEDS_RinsingStart,
+    LEDS_RinsingEnd,
 
 	LEDS_StartUpCO2,
 	LEDS_OOTBCO2Down,
@@ -39,9 +40,9 @@ typedef enum
 	LEDS_OOTBFilterDown,
 	LEDS_FIlterWarning,
 	LEDS_CO2Warning,
-	LEDS_allOff
+	LEDS_allOff,
+	LEDS_Malfunction
 }eLedsSequence;
-void StartMalfunctionLedsSequence();
 void FadeOutAmbiantLight();
 
 
@@ -64,9 +65,6 @@ bool IsCarbonationLastCycle(uint16_t carbCycle);
 
 void StartWaterFilterLedSequence();
 void StartCarbonationLedSequance();
-void StartMalfunctionLedsSequence();
-void StartRinsingLedSequence();
-void StopRinsingLedSequence();
 void WaterLedOrangeToBlue();
 
 void ResetFilterLifetimeTimer();
@@ -101,4 +99,8 @@ bool IsOOTBState();
 bool IsLedsSequencePlaying();
 void ClearCO2OOTBFlag();
 void ClearFilterOOTBFlag();
+
+
+void StartFilterToCarbDelay();
+bool FilterToCarbDelayDone();
 #endif /* INC_SMINTERFACE_H_ */

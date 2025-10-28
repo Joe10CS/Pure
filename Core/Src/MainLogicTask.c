@@ -28,7 +28,7 @@
 #define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
 #define DEBUG_WS_LEDS
-//#define DEBUG_STATE_MACHINE
+#define DEBUG_STATE_MACHINE
 
 
 /* Private macro -------------------------------------------------------------*/
@@ -43,13 +43,13 @@ extern int8_t filtered_y;
 extern int8_t filtered_z;
 
 /* Private variables ---------------------------------------------------------*/
-SMSodaStreamPure mStateMachine;  // the state machine instance
+SMSodaStreamPure gStateMachine;  // the state machine instance
 eUartStatus glb_new_msg = eUART_NoMessage;
 sUartMessage glb_last_RxMessage;
 uint8_t gRawMsgForEcho[MAX_RX_BUFFER_LEN];
 uint32_t gRawMessageLen = 0;
 uint32_t gQueueErrors = 0;
-extern uint16_t mWaterLevelSensorThreahsold; // Hold the threshold (A2D) value of the water sensor for bottle full detection
+extern uint16_t gWaterLevelSensorThreahsold; // Hold the threshold (A2D) value of the water sensor for bottle full detection
 uint32_t gPeriodicStatusSendIntervalMilliSconds = 0; // 0 -don't send
 bool gIsGuiControlMode = false;
 bool gIsUVLEdOn = false;
@@ -57,10 +57,10 @@ bool gIsTilted = false;
 bool gAccelerometerIsPresent = false;
 //bool gLP5009InitOK = false;
 // These variables store the current state of various values that, among other purposes, used for reading by the GUI
-extern volatile uint16_t mReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
-extern volatile uint16_t mReadWaterPumpCurrentADC;
-extern volatile uint16_t mReadUVCurrentADC;
-extern uint32_t mLastPumpTimeMSecs;
+extern volatile uint16_t gReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
+extern volatile uint16_t gReadWaterPumpCurrentADC;
+extern volatile uint16_t gReadUVCurrentADC;
+extern uint32_t gLastPumpTimeMSecs;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
 
@@ -115,8 +115,8 @@ void MainLogicInit(void) {
 
 
 	// Initialize the state machine
-	SMSodaStreamPure_ctor(&mStateMachine);
-	SMSodaStreamPure_start(&mStateMachine);
+	SMSodaStreamPure_ctor(&gStateMachine);
+	SMSodaStreamPure_start(&gStateMachine);
 
 
 	// Initialize the Accelerometer
@@ -135,7 +135,7 @@ void MainLogicInit(void) {
 #endif
 
 	// Initialize the filter RTC timer
-	FilterRTCTimer_Init();
+	//FilterRTCTimer_Init();
 
 	// starts the main logic timer
 	HAL_TIM_Base_Start_IT(&htim14);
@@ -176,13 +176,13 @@ void MainLogicPeriodic() {
 	CheckHWAndGenerateEventsAsNeeded();
 
 	// optional: dispatch DO every tick
-	SMSodaStreamPure_dispatch_event(&mStateMachine, SMSodaStreamPure_EventId_DO);
+	SMSodaStreamPure_dispatch_event(&gStateMachine, SMSodaStreamPure_EventId_DO);
 #ifdef DEBUG_STATE_MACHINE
 	// DEBUG REMOVE
-	if (dbgCurrentState != mStateMachine.state_id)
+	if (dbgCurrentState != gStateMachine.state_id)
 	{
-		uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, 0, mStateMachine.state_id}, 3,false);
-		dbgCurrentState = mStateMachine.state_id;
+		uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, 0, gStateMachine.state_id}, 3,false);
+		dbgCurrentState = gStateMachine.state_id;
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 	}
 	// DEBUG REMOVE
@@ -191,13 +191,13 @@ void MainLogicPeriodic() {
 	// dispatch queued events from the ring buffer (if any)
 	SMSodaStreamPure_EventId ev;
 	while (SMEventQueue_Take(&ev)) {
-		SMSodaStreamPure_dispatch_event(&mStateMachine, ev);
+		SMSodaStreamPure_dispatch_event(&gStateMachine, ev);
 #ifdef DEBUG_STATE_MACHINE
 		// DEBUG REMOVE
-		if ((dbgCurrentState != mStateMachine.state_id) || (ev != SMSodaStreamPure_EventId_DO))
+		if ((dbgCurrentState != gStateMachine.state_id) || (ev != SMSodaStreamPure_EventId_DO))
 		{
-			uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, ev, mStateMachine.state_id}, 3, false);
-			dbgCurrentState = mStateMachine.state_id;
+			uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, ev, gStateMachine.state_id}, 3, false);
+			dbgCurrentState = gStateMachine.state_id;
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		}
 		// DEBUG REMOVE
@@ -300,7 +300,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
 
 			if (msg->params.pump.isOn == 1) {
-				mStateMachine.vars.pumpStopsOnSensor = (msg->params.pump.sensorThreashold != 0);
+				gStateMachine.vars.pumpStopsOnSensor = (msg->params.pump.sensorThreashold != 0);
 				StartWaterPump();
 			} else {
 				StopWaterPump();
@@ -322,8 +322,8 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			echoCommand = false; // done here since might need to send done message after it
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
 
-			if (mStateMachine.vars.pumpStopsOnSensor) {
-				mStateMachine.vars.pumpStopsOnSensor = false;
+			if (gStateMachine.vars.pumpStopsOnSensor) {
+				gStateMachine.vars.pumpStopsOnSensor = false;
 				SendDoneMessage(eDone_OK);
 			}
 			SolenoidPump(0);
@@ -339,7 +339,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		echoCommand = false;
 		break;
 	case eUARTCommand_wtrs: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_wtrs, (uint32_t[]){mReadWaterLevelADC}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_wtrs, (uint32_t[]){gReadWaterLevelADC}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
@@ -356,20 +356,26 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		}
 		break;
 	case eUARTCommand_uvla: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_uvla, (uint32_t[]){mReadUVCurrentADC}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_uvla, (uint32_t[]){gReadUVCurrentADC}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
 	case eUARTCommand_pmpa: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_pmpa, (uint32_t[]){mReadWaterPumpCurrentADC}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_pmpa, (uint32_t[]){gReadWaterPumpCurrentADC}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
 	case eUARTCommand_rrtc: // Get Info - non state machine related command
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_rrtc, (uint32_t[]){FilterRTC_SecondsElapsed()}, 1, false);
+	{
+	    extern RTC_HandleTypeDef hrtc;
+	    RTC_TimeTypeDef sTime;
+	    HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_rrtc, (uint32_t[]){GetDaysSinceFilterReplacement(),
+		sTime.Hours*3600+sTime.Minutes*60+sTime.Seconds}, 2, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
+	}
 	case eUARTCommand_rsts:
 		gPeriodicStatusSendInterval = msg->params.periodicStatus.periodicStatusInterval;
 		if ((gPeriodicStatusSendMask == 0) && (msg->params.periodicStatus.periodicStatusMask != 0))
@@ -410,7 +416,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			gPumpTimoutMsecs = msg->params.config.value;
 			break;
 		case 3:
-			mWaterLevelSensorThreahsold = msg->params.config.value;
+			gWaterLevelSensorThreahsold = msg->params.config.value;
 			break;
 		}
 		break;
@@ -434,7 +440,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		WaterPumpSensor((int)(msg->params.onOff.isOn));
 		break;
 	case eUARTCommand_lptm:
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_lptm, (uint32_t[]){mLastPumpTimeMSecs}, 1, false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_lptm, (uint32_t[]){gLastPumpTimeMSecs}, 1, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
@@ -444,8 +450,20 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	        SetDaysSinceLastFilterReplacement(msg->params.fday.days);
         } else {
             // get days since last filter replacemeent
-            uint32_t secondsElapsed = FilterRTC_SecondsElapsed();
             msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_fday, (uint32_t[]){FILTER_LIFETIME_DAYS - GetFilterDaysLeft(),FILTER_LIFETIME_DAYS,FILTER_WARNING_DAYS}, 3, false);
+            COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+            echoCommand = false;
+        }
+        break;
+    case eUARTCommand_fmem:
+        if (msg->params.fmem.isSet == 1) {
+            // set
+            FRAM_WriteElement(msg->params.fmem.id, (uint32_t)(msg->params.fmem.value));
+        } else {
+            // get
+            uint32_t value = 0;
+            FRAM_ReadElement(msg->params.fmem.id, &value);
+            msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_fmem, (uint32_t[]){msg->params.fmem.id, value}, 2, false);
             COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
             echoCommand = false;
         }
@@ -489,7 +507,7 @@ void HandleStatusSend()
 			{
 				uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
 					eUARTCommand_rsts,
-					(uint32_t[]){PERIODIC_STATUS_SEND_MASK_ADC,mReadWaterLevelADC,mReadUVCurrentADC,mReadWaterPumpCurrentADC},
+					(uint32_t[]){PERIODIC_STATUS_SEND_MASK_ADC,gReadWaterLevelADC,gReadUVCurrentADC,gReadWaterPumpCurrentADC},
 					4,
 					false);
 				COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
@@ -499,7 +517,7 @@ void HandleStatusSend()
 				uint8_t msg_len = (uint8_t)BuildReplySigned((char*)gRawMsgForEcho,
 					eUARTCommand_rsts,
 					(int32_t[]){PERIODIC_STATUS_SEND_MASK_RTCTILT,
-						(int32_t)FilterRTC_SecondsElapsed(),
+						(int32_t)GetDaysSinceFilterReplacement(),
 						filtered_x,filtered_y,filtered_z},
 					5,
 					false);

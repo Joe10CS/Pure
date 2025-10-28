@@ -62,7 +62,7 @@ HAL_StatusTypeDef FRAM_Write(uint16_t addr, const uint8_t *buf, uint16_t size)
     return HAL_I2C_Mem_Write(&hi2c1,
                                  FRAM_I2C_ADDR,
                                  addr,
-                                 I2C_MEMADD_SIZE_16BIT, // 2-byte address
+                                 I2C_MEMADD_SIZE_8BIT,
                                  (uint8_t*)buf,
                                  size,
                                  HAL_MAX_DELAY);
@@ -76,7 +76,7 @@ HAL_StatusTypeDef FRAM_Read(uint16_t addr, uint8_t *buf, uint16_t size)
     return HAL_I2C_Mem_Read(&hi2c1,
                             FRAM_I2C_ADDR,
                             addr,
-                            I2C_MEMADD_SIZE_16BIT,
+                            I2C_MEMADD_SIZE_8BIT,
                             buf,
                             size,
                             HAL_MAX_DELAY);

@@ -60,10 +60,10 @@ DMA_HandleTypeDef hdma_usart2_tx;
 
 /* USER CODE BEGIN PV */
 /// Define global variables to store the latest averaged ADC values.
-volatile uint16_t mReadWaterLevelADC;     // Stores the averaged value from ADC_CHANNEL_10 (PB2)
-volatile uint16_t mReadWaterPumpCurrentADC;
-volatile uint16_t mReadUVCurrentADC;
-uint16_t mWaterLevelSensorThreahsold = 500; //0x7fff;
+volatile uint16_t gReadWaterLevelADC;     // Stores the averaged value from ADC_CHANNEL_10 (PB2)
+volatile uint16_t gReadWaterPumpCurrentADC;
+volatile uint16_t gReadUVCurrentADC;
+uint16_t gWaterLevelSensorThreahsold = 500; //0x7fff;
 bool mWaterLevelAboveThroshold = false;
 #define WATER_FULL_EVENT_DEBOUNCE_MSEC (50)
 uint32_t mLastWaterFullSensorEventSent = 0;
@@ -329,6 +329,15 @@ static void MX_I2C1_Init(void)
 
 }
 
+//    __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSE);
+//    __HAL_RCC_RTC_ENABLE();
+//    // Check if RTC is already initialized don't reinitialize it
+//    // to avoid resetting the time on every boot
+//    if (__HAL_RTC_GET_FLAG(&hrtc, RTC_FLAG_INITS) != RESET)
+//      {
+//          // RTC is already running — do not reinitialize
+//          return;
+//      }
 /**
   * @brief RTC Initialization Function
   * @param None
@@ -338,8 +347,10 @@ static void MX_RTC_Init(void)
 {
 
   /* USER CODE BEGIN RTC_Init 0 */
-
   /* USER CODE END RTC_Init 0 */
+
+  RTC_TimeTypeDef sTime = {0};
+  RTC_DateTypeDef sDate = {0};
 
   /* USER CODE BEGIN RTC_Init 1 */
 
@@ -350,7 +361,7 @@ static void MX_RTC_Init(void)
   hrtc.Instance = RTC;
   hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
   hrtc.Init.AsynchPrediv = 127;
-  hrtc.Init.SynchPrediv = 249;
+  hrtc.Init.SynchPrediv = 255;
   hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
   hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
   hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
@@ -360,11 +371,50 @@ static void MX_RTC_Init(void)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN RTC_Init 2 */
 
+  /* USER CODE BEGIN Check_RTC_BKUP */
+
+  /* USER CODE END Check_RTC_BKUP */
+
+  /** Initialize RTC and set the Time and Date
+  */
+  sTime.Hours = 0x0;
+  sTime.Minutes = 0x0;
+  sTime.Seconds = 0x0;
+  sTime.SubSeconds = 0x0;
+  sTime.DayLightSaving = RTC_DAYLIGHTSAVING_NONE;
+  sTime.StoreOperation = RTC_STOREOPERATION_RESET;
+  if (HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sDate.WeekDay = RTC_WEEKDAY_MONDAY;
+  sDate.Month = RTC_MONTH_JANUARY;
+  sDate.Date = 0x1;
+  sDate.Year = 0x0;
+
+  if (HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BCD) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
   /* USER CODE END RTC_Init 2 */
 
 }
+// Set initial time/date only on first power-up
+//    RTC_TimeTypeDef sTime = {0};
+//    RTC_DateTypeDef sDate = {0};
+//
+//    sTime.Hours = 0;
+//    sTime.Minutes = 0;
+//    sTime.Seconds = 0;
+//    HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+//
+//    sDate.WeekDay = RTC_WEEKDAY_SATURDAY;
+//    sDate.Month   = RTC_MONTH_JANUARY;
+//    sDate.Date    = 1;
+//    sDate.Year    = 0;  // Year 2000
+//    HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
 /**
   * @brief SPI1 Initialization Function
@@ -731,13 +781,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 //    // each value in the buffer represents the average of 16 raw samples.
 //    //
 //    // The last element in this half (index 15) contains the most recent CH10 sample.
-//	mReadWaterLevelADC = aADCxConvertedData[ADC_DMA_BUFFER_SIZE - 1]; // Latest sample (index 15)
+//	gReadWaterLevelADC = aADCxConvertedData[ADC_DMA_BUFFER_SIZE - 1]; // Latest sample (index 15)
 
     // Index 14 = latest CH0 sample (even)
     // Index 15 = latest CH10 sample (odd)
-    mReadWaterPumpCurrentADC = aADCxConvertedData[15];// IN0
-    mReadWaterLevelADC = aADCxConvertedData[16];      // IN10
-    mReadUVCurrentADC = aADCxConvertedData[17];        // IN15
+    gReadWaterPumpCurrentADC = aADCxConvertedData[15];// IN0
+    gReadWaterLevelADC = aADCxConvertedData[16];      // IN10
+    gReadUVCurrentADC = aADCxConvertedData[17];        // IN15
 
     CheckAndSentWaterFullSensorEvent();
 }
@@ -759,20 +809,20 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 //    // So each entry in aADCxConvertedData[] is the already-averaged 12-bit result.
 //    //
 //    // The last element in this half (index 7) contains the most recent CH10 sample.
-//	mReadWaterLevelADC = aADCxConvertedData[(ADC_DMA_BUFFER_SIZE / 2) - 1]; // Latest sample (index 7)
+//	gReadWaterLevelADC = aADCxConvertedData[(ADC_DMA_BUFFER_SIZE / 2) - 1]; // Latest sample (index 7)
 
     // Index 6 = latest CH0 sample (even)
     // Index 7 = latest CH10 sample (odd)
-    mReadWaterPumpCurrentADC = aADCxConvertedData[6];// IN0
-    mReadWaterLevelADC = aADCxConvertedData[7];      // IN10
-    mReadUVCurrentADC = aADCxConvertedData[8];        // IN15
+    gReadWaterPumpCurrentADC = aADCxConvertedData[6];// IN0
+    gReadWaterLevelADC = aADCxConvertedData[7];      // IN10
+    gReadUVCurrentADC = aADCxConvertedData[8];        // IN15
 
     CheckAndSentWaterFullSensorEvent();
 }
 
 void CheckAndSentWaterFullSensorEvent()
 {
-    if (mReadWaterLevelADC >= mWaterLevelSensorThreahsold)
+    if (gReadWaterLevelADC >= gWaterLevelSensorThreahsold)
 	{
 		if (!mWaterLevelAboveThroshold)
 		{

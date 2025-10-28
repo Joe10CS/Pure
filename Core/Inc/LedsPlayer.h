@@ -58,7 +58,7 @@ typedef enum {
     eLEd_LED18 = 0x20000
 }eLedMappings;
 
-#define USE_DEBUG_LEDS_MAPPING
+//#define USE_DEBUG_LEDS_MAPPING
 #ifdef USE_DEBUG_LEDS_MAPPING
 #ifndef _MSC_VER
 #warning "Using debug LED mapping - for test hardware only"
@@ -163,6 +163,14 @@ typedef enum {
 	eAnimation_MakeADrinkSuccess,
 	eAnimation_StartUp,
 	eAnimation_MakeADrink,
+    eAnimation_RingLoaderStart, // Used for rinsing/priming the filter
+    eAnimation_RingLoaderEnd, // Used for rinsing/priming the filter
+    eAnimation_OOTBCO2Down,
+    eAnimation_OOTBFilterDown,
+    eAnimation_Status,  // generic status display animation (filter warning, CO2 warning)
+    eAnimation_StartUpCO2, // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
+    eAnimation_FilterWarning, // filter warning animation base on number of days left
+    eAnimation_CO2Warning, // CO2 warning animation, currently implemented only on OOTB state
 
 	// special animation to clear leds from last value -
 	// i.e if led is not at 100% it will go down from the last value it was
