@@ -80,7 +80,7 @@ void WS_InitLeds(void);
 
 extern bool gIsGuiControlMode;
 extern eCarbonationLevel gCarbonationLevel;
-//extern eCarbonationLevel gPrevCarbonationLevel;
+extern eCarbonationLevel gPrevCarbonationLevel;
 extern bool gButtonsFunction;
 extern uint32_t gBottleSizeThresholdmSecs;
 extern uint32_t mPumpStartTimeTick;

@@ -111,8 +111,8 @@ uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_
 void MainLogicInit(void) {
 
     // Initialize the FRAM Storage
-    FRAM_Init();
-
+    gCarbonationLevel = (eCarbonationLevel)FRAM_Init();
+    gPrevCarbonationLevel = gCarbonationLevel;
 
 	// Initialize the state machine
 	SMSodaStreamPure_ctor(&gStateMachine);
@@ -244,7 +244,6 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		if (gIsGuiControlMode) {
 			StopWaterPump();
 			StopUVLed();
-			LedsOff(LEDS_all);
 		}
 		if (! SMEventQueue_Add(gIsGuiControlMode? SMSodaStreamPure_EventId_EVENT_ENTER_GUI_CONTROLLED_MODE : SMSodaStreamPure_EventId_EVENT_EXIT_GUI_CONTROLLED_MODE))
 			gQueueErrors++;

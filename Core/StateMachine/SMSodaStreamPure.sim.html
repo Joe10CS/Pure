@@ -395,7 +395,7 @@ state State_AutomaticMode {
 
         State_SetLevel : State_SetLevel
 
-        State_SetLevel : enter / #123; SetLevelLeds()#59; #125;
+        State_SetLevel : enter / #123; LedsSequence(LEDS_CO2Level)#59; #125;
 
         state State_Awake {
 
@@ -435,7 +435,7 @@ state State_AutomaticMode {
 
         State_Sleeping : enter / #123; ButtonsFunction(false)#59; #125;
 
-        State_Sleeping : enter / #123; FadeOutLeds(LEDS_all)#59; #125;
+        State_Sleeping : enter / #123; LedsSequence(LEDS_allOff)#59; #125;
 
         state State_OOTBSetup {
 
@@ -619,7 +619,7 @@ State_AutomaticMode.(ChoicePoint)() --> Sate_FilterToCarbDelay : [CarbonationEna
 
 State_MakeDrinkDone --> State_Awake : do
 
-State_SetLevel --> State_Awake : do
+State_SetLevel --> State_Ready : do
 
 State_Awake --> State_SetLevel : Event_CarbLevelShortPressed
 
@@ -4067,10 +4067,10 @@ evaluateGuard = null;
         } // end of behavior for State_SetLevel
         
         // State_SetLevel behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SetLevelLeds();"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_CO2Level);"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SetLevelLeds();");`
-            this.tracer?.log("⚡ FSM would execute action: " + "SetLevelLeds();");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_CO2Level);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_CO2Level);");
         } // end of behavior for State_SetLevel
     }
     
@@ -4091,7 +4091,7 @@ evaluateGuard = null;
         let consume_event = false;
         
         // State_SetLevel behavior
-        // uml: do / { this.tracer?.edgeTransition("edge28"); } TransitionTo(State_Awake)
+        // uml: do / { this.tracer?.edgeTransition("edge28"); } TransitionTo(State_Ready)
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_SETLEVEL_exit();
@@ -4099,12 +4099,12 @@ evaluateGuard = null;
             // Step 2: Transition action: `this.tracer?.edgeTransition("edge28");`.
             this.tracer?.edgeTransition("edge28");
             
-            // Step 3: Enter/move towards transition target `State_Awake`.
+            // Step 3: Enter/move towards transition target `State_Ready`.
             this.#STATE_AWAKE_enter();
+            this.#STATE_READY_enter();
             
-            // Finish transition by calling pseudo state transition function.
-            this.#State_Awake_InitialState_transition();
-            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
         } // end of behavior for State_SetLevel
         
         // Check if event has been consumed before calling ancestor handler.
@@ -4138,10 +4138,10 @@ evaluateGuard = null;
         } // end of behavior for State_Sleeping
         
         // State_Sleeping behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "FadeOutLeds(LEDS_all);"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_allOff);"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "FadeOutLeds(LEDS_all);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "FadeOutLeds(LEDS_all);");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_allOff);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_allOff);");
         } // end of behavior for State_Sleeping
     }
     

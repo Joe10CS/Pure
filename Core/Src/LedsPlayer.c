@@ -5,6 +5,7 @@
 #ifndef _MSC_VER
 #include "WS2811.h"
 #include "FRAM.h"
+#include "RTC.h"
 #endif
 
 uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
@@ -83,8 +84,13 @@ sLedsStep stepsStartupFilter[LEDFLOW_STARTUP_FILTER_STEPS] = {
 
 #define LEDFLOW_INTERSTITIAL_STEPS (1)
 sLedsStep stepsInterstitial[LEDFLOW_INTERSTITIAL_STEPS] = {
-        //  { hidden delay of 400ms (delay 980 to 1380) where all leds are on... }
-        {eLED_ALL_LEDS,      400, 255,   0, 10, 100, eLedEase_OutExpo},
+        {eLED_ALL_LEDS,      0, 255,   0, 10, 100, eLedEase_OutExpo},
+};
+
+#define LEDFLOW_SHOWSTATUS_NORMAL_STEPS (1)
+sLedsStep stepsShowStatusNormal[LEDFLOW_SHOWSTATUS_NORMAL_STEPS] = {
+        // ON leds (will be set at run time)
+        {eLED_ALL_LEDS,      0,   0, 100, 10, 100, eLedEase_OutExpo},
 };
 
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
@@ -174,23 +180,28 @@ sLedsSequence sequenceDisplayStatus[LEDFLOW_DISPLAY_STATUS_STEPS] = {
         { 1, 0, (sLedsStep[]){ {eLED_FilterWhite,   0, 0,   255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
 };
 
-// OFF of Carb level and filter - for the short press during OOTB
+
+#define CO2_LEVEL_ON_IDX (0)
+#define CO2_LEVEL_OFF_IDX (1)
+#define LEDFLOW_DISPLAY_CO2_LEVEL_STEPS (2)
+sLedsSequence sequenceCO2Level[LEDFLOW_DISPLAY_CO2_LEVEL_STEPS] = {
+        // ON LEDS
+        { 1, 0, (sLedsStep[]){ {eLED_LevelNoneWhite,   0,   0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
+        // OFF LEDS
+        { 1, 0, (sLedsStep[]){ {eLED_LevelNoneWhite,   0, 255,   0, 10, 100, eLedEase_OutExpo}}, 0, 0 },
+};
 
 
 
 // ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
-#define LEDS_FLOW_STARTUP_LEN (4)
-//sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
-//    {stepsStartupCircle, LEDFLOW_STARTUP_CIRCLE_STEPS},
-//    {stepsStartupCarbLevel, LEDFLOW_STARTUP_CARB_LEVEL_STEPS},
-//    {stepsStartupFilter, LEDFLOW_STARTUP_FILTER_STEPS},    // TODO consider defining stepsStartupFilter inline here
-//    {stepsInterstitial, LEDFLOW_INTERSTITIAL_STEPS} // TODO consider defining stepsInterstitial inline here
-//};
+#define LEDS_FLOW_STARTUP_LEN (5)
+#define STARTUP_FLOW_STATUS_SEQ_IDX (4)
 sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
     { (sLedsSequence[]){{LEDFLOW_STARTUP_CIRCLE_STEPS, 0, stepsStartupCircle, 0, 0 }}, 1},
     { (sLedsSequence[]){{LEDFLOW_STARTUP_CARB_LEVEL_STEPS, 0, stepsStartupCarbLevel, 0, 0}}, 1},
     { (sLedsSequence[]){{LEDFLOW_STARTUP_FILTER_STEPS, 0, stepsStartupFilter, 0, 0 }}, 1 },
-    { (sLedsSequence[]){{LEDFLOW_INTERSTITIAL_STEPS, 0, stepsInterstitial, 0, 0 }}, 1 }
+    { (sLedsSequence[]){{LEDFLOW_INTERSTITIAL_STEPS, 400, stepsInterstitial, 0, 0 }}, 1 },
+    { (sLedsSequence[]){{LEDFLOW_SHOWSTATUS_NORMAL_STEPS, 400, stepsShowStatusNormal, 0, 0 }}, 1 }
 };
 #define LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN (1)
 sLedsFlowDef ledsFlowMakeADrinkProgrees[LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN] = {
@@ -218,6 +229,12 @@ sLedsFlowDef ledsFlowDisplayStatus[LEDS_FLOW_DISPLAY_STATUS_LEN] = {
         {sequenceDisplayStatus, LEDFLOW_DISPLAY_STATUS_STEPS}
 };
 
+#define LEDS_FLOW_CO2_ELVEL_LEN (1)
+sLedsFlowDef ledsFlowCO2LevelStatus[LEDS_FLOW_CO2_ELVEL_LEN] = {
+        {sequenceCO2Level, LEDFLOW_DISPLAY_CO2_LEVEL_STEPS}
+};
+
+
 ///--- Global Animation Parameters ----------------------------------------------------------------------------------------
 uint8_t gLeds[NUMBER_OF_LEDS] = {0};
 uint32_t gAnimationStartingMS = 0;
@@ -240,14 +257,19 @@ eAnimations gPendingAnimation = eAnimation_none;
 void ZeroGlobalAnimationParams(bool zeroCurrent, bool zeroPendingToo);
 void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
 bool IsPendingAnimation(void);
+uint32_t OOTBGetCarbLevelLedStatusMask(void);
+uint32_t OOTBGetFilterStatusMask(void);
 uint32_t GetCarbLevelLedStatusMask(void);
 uint32_t GetFilterStatusMask(void);
+void GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
 
+eAnimations gLastAnimation = eAnimation_none; // TODO DEBUG Remove
 
 void StartAnimation(eAnimations animation, bool forceStopPrevious)
 {
     uint16_t requestedFlowTotalSteps = 0;
     sLedsFlowDef *requestedFlow = NULL;  // A flow of sequences
+    uint32_t val;
 
     switch(animation)
     {
@@ -257,8 +279,18 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         break;
 
     case eAnimation_StartUp:
+        FRAM_ReadElement(eFRAM_isFirstTimeSetupRequired, &val);
         requestedFlow = ledsFlowStartup;
         requestedFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
+        // check if normal startup
+        if (val == 0) {
+            // update the status display
+            ledsFlowStartup[STARTUP_FLOW_STATUS_SEQ_IDX].seq[0].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask() | GetFilterStatusMask() | ALL_RING_LEDS_MASK;
+        } else {
+            // ignore the last step of status (shown on other flows)
+            requestedFlowTotalSteps--;
+        }
+
         break;
 
     case eAnimation_MakeADrinkProgress:
@@ -283,10 +315,18 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
 
     case eAnimation_OOTBStatus:
         // Set the required leds based on current status
-        ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask();
-        ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = GetFilterStatusMask();
+        ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = OOTBGetCarbLevelLedStatusMask();
+        ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = OOTBGetFilterStatusMask();
         requestedFlow = ledsFlowDisplayStatus;
         requestedFlowTotalSteps = LEDS_FLOW_DISPLAY_STATUS_LEN;
+        break;
+
+    case eAnimation_CO2Level:
+        GetCO2ChangedOnOffMasks(
+                &ledsFlowCO2LevelStatus[0].seq[CO2_LEVEL_ON_IDX].subSeq[0].ledIdMask,
+                &ledsFlowCO2LevelStatus[0].seq[CO2_LEVEL_OFF_IDX].subSeq[0].ledIdMask);
+        requestedFlow = ledsFlowCO2LevelStatus;
+        requestedFlowTotalSteps = LEDS_FLOW_CO2_ELVEL_LEN;
         break;
 
     // TODO - this is here to cover animations that are not yet implemented
@@ -313,6 +353,7 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
     }
     // else: start immediately (cancelling any pending)
     gCurrentAnimation = animation;
+    gLastAnimation = gCurrentAnimation; // TODO DEBUG Remove
     pCurrentFlow = requestedFlow;
     gCurrentFlowTotalSteps = requestedFlowTotalSteps;
 
@@ -612,7 +653,7 @@ uint8_t EaseLUT_PlaySegment(
     return gLedEaseData[StepInfo->easeFunc][lutIndex];
 }
 
-uint32_t GetCarbLevelLedStatusMask(void)
+uint32_t OOTBGetCarbLevelLedStatusMask(void)
 {
     // This code assumes that
     uint32_t val = 0;
@@ -622,6 +663,7 @@ uint32_t GetCarbLevelLedStatusMask(void)
     val = 0; // used as mask now
     val |= eLED_LevelNoneWhite;
     if (gCarbonationLevel >= eLevel_Low) {
+        val  = 0; // clear the "none"
         val |= ((isCo2Warning) ? eLED_LevellowOrange : eLED_LevelLowWhite);
     }
     if (gCarbonationLevel >= eLevel_medium) {
@@ -633,11 +675,61 @@ uint32_t GetCarbLevelLedStatusMask(void)
     return val | ALL_RING_LEDS_MASK;
 }
 
-uint32_t GetFilterStatusMask(void)
+uint32_t OOTBGetFilterStatusMask(void)
 {
     uint32_t val = 0;
     FRAM_ReadElement(eFRAM_isFilterOOTBResetRequired, &val);
     return ((val == 0) ? eLED_FilterWhite : eLED_FilterOrange) | ALL_RING_LEDS_MASK;
 
 
+}
+uint32_t GetCarbLevelLedStatusMask(void)
+{
+    // This code assumes that
+    uint32_t mask = 0;
+    mask |= eLED_LevelNoneWhite;
+    if (gCarbonationLevel >= eLevel_Low) {
+        mask  = 0; // clear the "none"
+        mask |= eLED_LevelLowWhite;
+    }
+    if (gCarbonationLevel >= eLevel_medium) {
+        mask |= eLED_LevelMedWhite;
+    }
+    if (gCarbonationLevel >= eLevel_high) {
+        mask |= eLED_LevelHighWhite;
+    }
+    return mask;
+}
+
+void GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask)
+{
+    switch (gCarbonationLevel)
+    {
+    case eLevel_off:
+        *onMask = eLED_LevelNoneWhite;
+        *offMask = eLED_LevelLowWhite | eLED_LevelMedWhite | eLED_LevelHighWhite;
+        break;
+    case eLevel_Low:
+        *onMask = eLED_LevelLowWhite;
+        *offMask = eLED_LevelNoneWhite;
+        break;
+    case eLevel_medium:
+        *onMask = eLED_LevelMedWhite;
+        *offMask = 0;
+        break;
+    case eLevel_high:
+        *onMask = eLED_LevelHighWhite;
+        *offMask = 0;
+        break;
+    default:
+        *onMask = 0;
+        *offMask = 0;
+        break;
+    }
+}
+
+
+uint32_t GetFilterStatusMask(void)
+{
+    return ((IsInFilterReplacementWarningPeriod() || IsFilterExpired()) ? eLED_FilterOrange : 0); // nothing shown if filter is OK
 }

@@ -41,6 +41,7 @@ typedef enum
 	LEDS_FIlterWarning,
 	LEDS_CO2Warning,
 	LEDS_allOff,
+	LEDS_CO2Level,
 	LEDS_Malfunction
 }eLedsSequence;
 void FadeOutAmbiantLight();
@@ -72,11 +73,6 @@ bool FilterLifeTimeExpired();
 void StartReadyTimer();
 bool ReadyTimerExpired();
 void StartWaterPumpingTimer();
-
-void LedsOff(uint32_t leds);
-void FadeOutLeds(uint32_t leds);
-void FadeInLeds();
-void SetLevelLeds();
 
 void RestartCO2Counter();
 

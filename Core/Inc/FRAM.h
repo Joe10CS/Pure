@@ -63,7 +63,7 @@ typedef enum
 bool FRAM_IsValidRange(uint16_t addr, uint16_t size);
 HAL_StatusTypeDef FRAM_Write(uint16_t addr, const uint8_t *buf, uint16_t size);
 HAL_StatusTypeDef FRAM_Read(uint16_t addr, uint8_t *buf, uint16_t size);
-void FRAM_Init(void);
+uint32_t FRAM_Init(void);
 HAL_StatusTypeDef FRAM_WriteElement(eFRAM_Element elem, uint32_t value);
 HAL_StatusTypeDef FRAM_ReadElement(eFRAM_Element elem, uint32_t *value);
 #endif /* INC_FRAM_H_ */

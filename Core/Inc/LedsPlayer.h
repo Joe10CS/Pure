@@ -176,6 +176,7 @@ typedef enum {
     eAnimation_FilterWarning, // filter warning animation base on number of days left
     eAnimation_CO2Warning, // CO2 warning animation, currently implemented only on OOTB state
     eAnimation_OOTBStatus, // Shows the current status of CO2 and Filter on OOTB procedure
+    eAnimation_CO2Level, // Update the CO2 level LEDS in normal mode
 
 	// special animation to clear leds from last value -
 	// i.e if led is not at 100% it will go down from the last value it was
@@ -203,7 +204,7 @@ typedef enum {
 // when it is played in an array > 1, the delay sets the starting point
 // therefore steps can overlap or even played parallel
 typedef struct {
-	int32_t ledIdMask;
+	uint32_t ledIdMask;
 	uint16_t delayMS;       // MSecs to wait before starting the step when it is part of array of steps (otherwise 0)
 	uint8_t startPercent;   // starting intensity 0-255
 	uint8_t endPercent;     // ending intensity 0-255

@@ -15,35 +15,80 @@ static const uint16_t gFRAMElementOffset[eFRAM_MAX] =
     [eFRAM_lastCarbonationLevel]  = offsetof(sFRAMStorageData, lastCarbonationLevel)
 };
 
-void FRAM_Init(void)
-{
-    sFRAMStorageData data;
-    FRAM_Read(0, (uint8_t*)&data, sizeof(data));
 
-    if (data.magicNumber != FRAM_MAGIC_NUMBER)
+sFRAMStorageData gFRAMdata;
+
+uint32_t FRAM_Init(void)
+{
+    FRAM_Read(0, (uint8_t*)&gFRAMdata, sizeof(gFRAMdata));
+
+    if (gFRAMdata.magicNumber != FRAM_MAGIC_NUMBER)
     {
         // Fill with defaults
-        data.magicNumber = FRAM_MAGIC_NUMBER;
-        data.isFirstTimeSetupRequired = DEFAULT_isFirstTimeSetupRequired;
-        data.isCO2OOTBResetRequired = DEFAULT_isCO2OOTBResetRequired;
-        data.isFilterOOTBResetRequired = DEFAULT_isFilterOOTBResetRequired;
-        data.lastCarbonationLevel = DEFAULT_lastCarbonationLevel;
+        gFRAMdata.magicNumber = FRAM_MAGIC_NUMBER;
+        gFRAMdata.isFirstTimeSetupRequired = DEFAULT_isFirstTimeSetupRequired;
+        gFRAMdata.isCO2OOTBResetRequired = DEFAULT_isCO2OOTBResetRequired;
+        gFRAMdata.isFilterOOTBResetRequired = DEFAULT_isFilterOOTBResetRequired;
+        gFRAMdata.lastCarbonationLevel = DEFAULT_lastCarbonationLevel;
 
         // Write back defaults
-        FRAM_Write(0, (uint8_t*)&data, sizeof(data));
+        FRAM_Write(0, (uint8_t*)&gFRAMdata, sizeof(gFRAMdata));
     }
+    return gFRAMdata.lastCarbonationLevel;
 }
 
 HAL_StatusTypeDef FRAM_WriteElement(eFRAM_Element elem, uint32_t value)
 {
+    switch (elem)
+    {
+    case eFRAM_magicNumber:
+        gFRAMdata.magicNumber = value;
+        break;
+    case eFRAM_isFirstTimeSetupRequired:
+        gFRAMdata.isFirstTimeSetupRequired = value;
+        break;
+    case eFRAM_isCO2OOTBResetRequired:
+        gFRAMdata.isCO2OOTBResetRequired = value;
+        break;
+    case eFRAM_isFilterOOTBResetRequired:
+        gFRAMdata.isFilterOOTBResetRequired = value;
+        break;
+    case eFRAM_lastCarbonationLevel:
+        gFRAMdata.lastCarbonationLevel = value;
+        break;
+    default:
+        break;
+    }
+    // Save to RFAM
     uint16_t addr = gFRAMElementOffset[elem];
     return FRAM_Write(addr, (uint8_t*)&value, sizeof(value));
 }
 
 HAL_StatusTypeDef FRAM_ReadElement(eFRAM_Element elem, uint32_t *value)
 {
-    uint16_t addr = gFRAMElementOffset[elem];
-    return FRAM_Read(addr, (uint8_t*)value, sizeof(*value));
+    switch (elem)
+    {
+    case eFRAM_magicNumber:
+        *value = gFRAMdata.magicNumber;
+        break;
+    case eFRAM_isFirstTimeSetupRequired:
+        *value = gFRAMdata.isFirstTimeSetupRequired;
+        break;
+    case eFRAM_isCO2OOTBResetRequired:
+        *value = gFRAMdata.isCO2OOTBResetRequired;
+        break;
+    case eFRAM_isFilterOOTBResetRequired:
+        *value = gFRAMdata.isFilterOOTBResetRequired;
+        break;
+    case eFRAM_lastCarbonationLevel:
+        *value = gFRAMdata.lastCarbonationLevel;
+        break;
+    default:
+        *value = 0;
+        break;
+    }
+//    uint16_t addr = gFRAMElementOffset[elem];
+//    return FRAM_Read(addr, (uint8_t*)value, sizeof(*value));
 }
 
 

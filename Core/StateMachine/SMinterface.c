@@ -78,14 +78,32 @@ bool IsLedsSequencePlaying()
 {
     return (IsAnimationActive() || IsPendingAnimation());
 }
-void ClearCO2OOTBFlag()
-{
-    FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired, 0);
-}
+
 void ClearFilterOOTBFlag()
 {
     FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, 0);
+    // check if need to clear the eFRAM_isFirstTimeSetupRequired
+    uint32_t val = 0;
+    FRAM_ReadElement(eFRAM_isCO2OOTBResetRequired, &val);
+    if (val == 0) // Both cleared
+    {
+        FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired,0);
+    }
 }
+
+void ClearCO2OOTBFlag()
+{
+    FRAM_WriteElement(eFRAM_isCO2OOTBResetRequired, 0);
+    // check if need to clear the eFRAM_isFirstTimeSetupRequired
+    uint32_t val = 0;
+    FRAM_ReadElement(eFRAM_isFilterOOTBResetRequired, &val);
+    if (val == 0) // Both cleared
+    {
+        FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired,0);
+    }
+
+}
+
 
 void StartWaterPump()
 {
@@ -185,16 +203,14 @@ void LedsSequence(eLedsSequence seq)
     case LEDS_allOff:
         StartAnimation(eAnimation_ClearLedsFromLastValue, true);
         break;
+    case LEDS_CO2Level:
+        StartAnimation(eAnimation_CO2Level, true);
+        break;
     case LEDS_Malfunction:
         // TODO turning all leds off is cirrect for tilt mode - need to check what about HW or Security faults
         StartAnimation(eAnimation_ClearLedsFromLastValue, true);
         break;
     }
-}
-
-void SetCarbonationLevel(eCarbonationLevel level)
-{
-    gCarbonationLevel = level;
 }
 
 bool CarbonationEnabled()
@@ -217,7 +233,7 @@ void StartCarbStageTimer()
 
 bool CarbonationOffCycleExpired(uint16_t carbCycle)
 {
-	int row_index = gCarbonationLevel + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	int row_index = (gCarbonationLevel - 1) + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
 	if (gCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_off][carbCycle] < HAL_GetTick())
 	{
 		return true;
@@ -227,7 +243,7 @@ bool CarbonationOffCycleExpired(uint16_t carbCycle)
 
 bool CarbonationOnCycleExpired(uint16_t carbCycle)
 {
-	int row_index = gCarbonationLevel + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	int row_index = (gCarbonationLevel - 1) + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
 	if (gCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_on][carbCycle] < HAL_GetTick())
 	{
 		return true;
@@ -237,7 +253,7 @@ bool CarbonationOnCycleExpired(uint16_t carbCycle)
 
 bool IsCarbonationLastCycle(uint16_t carbCycle)
 {
-	int row_index = gCarbonationLevel + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
+	int row_index = (gCarbonationLevel - 1) + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
 	if (gCarbTimeTable[row_index][eCycle_on][carbCycle] == 0)
 	{
 		return true;
@@ -260,22 +276,6 @@ bool ReadyTimerExpired()
 }
 void StartWaterPumpingTimer() {}
 
-void LedsOff(uint32_t leds)
-{
-	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(0), 100);
-	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(1), 100);
-	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(2), 100);
-	// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(3), 100);
-	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(0),(uint8_t)(0),(uint8_t)(0));
-}
-void FadeOutLeds(uint32_t leds) {}
-void FadeInLeds()
-{
-	LedsOff(0);
-}
-
-void SetLevelLeds() {/* TODO implement */}
-
 void RestartCO2Counter(){/* TODO implement */}
 
 bool IsGuiControlMode()
@@ -294,7 +294,7 @@ void SolenoidPumpUVPower(int isOn)
 
 void ResetFilterDaysCounter()
 {
-    FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, 0);
+    ClearFilterOOTBFlag();
     RestartFilterTimer();
 }
 
