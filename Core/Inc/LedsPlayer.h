@@ -120,6 +120,8 @@ typedef enum {
 }eLedIds;
 #else
 #define ALL_RING_LEDS_MASK (0xFF)
+#define ALL_CO2_MASK (0x3f300)
+#define ALL_FILTER_MASK (0xC00)
 #define ALL_LEDS_MASK (0x3FFFF)
 // The values here should be bits corresponding to the actual LED hardware
 typedef enum {
@@ -155,28 +157,36 @@ typedef enum {
 // U17 G - LED17 - Mw - Carbonation Level Medium white led - 0x10000
 // U17 B - LED18 - Mo - Carbonation Level Medium orange led - 0x20000
 
-
+// The bits used by PlayLedsPeriodic to identify the special clearing animations
+#define CLEAR_ALL_LEDS_ANIMATION_MASK (0x1000)
+// This mask tell PlayLedsPeriodic which bits are cleard for OOTB CO2 leds (only CO2 leds and circle)
+#define CLEAR_OOTB_CO2_LEDS_MASK (ALL_RING_LEDS_MASK|ALL_CO2_MASK)
+// This mask tell PlayLedsPeriodic which bits are cleard for OOTB Filter leds (only Filter leds and circle)
+#define CLEAR_OOTB_FILTER_LEDS_MASK (ALL_RING_LEDS_MASK|ALL_FILTER_MASK)
 typedef enum {
 	eAnimation_none,
 	eAnimation_InitalSetup,
 	eAnimation_MakeADrinkProgress,
 	eAnimation_MakeADrinkSuccess,
 	eAnimation_StartUp,
-	eAnimation_MakeADrink,
     eAnimation_RingLoaderStart, // Used for rinsing/priming the filter
     eAnimation_RingLoaderEnd, // Used for rinsing/priming the filter
-    eAnimation_OOTBCO2Down,
-    eAnimation_OOTBFilterDown,
     eAnimation_Status,  // generic status display animation (filter warning, CO2 warning)
     eAnimation_StartUpCO2, // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
     eAnimation_FilterWarning, // filter warning animation base on number of days left
     eAnimation_CO2Warning, // CO2 warning animation, currently implemented only on OOTB state
+    eAnimation_OOTBStatus, // Shows the current status of CO2 and Filter on OOTB procedure
 
 	// special animation to clear leds from last value -
 	// i.e if led is not at 100% it will go down from the last value it was
 	// This can be a pending animation too so it will just take the leds from their last value
 	// and turn them off smoothly
-    eAnimation_ClearLedsFromLastValue,
+    // it has the pattern 0x1xxxx so it can be identified fast (CLEAR_ALL_LEDS_ANIMATION_MASK)
+    eAnimation_ClearLedsFromLastValue = 0x1001, // 4097
+    // These two are similar to eAnimation_ClearLedsFromLastValue it clears only
+    // the circle and the CO2 or Filter leds from their last value
+    eAnimation_OOTBCO2Down = 0x1002, // 4098
+    eAnimation_OOTBFilterDown = 0x1003, // 4099
 }eAnimations;
 
 

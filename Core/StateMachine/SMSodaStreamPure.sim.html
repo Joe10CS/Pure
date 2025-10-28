@@ -449,7 +449,7 @@ state State_AutomaticMode {
 
                 State_OOTBDisplayStatus : State_OOTBDisplayStatus
 
-                State_OOTBDisplayStatus : enter / #123; LedsSequence(LEDS_DisplayStatus)#59; #125;
+                State_OOTBDisplayStatus : enter / #123; LedsSequence(LEDS_OOTBStatus)#59; #125;
 
                 State_OOTBDisplayStatus : enter / #123; ButtonsFunction(true)#59; #125;
 
@@ -3463,10 +3463,10 @@ evaluateGuard = null;
         } // end of behavior for State_OOTBDisplayStatus
         
         // State_OOTBDisplayStatus behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_DisplayStatus);"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_OOTBStatus);"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_DisplayStatus);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_DisplayStatus);");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_OOTBStatus);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_OOTBStatus);");
         } // end of behavior for State_OOTBDisplayStatus
         
         // State_OOTBDisplayStatus behavior

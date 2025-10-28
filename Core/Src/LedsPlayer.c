@@ -4,6 +4,7 @@
 #include "LedsPlayer.h"
 #ifndef _MSC_VER
 #include "WS2811.h"
+#include "FRAM.h"
 #endif
 
 uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
@@ -162,11 +163,19 @@ sLedsSequence sequenceRingLoaderEnd[LEDFLOW_RING_LOADER_END_SEQUENCE_LEN] = {
 
 //--------------------- Display status of CO2 and Filter  -------------------
 
+
+// This is a special sequence that is overwritten before starting to play is according to the actual status
+// of the CO2 and Filter
+#define STATUS_CARB_IDX (0)
+#define STATUS_FILTER_IDX (1)
 #define LEDFLOW_DISPLAY_STATUS_STEPS (2)
 sLedsSequence sequenceDisplayStatus[LEDFLOW_DISPLAY_STATUS_STEPS] = {
-        { 1,   0, (sLedsStep[]){ {eLED_LevelNoneWhite,   0,   0, 255, 100, 100, eLedEase_OutExpo}}, 0, 0 },
-        { LEDFLOW_RING_LOADER_LOOP_STEPS, 320, stepsRingLoaderLoop, ENDLESS_LOOP, 0 },
+        { 1, 0,(sLedsStep[]){ {eLED_LevelNoneWhite,   0, 0,   255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
+        { 1, 0, (sLedsStep[]){ {eLED_FilterWhite,   0, 0,   255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
 };
+
+// OFF of Carb level and filter - for the short press during OOTB
+
 
 
 // ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
@@ -231,80 +240,82 @@ eAnimations gPendingAnimation = eAnimation_none;
 void ZeroGlobalAnimationParams(bool zeroCurrent, bool zeroPendingToo);
 void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
 bool IsPendingAnimation(void);
+uint32_t GetCarbLevelLedStatusMask(void);
+uint32_t GetFilterStatusMask(void);
 
 
 void StartAnimation(eAnimations animation, bool forceStopPrevious)
 {
-    if (IsAnimationActive() && !forceStopPrevious) {
-        // queue as pending
-        gPendingAnimation = animation;
-        switch(animation)
-        {
-        case eAnimation_InitalSetup:
-            pPendingFlow = NULL;
-            gPendingFlowTotalSteps = 0;
-            break;
+    uint16_t requestedFlowTotalSteps = 0;
+    sLedsFlowDef *requestedFlow = NULL;  // A flow of sequences
 
-        case eAnimation_StartUp:
-            pPendingFlow = ledsFlowStartup;
-            gPendingFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
-            break;
-
-        case eAnimation_MakeADrinkProgress:
-            pPendingFlow = ledsFlowMakeADrinkProgrees;
-            gPendingFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN;
-            break;
-
-        case eAnimation_MakeADrinkSuccess:
-            pPendingFlow = ledsFlowMakeADrinkSuccess;
-            gPendingFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN;
-            break;
-
-        case eAnimation_RingLoaderStart:
-            pPendingFlow = ledsFlowStartLoader;
-            gPendingFlowTotalSteps = LEDS_FLOW_START_LOADER_LEN;
-            break;
-
-        case eAnimation_RingLoaderEnd:
-            pPendingFlow = ledsFlowEndLoader;
-            gPendingFlowTotalSteps = LEDS_FLOW_END_LOADER_LEN;
-            break;
-
-        default: // also for eAnimation_none and eAnimation_ClearLedsFromLastValue
-            pPendingFlow = NULL;
-            gPendingFlowTotalSteps = 0;
-            break;
-        }
-        return;
-    }
-    gCurrentAnimation = animation;
     switch(animation)
     {
     case eAnimation_InitalSetup:
-        pCurrentFlow = NULL;
-        gCurrentFlowTotalSteps = 0;
+        requestedFlow = NULL;
+        requestedFlowTotalSteps = 0;
         break;
 
     case eAnimation_StartUp:
-        pCurrentFlow = ledsFlowStartup;
-        gCurrentFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
+        requestedFlow = ledsFlowStartup;
+        requestedFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
         break;
 
     case eAnimation_MakeADrinkProgress:
-        pCurrentFlow = ledsFlowMakeADrinkProgrees;
-        gCurrentFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN;
+        requestedFlow = ledsFlowMakeADrinkProgrees;
+        requestedFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN;
         break;
 
     case eAnimation_MakeADrinkSuccess:
-        pCurrentFlow = ledsFlowMakeADrinkSuccess;
-        gCurrentFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN;
+        requestedFlow = ledsFlowMakeADrinkSuccess;
+        requestedFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN;
+        break;
+
+    case eAnimation_RingLoaderStart:
+        requestedFlow = ledsFlowStartLoader;
+        requestedFlowTotalSteps = LEDS_FLOW_START_LOADER_LEN;
+        break;
+
+    case eAnimation_RingLoaderEnd:
+        requestedFlow = ledsFlowEndLoader;
+        requestedFlowTotalSteps = LEDS_FLOW_END_LOADER_LEN;
+        break;
+
+    case eAnimation_OOTBStatus:
+        // Set the required leds based on current status
+        ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask();
+        ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = GetFilterStatusMask();
+        requestedFlow = ledsFlowDisplayStatus;
+        requestedFlowTotalSteps = LEDS_FLOW_DISPLAY_STATUS_LEN;
+        break;
+
+    // TODO - this is here to cover animations that are not yet implemented
+    case eAnimation_StartUpCO2: // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
+    case eAnimation_FilterWarning: // filter warning animation base on number of days left
+    case eAnimation_CO2Warning: // CO2 warning animation, currently implemented only on OOTB state
+        animation = eAnimation_none;
         break;
 
     default: // also for eAnimation_none
-        pCurrentFlow = NULL;
-        gCurrentFlowTotalSteps = 0;
+        requestedFlow = NULL;
+        requestedFlowTotalSteps = 0;
         break;
     }
+
+    // If need toe queue as pending
+    if (IsAnimationActive() && !forceStopPrevious) {
+        // queue as pending
+        gPendingAnimation = animation;
+        pPendingFlow = requestedFlow;
+        gPendingFlowTotalSteps = requestedFlowTotalSteps;
+
+        return; // done
+    }
+    // else: start immediately (cancelling any pending)
+    gCurrentAnimation = animation;
+    pCurrentFlow = requestedFlow;
+    gCurrentFlowTotalSteps = requestedFlowTotalSteps;
+
     // some general initialisations of the flow
 
     gStopRequested = false;
@@ -354,6 +365,7 @@ uint16_t offset_in_inner_step = 0;
 uint16_t sqlen = 0;
 
 uint32_t ddd = 0;
+
 void PlayLedsPeriodic(void)
 {
     uint32_t now = HAL_GetTick();
@@ -363,16 +375,19 @@ void PlayLedsPeriodic(void)
     // Handle special animations
 
     // Clear leds from last value
-    if (gCurrentAnimation == eAnimation_ClearLedsFromLastValue) {
+    if (gCurrentAnimation & CLEAR_ALL_LEDS_ANIMATION_MASK) {
         uint8_t val = 0;
-        if (elapsed >= clearAllLedsStep.totalMs) {
-            gCurrentAnimation = eAnimation_none;
-        }
-        else {
+        if (elapsed < clearAllLedsStep.totalMs) {
             val = EaseLUT_PlaySegment(&clearAllLedsStep, elapsed / 10);
         }
         uint32_t mask = 1;
         for (j = 0; j < NUMBER_OF_LEDS; j++) {
+            // if the current animation is OOTB CO2/Filter down , skip leds that are not in the mask
+            if (((gCurrentAnimation == eAnimation_OOTBCO2Down) && !(mask & CLEAR_OOTB_CO2_LEDS_MASK)) ||
+                ((gCurrentAnimation == eAnimation_OOTBFilterDown) && !(mask & CLEAR_OOTB_FILTER_LEDS_MASK))) {
+                mask <<= 1;
+             continue;
+            }
             // this is the "trick" - setting value only id smaller then previous (and member of the mask)
             if ((clearAllLedsStep.ledIdMask & mask) && (val < gLeds[j])){
                 gLeds[j] = val; // or blend logic
@@ -381,6 +396,10 @@ void PlayLedsPeriodic(void)
         }
         // Set the LEDs
         WS_SetLeds(gLeds, NUMBER_OF_LEDS);
+        // To stop it when done (done after the above for loop since gCurrentAnimation may be used there)
+        if (elapsed >= clearAllLedsStep.totalMs) {
+            gCurrentAnimation = eAnimation_none;
+        }
         return;
     }
 
@@ -591,4 +610,34 @@ uint8_t EaseLUT_PlaySegment(
         lutIndex = LEDS_EASE_VECTOR_SIZE - 1;
     }
     return gLedEaseData[StepInfo->easeFunc][lutIndex];
+}
+
+uint32_t GetCarbLevelLedStatusMask(void)
+{
+    // This code assumes that
+    uint32_t val = 0;
+    FRAM_ReadElement(eFRAM_isCO2OOTBResetRequired, &val);
+    bool isCo2Warning = (val != 0);
+
+    val = 0; // used as mask now
+    val |= eLED_LevelNoneWhite;
+    if (gCarbonationLevel >= eLevel_Low) {
+        val |= ((isCo2Warning) ? eLED_LevellowOrange : eLED_LevelLowWhite);
+    }
+    if (gCarbonationLevel >= eLevel_medium) {
+        val |= ((isCo2Warning) ? eLED_LevelMedrange : eLED_LevelMedWhite);
+    }
+    if (gCarbonationLevel >= eLevel_high) {
+        val |= ((isCo2Warning) ? eLED_LevelHighOrange : eLED_LevelHighWhite);
+    }
+    return val | ALL_RING_LEDS_MASK;
+}
+
+uint32_t GetFilterStatusMask(void)
+{
+    uint32_t val = 0;
+    FRAM_ReadElement(eFRAM_isCO2OOTBResetRequired, &val);
+    return ((val == 0) ? eLED_FilterWhite : eLED_FilterOrange) | ALL_RING_LEDS_MASK;
+
+
 }

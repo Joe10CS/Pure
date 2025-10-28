@@ -36,7 +36,7 @@ typedef enum
 
 	LEDS_StartUpCO2,
 	LEDS_OOTBCO2Down,
-	LEDS_DisplayStatus,
+	LEDS_OOTBStatus,
 	LEDS_OOTBFilterDown,
 	LEDS_FIlterWarning,
 	LEDS_CO2Warning,

@@ -14,6 +14,7 @@
 // TODO replace this with WS2811 as needed #include "LP5009.h"// TODO remove this on new Pure board
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
+eCarbonationLevel gPrevCarbonationLevel = eLevel_Low; // stam
 uint32_t gCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
 uint32_t gPumpStartTimeTick = 0;
 uint32_t gLastPumpTimeMSecs = 0;
@@ -171,8 +172,8 @@ void LedsSequence(eLedsSequence seq)
     case LEDS_OOTBCO2Down:
         StartAnimation(eAnimation_OOTBCO2Down, true);
         break;
-    case LEDS_DisplayStatus:
-        StartAnimation(eAnimation_Status, true);
+    case LEDS_OOTBStatus:
+        StartAnimation(eAnimation_OOTBStatus, true);
         break;
     case LEDS_OOTBFilterDown:
         StartAnimation(eAnimation_OOTBFilterDown, true);

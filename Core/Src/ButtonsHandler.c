@@ -121,7 +121,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 				SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
 			} else {
 			    // Short press - has no specific action
-			    SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+			    SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONSHORTPRESSED);
 			}
 		}
 		break;
@@ -134,6 +134,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
           if (gCarbonationLevelPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
               SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
           } else {
+              //gPrevCarbonationLevel = gCarbonationLevel; // indicates the leds display that the level was changed by user
               gCarbonationLevel++;
               if (gCarbonationLevel == eLevel_number_of_levels) {
                   gCarbonationLevel = eLevel_off;
