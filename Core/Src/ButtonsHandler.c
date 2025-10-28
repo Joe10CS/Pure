@@ -26,6 +26,8 @@
 #define DEBOUNCE_BUTTONS_PERIOD_MSEC (300)
 #define LONG_PRESS_PERIOD_MSEC (3000)
 
+#define RESET_TO_OOTB_MSEC (5000)
+
 #define IS_FILTER_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin) == GPIO_PIN_RESET)
 #define IS_CARB_LEVEL_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin) == GPIO_PIN_RESET)
 
@@ -130,6 +132,17 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 
 void CheckLongPressButtonsPeriodic()
 {
+    uint32_t ootb = 0;
+    FRAM_ReadElement(eFRAM_isFirstTimeSetupRequired, &ootb);
+
+    if (IS_FILTER_BUTTON_PRESSED() && IS_CARB_LEVEL_BUTTON_PRESSED() && (ootb == 0))
+    {
+        if (gLastFilterKeyPressTick + RESET_TO_OOTB_MSEC  < HAL_GetTick()) { // Long press on filter and carb level
+            FRAM_WriteElement(eFRAM_magicNumber, 0);
+        } else {
+            return;
+        }
+    }
     if (IS_FILTER_BUTTON_PRESSED() && (gIgnoreFilterButtonRelease == false) && (gLastFilterKeyPressTick > 0)) {
         if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
             gIgnoreFilterButtonRelease = true;

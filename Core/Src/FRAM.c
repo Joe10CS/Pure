@@ -87,6 +87,7 @@ HAL_StatusTypeDef FRAM_ReadElement(eFRAM_Element elem, uint32_t *value)
         *value = 0;
         break;
     }
+    return HAL_OK;
 //    uint16_t addr = gFRAMElementOffset[elem];
 //    return FRAM_Read(addr, (uint8_t*)value, sizeof(*value));
 }

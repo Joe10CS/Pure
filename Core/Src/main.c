@@ -329,15 +329,6 @@ static void MX_I2C1_Init(void)
 
 }
 
-//    __HAL_RCC_RTC_CONFIG(RCC_RTCCLKSOURCE_LSE);
-//    __HAL_RCC_RTC_ENABLE();
-//    // Check if RTC is already initialized don't reinitialize it
-//    // to avoid resetting the time on every boot
-//    if (__HAL_RTC_GET_FLAG(&hrtc, RTC_FLAG_INITS) != RESET)
-//      {
-//          // RTC is already running — do not reinitialize
-//          return;
-//      }
 /**
   * @brief RTC Initialization Function
   * @param None
@@ -401,20 +392,6 @@ static void MX_RTC_Init(void)
   /* USER CODE END RTC_Init 2 */
 
 }
-// Set initial time/date only on first power-up
-//    RTC_TimeTypeDef sTime = {0};
-//    RTC_DateTypeDef sDate = {0};
-//
-//    sTime.Hours = 0;
-//    sTime.Minutes = 0;
-//    sTime.Seconds = 0;
-//    HAL_RTC_SetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-//
-//    sDate.WeekDay = RTC_WEEKDAY_SATURDAY;
-//    sDate.Month   = RTC_MONTH_JANUARY;
-//    sDate.Date    = 1;
-//    sDate.Year    = 0;  // Year 2000
-//    HAL_RTC_SetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
 /**
   * @brief SPI1 Initialization Function

@@ -66,9 +66,9 @@ bool Tilted()
 }
 
 
+uint32_t val = 0;
 bool IsOOTBState()
 {
-    uint32_t val = 0;
     if (HAL_OK == FRAM_ReadElement(eFRAM_isFirstTimeSetupRequired, &val)) {
         return (val != 0);
     }
@@ -83,7 +83,6 @@ void ClearFilterOOTBFlag()
 {
     FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, 0);
     // check if need to clear the eFRAM_isFirstTimeSetupRequired
-    uint32_t val = 0;
     FRAM_ReadElement(eFRAM_isCO2OOTBResetRequired, &val);
     if (val == 0) // Both cleared
     {
@@ -95,7 +94,6 @@ void ClearCO2OOTBFlag()
 {
     FRAM_WriteElement(eFRAM_isCO2OOTBResetRequired, 0);
     // check if need to clear the eFRAM_isFirstTimeSetupRequired
-    uint32_t val = 0;
     FRAM_ReadElement(eFRAM_isFilterOOTBResetRequired, &val);
     if (val == 0) // Both cleared
     {
