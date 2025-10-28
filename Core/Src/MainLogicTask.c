@@ -172,6 +172,7 @@ void MainLogicPeriodic() {
 	//	StartAnimation(eAnimation_MakeADrinkProgress);
 	}
 	PlayLedsPeriodic();
+	CheckLongPressButtonsPeriodic();
 
 	CheckHWAndGenerateEventsAsNeeded();
 

@@ -636,7 +636,7 @@ uint32_t GetCarbLevelLedStatusMask(void)
 uint32_t GetFilterStatusMask(void)
 {
     uint32_t val = 0;
-    FRAM_ReadElement(eFRAM_isCO2OOTBResetRequired, &val);
+    FRAM_ReadElement(eFRAM_isFilterOOTBResetRequired, &val);
     return ((val == 0) ? eLED_FilterWhite : eLED_FilterOrange) | ALL_RING_LEDS_MASK;
 
 

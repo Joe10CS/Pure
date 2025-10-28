@@ -37,5 +37,5 @@ typedef enum {
 }eDoneResults;
 
 void SendDoneMessage(eDoneResults result);
-
+void CheckLongPressButtonsPeriodic();
 #endif /* INC_COMMON_H_ */

@@ -277,7 +277,7 @@ state State_AutomaticMode {
 
         State_Rinsing : enter / #123; StartWaterPump()#59; #125;
 
-        State_Rinsing : enter / #123; RestartFilterTimer()#59; #125;
+        State_Rinsing : enter / #123; ResetFilterDaysCounter()#59; #125;
 
         State_Rinsing : enter / #123; StartWaterPumpingTimer()#59; #125;
 
@@ -3945,10 +3945,10 @@ evaluateGuard = null;
         } // end of behavior for State_Rinsing
         
         // State_Rinsing behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "RestartFilterTimer();"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterDaysCounter();"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "RestartFilterTimer();");`
-            this.tracer?.log("⚡ FSM would execute action: " + "RestartFilterTimer();");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterDaysCounter();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterDaysCounter();");
         } // end of behavior for State_Rinsing
         
         // State_Rinsing behavior

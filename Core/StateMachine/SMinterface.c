@@ -80,13 +80,11 @@ bool IsLedsSequencePlaying()
 }
 void ClearCO2OOTBFlag()
 {
-    uint32_t val = 0;
-    FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired, val);
+    FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired, 0);
 }
 void ClearFilterOOTBFlag()
 {
-    uint32_t val = 0;
-    FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, val);
+    FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, 0);
 }
 
 void StartWaterPump()
@@ -248,11 +246,6 @@ bool IsCarbonationLastCycle(uint16_t carbCycle)
 
 }
 
-void StartWaterFilterLedSequence()
-{
-	// B G R
-	// TODO replace this with WS2811 as needed LP5009_RGB(&hi2c1,(uint8_t)(250),(uint8_t)(0),(uint8_t)(0));
-}
 void StartCarbonationLedSequance() {}
 void StartMalfunctionLedsSequence() {}
 void WaterLedOrangeToBlue() {}
@@ -298,8 +291,12 @@ void SolenoidPumpUVPower(int isOn)
 {
 	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
-void StartStatusTransmit() {}
-void StopStatusTransmit() {}
+
+void ResetFilterDaysCounter()
+{
+    FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, 0);
+    RestartFilterTimer();
+}
 
 void StartFilterToCarbDelay()
 {

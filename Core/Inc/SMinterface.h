@@ -63,7 +63,6 @@ bool CarbonationOffCycleExpired(uint16_t carbCycle);
 bool CarbonationOnCycleExpired(uint16_t carbCycle);
 bool IsCarbonationLastCycle(uint16_t carbCycle);
 
-void StartWaterFilterLedSequence();
 void StartCarbonationLedSequance();
 void WaterLedOrangeToBlue();
 
@@ -84,8 +83,6 @@ void RestartCO2Counter();
 bool IsGuiControlMode();
 void SolenoidPump(int itOn);
 void SolenoidPumpUVPower(int itOn);
-void StartStatusTransmit();
-void StopStatusTransmit();
 
 // Added for pure 2
 bool WaterPumpTimerExpired();
@@ -100,7 +97,7 @@ bool IsLedsSequencePlaying();
 void ClearCO2OOTBFlag();
 void ClearFilterOOTBFlag();
 
-
+void ResetFilterDaysCounter();
 void StartFilterToCarbDelay();
 bool FilterToCarbDelayDone();
 #endif /* INC_SMINTERFACE_H_ */
