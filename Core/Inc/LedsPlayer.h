@@ -112,7 +112,7 @@ typedef enum {
     eLED_LevelLowWhite = 0x800003,
     eLED_LevellowOrange = 0x800004,
     eLED_LevelMedWhite = 0x800005,
-    eLED_LevelMedrange = 0x800006,
+    eLED_LevelMedOrange = 0x800006,
     eLED_LevelHighWhite = 0x800007,
     eLED_LevelHighOrange = 0x800008,
     eLED_FilterWhite = 0x800009,
@@ -124,6 +124,7 @@ typedef enum {
 #define ALL_CO2_MASK (0x3f300)
 #define ALL_FILTER_MASK (0xC00)
 #define ALL_LEDS_MASK (0x3FFFF)
+#define ALL_WHITE_LEDS_MASK (0x155FF)
 // The values here should be bits corresponding to the actual LED hardware
 typedef enum {
     eLED_Circle1 = eLEd_LED1,
@@ -139,7 +140,7 @@ typedef enum {
     eLED_LevelLowWhite = eLEd_LED15,
     eLED_LevellowOrange = eLEd_LED16,
     eLED_LevelMedWhite = eLEd_LED17,
-    eLED_LevelMedrange = eLEd_LED18,
+    eLED_LevelMedOrange = eLEd_LED18,
     eLED_LevelHighWhite = eLEd_LED9,
     eLED_LevelHighOrange = eLEd_LED10,
     eLED_FilterWhite = eLEd_LED11,

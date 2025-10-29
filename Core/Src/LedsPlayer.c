@@ -84,13 +84,13 @@ sLedsStep stepsStartupFilter[LEDFLOW_STARTUP_FILTER_STEPS] = {
 
 #define LEDFLOW_INTERSTITIAL_STEPS (1)
 sLedsStep stepsInterstitial[LEDFLOW_INTERSTITIAL_STEPS] = {
-        {eLED_ALL_LEDS,      0, 255,   0, 10, 100, eLedEase_OutExpo},
+        {ALL_WHITE_LEDS_MASK,      0, 255,   0, 10, 100, eLedEase_OutExpo},
 };
 
 #define LEDFLOW_SHOWSTATUS_NORMAL_STEPS (1)
 sLedsStep stepsShowStatusNormal[LEDFLOW_SHOWSTATUS_NORMAL_STEPS] = {
         // ON leds (will be set at run time)
-        {eLED_ALL_LEDS,      0,   0, 100, 10, 100, eLedEase_OutExpo},
+        {eLED_ALL_LEDS,      0,   0, 255, 10, 100, eLedEase_OutExpo},
 };
 
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
@@ -670,7 +670,7 @@ uint32_t OOTBGetCarbLevelLedStatusMask(void)
         val |= ((isCo2Warning) ? eLED_LevellowOrange : eLED_LevelLowWhite);
     }
     if (gCarbonationLevel >= eLevel_medium) {
-        val |= ((isCo2Warning) ? eLED_LevelMedrange : eLED_LevelMedWhite);
+        val |= ((isCo2Warning) ? eLED_LevelMedOrange : eLED_LevelMedWhite);
     }
     if (gCarbonationLevel >= eLevel_high) {
         val |= ((isCo2Warning) ? eLED_LevelHighOrange : eLED_LevelHighWhite);
