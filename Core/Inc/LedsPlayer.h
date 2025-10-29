@@ -11,7 +11,8 @@
 #else
 #include <stdint.h>
 #include <stdbool.h>
-#define NUMBER_OF_LEDS 24
+#define NUMBER_OF_LEDS 18
+#include <stubs.h>
 #endif
 
 #define LEDS_EASE_VECTOR_SIZE (256)

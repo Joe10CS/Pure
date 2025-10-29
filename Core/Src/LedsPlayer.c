@@ -4,8 +4,8 @@
 #include "LedsPlayer.h"
 #ifndef _MSC_VER
 #include "WS2811.h"
-#include "FRAM.h"
 #include "RTC.h"
+#include "FRAM.h"
 #endif
 
 uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
@@ -457,7 +457,7 @@ void PlayLedsPeriodic(void)
 
 #ifdef _MSC_VER
     extern uint32_t winElapsedTime;
-    if (winElapsedTime == 1410)
+    if (winElapsedTime == 80)
     {
         ddd = 1;
 	}
@@ -469,6 +469,7 @@ void PlayLedsPeriodic(void)
         sLedsSequence *seq = &fseq[sq];
         sqlen = seq->sequenceLen;
         sLedsStep *stp;
+        uint8_t ssi = 0;
         // Handle loops
         if (seq->loop > 0) {  // loop
             // if we are inside of it
@@ -478,7 +479,7 @@ void PlayLedsPeriodic(void)
                     /*uint16_t*/ offset_in_loop = (elapsed - seq->delayMS)
                         % (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
                     // Go over the loop elements
-                    for (uint8_t ssi = 0; ssi < seq->sequenceLen; ssi++) {
+                    for (ssi = 0; ssi < seq->sequenceLen; ssi++) {
                         stp = &seq->subSeq[ssi];
                         if ((offset_in_loop >= stp->delayMS) && (offset_in_loop <= (stp->delayMS + stp->totalMs))) {
                             uint8_t val = EaseLUT_PlaySegment(stp, (offset_in_loop - stp->delayMS) / 10);
@@ -524,27 +525,29 @@ void PlayLedsPeriodic(void)
             // check if time to play this step
             if (elapsed >= seq->delayMS) {
                 offset_in_inner_step = elapsed - seq->delayMS;
-                stp = &seq->subSeq[0];  // this code assumes that if the step is not a loop, there is only one inner step
-                // check if time to play the inner step
-                if (offset_in_inner_step >= stp->delayMS) {
-
-                    if (offset_in_inner_step <= stp->delayMS + stp->totalMs) {
-                        currentFlowIsDone = false; // at least one sequence still active
-                        uint8_t val = EaseLUT_PlaySegment(stp, (offset_in_inner_step - stp->delayMS) / 10);
-                        uint32_t mask = 1;
-                        for (j = 0; j < NUMBER_OF_LEDS; j++)
-                        {
-                            if (stp->ledIdMask & mask)
+                for (ssi = 0; ssi < seq->sequenceLen; ssi++)
+                {
+                    stp = &seq->subSeq[ssi];
+                    // check if time to play the inner step
+                    if (offset_in_inner_step >= stp->delayMS) {
+                        if (offset_in_inner_step <= stp->delayMS + stp->totalMs) {
+                            currentFlowIsDone = false; // at least one sequence still active
+                            uint8_t val = EaseLUT_PlaySegment(stp, (offset_in_inner_step - stp->delayMS) / 10);
+                            uint32_t mask = 1;
+                            for (j = 0; j < NUMBER_OF_LEDS; j++)
                             {
-                                gLeds[j] = val;
+                                if (stp->ledIdMask & mask)
+                                {
+                                    gLeds[j] = val;
+                                }
+                                mask <<= 1;
                             }
-                            mask <<= 1;
                         }
                     }
-                }
-                else {
-                    // not yet time to play the inner step
-                    currentFlowIsDone = false; // still active
+                    else {
+                        // not yet time to play the inner step
+                        currentFlowIsDone = false; // still active
+                    }
                 }
             } else {
                 // not yet time to play this step
