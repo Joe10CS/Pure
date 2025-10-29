@@ -180,6 +180,9 @@ void LedsSequence(eLedsSequence seq)
     case LEDS_RinsingEnd:
         StartAnimation(eAnimation_RingLoaderEnd, true);
         break;
+    case LEDS_Status:
+        StartAnimation(eAnimation_Status, true);
+        break;
     case LEDS_StartUpCO2:
         StartAnimation(eAnimation_StartUpCO2, true);
         break;

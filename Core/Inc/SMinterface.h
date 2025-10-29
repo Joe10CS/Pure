@@ -34,6 +34,7 @@ typedef enum
 	LEDS_RinsingStart,
     LEDS_RinsingEnd,
 
+    LEDS_Status, // show ring and current status of carb level and filter
 	LEDS_StartUpCO2,
 	LEDS_OOTBCO2Down,
 	LEDS_OOTBStatus,

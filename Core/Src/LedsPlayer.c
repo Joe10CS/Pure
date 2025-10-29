@@ -313,8 +313,16 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         requestedFlowTotalSteps = LEDS_FLOW_END_LOADER_LEN;
         break;
 
-    case eAnimation_OOTBStatus:
+    case eAnimation_Status:
         // Set the required leds based on current status
+        ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask() | ALL_RING_LEDS_MASK;
+        ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = GetFilterStatusMask();
+        requestedFlow = ledsFlowDisplayStatus;
+        requestedFlowTotalSteps = LEDS_FLOW_DISPLAY_STATUS_LEN;
+        break;
+
+    case eAnimation_OOTBStatus:
+		// Set the required leds based on current OOTB status
         ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = OOTBGetCarbLevelLedStatusMask();
         ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = OOTBGetFilterStatusMask();
         requestedFlow = ledsFlowDisplayStatus;
