@@ -120,24 +120,24 @@ sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
 // Factor: 1.8333 slower
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
 sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
-        {eLED_Circle3,   0, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle4,   0,   0, 255, 12, 120, eLedEase_InOutQuad},
-        {eLED_Circle4, 120, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle5, 120,   0, 255, 12, 120, eLedEase_InOutQuad},
-        {eLED_Circle5, 240, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle6, 240,   0, 255, 12, 120, eLedEase_InOutQuad},
-        {eLED_Circle6, 360, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle7, 360,   0, 255, 12, 120, eLedEase_InOutQuad},
-        {eLED_Circle7, 480, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle8, 480,   0, 255, 12, 120, eLedEase_InOutQuad},
-        {eLED_Circle8, 600, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle1, 600,   0, 255, 12, 120, eLedEase_InOutQuad},
-        {eLED_Circle1, 720, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle2, 720,   0, 255, 12, 120, eLedEase_InOutQuad},
-        {eLED_Circle2, 840, 255,   0, 24, 240, eLedEase_InOutQuad},
-        {eLED_Circle3, 840,   0, 255, 12, 120, eLedEase_InOutQuad}
+        {eLED_Circle3,   0, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle4,   0,   0, 255, 11, 110, eLedEase_InOutQuad},
+        {eLED_Circle4, 110, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle5, 110,   0, 255, 11, 110, eLedEase_InOutQuad},
+        {eLED_Circle5, 220, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle6, 220,   0, 255, 11, 110, eLedEase_InOutQuad},
+        {eLED_Circle6, 330, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle7, 330,   0, 255, 11, 110, eLedEase_InOutQuad},
+        {eLED_Circle7, 440, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle8, 440,   0, 255, 11, 110, eLedEase_InOutQuad},
+        {eLED_Circle8, 550, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle1, 550,   0, 255, 11, 110, eLedEase_InOutQuad},
+        {eLED_Circle1, 660, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle2, 660,   0, 255, 11, 110, eLedEase_InOutQuad},
+        {eLED_Circle2, 770, 255,   0, 22, 220, eLedEase_InOutQuad},
+        {eLED_Circle3, 770,   0, 255, 11, 110, eLedEase_InOutQuad}
 };
-#define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (120)
+#define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (110)
 
 #if 0
 // Original values taken from the Excel file
@@ -151,13 +151,25 @@ sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
 // Factor: 1.8333 slower
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
 sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
-        { 1,   0, (sLedsStep[]) { { eLED_Circle3, 0, 0, 255, 44, 440, eLedEase_OutExpo } }, 0, 0 },
-        { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 440, stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
+        { 1,   0, (sLedsStep[]) { { eLED_Circle3, 0, 0, 255, 40, 400, eLedEase_OutExpo } }, 0, 0 },
+        { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 400, stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
+};
+
+
+//#define LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN (2)
+//sLedsSequence sequenceMakeDrinkSuccessFinishRing[LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN] = {
+//        { 1,   0, (sLedsStep[]){ {eLED_Circle3, 0, 128, 0, 11, 110, eLedEase_OutExpo}}, 0, 0 }, // 50% fade out left
+//        { 1,   0, (sLedsStep[]){ {eLED_Circle4, 0, 255, 0, 22, 220, eLedEase_OutExpo}}, 0, 0 }, // 100% fade out left
+//};
+#define LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN (2)
+sLedsSequence sequenceMakeDrinkSuccessFinishRing[LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN] = {
+        { 1,   0, (sLedsStep[]){ {eLED_Circle2, 0, 128, 0, 11, 110, eLedEase_OutExpo}}, 0, 0 }, // 50% fade out left
+        { 1,   0, (sLedsStep[]){ {eLED_Circle3, 0, 255, 0, 22, 220, eLedEase_OutExpo}}, 0, 0 }, // 100% fade out left
 };
 
 #define LEDFLOW_RING_SUCCESS_INTERSTITIAL_SEQUENCE_LEN (1)
 sLedsSequence sequenceMakeDrinkSuccessInterstitial[LEDFLOW_RING_SUCCESS_INTERSTITIAL_SEQUENCE_LEN] = {
-        { 1,   0, (sLedsStep[]){ {eLED_Circle3, 0, 255, 0, 36, 360, eLedEase_OutExpo}}, 0, 0 },
+        { 1,   0, (sLedsStep[]){ {eLED_Circle3 | eLED_Circle2, 0, 0, 0, 36, 360, eLEdEase_constant}}, 0, 0 },
 };
 
 #define LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS (4)
@@ -243,8 +255,9 @@ sLedsFlowDef ledsFlowMakeADrinkProgrees[LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN] = {
         {sequenceRingProgress, LEDFLOW_RING_PROGRESS_SEQUENCE_LEN},
 };
 
-#define LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN (2)
+#define LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN (3)
 sLedsFlowDef ledsFlowMakeADrinkSuccess[LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN] = {
+        {sequenceMakeDrinkSuccessFinishRing, LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN},
         {sequenceMakeDrinkSuccessInterstitial, LEDFLOW_RING_SUCCESS_INTERSTITIAL_SEQUENCE_LEN},
         {sequenceRingSuccess, LEDFLOW_RING_SUCCESS_SEQUENCE_LEN},
 };
@@ -553,6 +566,14 @@ void PlayLedsPeriodic(void)
                                         gLeds[j] = val; // or blend logic
                                     }
                                     mask <<= 1;
+                                }
+                                // need to move from the endless make to success
+                                // i.e. success is pending and last updated led is 4 to around 100%
+                                if ((gPendingAnimation == eAnimation_MakeADrinkSuccess) && (gLeds[2] >= 250)) {
+//                                    // i.e. success is pending and last updated led is 4 to around 100%
+//                                    if ((gPendingAnimation == eAnimation_MakeADrinkSuccess) && (gLeds[3] >= 250)) {
+                                    currentFlowIsDone = true;
+                                    break;
                                 }
                             }
                         }

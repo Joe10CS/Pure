@@ -28,7 +28,7 @@
 #define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
 #define DEBUG_WS_LEDS
-//#define DEBUG_STATE_MACHINE
+#define DEBUG_STATE_MACHINE
 
 
 /* Private macro -------------------------------------------------------------*/

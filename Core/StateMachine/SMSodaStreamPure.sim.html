@@ -513,6 +513,8 @@ state State_AutomaticMode {
 
         State_ShowStatus : enter / #123; LedsSequence(LEDS_Status)#59; #125;
 
+        State_ShowStatus : enter / #123; ButtonsFunction(true)#59; #125;
+
 }
 
 Sate_SafetyFail
@@ -4157,6 +4159,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Status);");`
             this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Status);");
+        } // end of behavior for State_ShowStatus
+        
+        // State_ShowStatus behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");
         } // end of behavior for State_ShowStatus
     }
     

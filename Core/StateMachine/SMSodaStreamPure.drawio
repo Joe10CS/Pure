@@ -850,8 +850,8 @@
         <mxCell id="DGJV_QJC8LC7ju2ie8hX-2" value="State_ShowStatus" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;points=[[0,0,0,0,0],[0,0.25,0,0,0],[0,0.5,0,0,0],[0,0.75,0,0,0],[0,1,0,0,0],[0.25,0,0,0,0],[0.25,1,0,0,0],[0.5,0,0,0,0],[0.5,1,0,0,0],[0.75,0,0,0,0],[0.75,1,0,0,0],[0.88,0.99,0,0,0],[1,0,0,0,0],[1,0.25,0,0,0],[1,0.5,0,0,0],[1,0.75,0,0,0],[1,1,0,0,0]];" vertex="1" parent="qZF7NaJGXNpq08xq_DYa-5">
           <mxGeometry x="1381" y="1039" width="320" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="DGJV_QJC8LC7ju2ie8hX-3" value="enter / LedsSequence(LEDS_Status);&#xa;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" vertex="1" connectable="0" parent="DGJV_QJC8LC7ju2ie8hX-2">
-          <mxGeometry y="30" width="270" height="30" as="geometry" />
+        <mxCell id="DGJV_QJC8LC7ju2ie8hX-3" value="enter / LedsSequence(LEDS_Status);&#xa;enter / ButtonsFunction(true);" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" vertex="1" connectable="0" parent="DGJV_QJC8LC7ju2ie8hX-2">
+          <mxGeometry y="30" width="270" height="40" as="geometry" />
         </mxCell>
         <mxCell id="DGJV_QJC8LC7ju2ie8hX-4" value="" style="endArrow=classic;html=1;rounded=1;strokeWidth=4;curved=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.75;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;exitPerimeter=0;" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="DGJV_QJC8LC7ju2ie8hX-2" target="qZF7NaJGXNpq08xq_DYa-19">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
