@@ -63,7 +63,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 volatile uint16_t gReadWaterLevelADC;     // Stores the averaged value from ADC_CHANNEL_10 (PB2)
 volatile uint16_t gReadWaterPumpCurrentADC;
 volatile uint16_t gReadUVCurrentADC;
-uint16_t gWaterLevelSensorThreahsold = 500; //0x7fff;
+uint16_t gWaterLevelSensorThreahsold = 372; // 30/10/2025 changed from 500 to Itzik request
 bool mWaterLevelAboveThroshold = false;
 #define WATER_FULL_EVENT_DEBOUNCE_MSEC (50)
 uint32_t mLastWaterFullSensorEventSent = 0;

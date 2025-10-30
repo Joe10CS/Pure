@@ -93,6 +93,8 @@ sLedsStep stepsShowStatusNormal[LEDFLOW_SHOWSTATUS_NORMAL_STEPS] = {
         {eLED_ALL_LEDS,      0,   0, 255, 10, 100, eLedEase_OutExpo},
 };
 
+#if 0
+// Original values taken from the Excel file
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
 sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
         {eLED_Circle3,   0, 255,   0, 13, 128, eLedEase_InOutQuad},
@@ -113,11 +115,44 @@ sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
         {eLED_Circle3, 448,   0, 255,  6,  64, eLedEase_InOutQuad}
 };
 #define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (64)
+#endif
+// Modified values to make the progress according to the figma design
+// Factor: 1.8333 slower
+#define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
+sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
+        {eLED_Circle3,   0, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle4,   0,   0, 255, 12, 120, eLedEase_InOutQuad},
+        {eLED_Circle4, 120, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle5, 120,   0, 255, 12, 120, eLedEase_InOutQuad},
+        {eLED_Circle5, 240, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle6, 240,   0, 255, 12, 120, eLedEase_InOutQuad},
+        {eLED_Circle6, 360, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle7, 360,   0, 255, 12, 120, eLedEase_InOutQuad},
+        {eLED_Circle7, 480, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle8, 480,   0, 255, 12, 120, eLedEase_InOutQuad},
+        {eLED_Circle8, 600, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle1, 600,   0, 255, 12, 120, eLedEase_InOutQuad},
+        {eLED_Circle1, 720, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle2, 720,   0, 255, 12, 120, eLedEase_InOutQuad},
+        {eLED_Circle2, 840, 255,   0, 24, 240, eLedEase_InOutQuad},
+        {eLED_Circle3, 840,   0, 255, 12, 120, eLedEase_InOutQuad}
+};
+#define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (120)
 
+#if 0
+// Original values taken from the Excel file
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
 sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
         { 1,   0, (sLedsStep[]){ {eLED_Circle3, 0, 0, 255, 24, 240, eLedEase_OutExpo}}, 0, 0 },
         { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 240, stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
+};
+#endif
+// Modified values to make the progress according to the figma design
+// Factor: 1.8333 slower
+#define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
+sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
+        { 1,   0, (sLedsStep[]) { { eLED_Circle3, 0, 0, 255, 44, 440, eLedEase_OutExpo } }, 0, 0 },
+        { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 440, stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
 };
 
 #define LEDFLOW_RING_SUCCESS_INTERSTITIAL_SEQUENCE_LEN (1)
@@ -127,9 +162,9 @@ sLedsSequence sequenceMakeDrinkSuccessInterstitial[LEDFLOW_RING_SUCCESS_INTERSTI
 
 #define LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS (4)
 sLedsStep stepsRingSuccessInnerLoop[LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS] = {
-        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255,   0, 6, 64, eLedEase_InOutQuad},
-        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,  64,   0,   0, 6, 64, eLEdEase_constant},
-        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 128,   0, 255, 6, 64, eLedEase_OutExpo},
+        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255,   0,  6, 64, eLedEase_InOutQuad},
+        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,  64,   0,   0,  6, 64, eLEdEase_constant},
+        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 128,   0, 255,  6, 64, eLedEase_OutExpo},
         {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 192, 255, 255, 12, 120, eLEdEase_constant}
 };
 #define LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT (3)

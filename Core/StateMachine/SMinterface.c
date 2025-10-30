@@ -172,7 +172,10 @@ void LedsSequence(eLedsSequence seq)
         StartAnimation(eAnimation_MakeADrinkProgress, true);
         break;
     case LEDS_DoneMakeDring:
-        StartAnimation(eAnimation_MakeADrinkSuccess, true);
+        // This flow is starting over the continuous playing of
+        // MakeADrink, the "false" is used for adding
+        // as a pending sequence
+        StartAnimation(eAnimation_MakeADrinkSuccess, false);
         break;
     case LEDS_RinsingStart:
         StartAnimation(eAnimation_RingLoaderStart, true);
