@@ -73,7 +73,8 @@ typedef enum {
 	eUARTCommand_anim,
     eUARTCommand_fday, // Get or set the number of days since last filter change
     eUARTCommand_fmem, // Get or set fram memory value
-	eUARTCommand_dbug, // debug messages
+    eUARTCommand_flsc, // Get false press counters
+ 	eUARTCommand_dbug, // debug messages
 
 
 	eUARTCommand_num_commands,

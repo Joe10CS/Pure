@@ -38,4 +38,5 @@ typedef enum {
 
 void SendDoneMessage(eDoneResults result);
 void CheckLongPressButtonsPeriodic();
+bool IsAnyKeyPressed();
 #endif /* INC_COMMON_H_ */

@@ -41,7 +41,15 @@ extern I2C_HandleTypeDef hi2c1;
 extern int8_t filtered_x;
 extern int8_t filtered_y;
 extern int8_t filtered_z;
+extern uint16_t gFalseButMainCounter;
+extern uint16_t gFalseButCarbLevelCounter;
+extern uint16_t gFalseButFilterCounter;
+extern uint16_t gKeyPressButMainMS;
+extern uint16_t gKeyPressButCarbLevelMS;
+extern uint16_t gKeyPressButFilterMS;
 
+bool gMakeADrinkInProgress = false;
+uint32_t echoParams[6];
 /* Private variables ---------------------------------------------------------*/
 SMSodaStreamPure gStateMachine;  // the state machine instance
 eUartStatus glb_new_msg = eUART_NoMessage;
@@ -185,6 +193,16 @@ void MainLogicPeriodic() {
 		uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, 0, gStateMachine.state_id}, 3,false);
 		dbgCurrentState = gStateMachine.state_id;
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+        if ((SMSodaStreamPure_StateId_STATE_FILTERING == dbgCurrentState) || (SMSodaStreamPure_StateId_STATE_CARBONATING == dbgCurrentState))
+        {
+            gMakeADrinkInProgress = true;
+        }
+        if (SMSodaStreamPure_StateId_STATE_SHOWSTATUS == dbgCurrentState)
+        {
+            gMakeADrinkInProgress = false;
+            glb_last_RxMessage.cmd = eUARTCommand_flsc;
+            ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
+        }
 	}
 	// DEBUG REMOVE
 #endif
@@ -200,6 +218,16 @@ void MainLogicPeriodic() {
 			uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, ev, gStateMachine.state_id}, 3, false);
 			dbgCurrentState = gStateMachine.state_id;
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+	        if ((SMSodaStreamPure_StateId_STATE_FILTERING == dbgCurrentState) || (SMSodaStreamPure_StateId_STATE_CARBONATING == dbgCurrentState))
+	        {
+	            gMakeADrinkInProgress = true;
+	        }
+	        if (SMSodaStreamPure_StateId_STATE_SHOWSTATUS == dbgCurrentState)
+	        {
+	            gMakeADrinkInProgress = false;
+		        glb_last_RxMessage.cmd = eUARTCommand_flsc;
+		        ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
+			}
 		}
 		// DEBUG REMOVE
 #endif
@@ -468,6 +496,14 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
             echoCommand = false;
         }
         break;
+    case eUARTCommand_flsc:
+        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gFalseButMainCounter,(uint32_t)gFalseButCarbLevelCounter,(uint32_t)gFalseButFilterCounter}, 3, false);
+        COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gKeyPressButMainMS,(uint32_t)gKeyPressButCarbLevelMS,(uint32_t)gKeyPressButFilterMS}, 3, false);
+        COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+        echoCommand = false;
+        break;
+
 	default:
 	}
 	if (illegalCommand) {
