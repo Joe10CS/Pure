@@ -345,6 +345,12 @@ static void MX_RTC_Init(void)
 
   /* USER CODE BEGIN RTC_Init 1 */
 
+  // Needed for backup access
+  __HAL_RCC_PWR_CLK_ENABLE();
+  // Needed for writing BDCR/BKP
+  HAL_PWR_EnableBkUpAccess();
+  // Enables peripheral access
+  __HAL_RCC_RTC_ENABLE();
   /* USER CODE END RTC_Init 1 */
 
   /** Initialize RTC Only
@@ -364,6 +370,20 @@ static void MX_RTC_Init(void)
   }
 
   /* USER CODE BEGIN Check_RTC_BKUP */
+
+  // Clear RSF - ST recommendation to ensure a fresh synchronization cycle:
+  RTC->ICSR &= ~RTC_ICSR_RSF;  //
+  // Wait for register sync (safe 100ms timeout)
+  // TODO add watchdog reset as needed
+  uint32_t timeout = HAL_GetTick() + 100;
+  while ((RTC->ICSR & RTC_ICSR_RSF) == 0 && HAL_GetTick() < timeout);
+  if (HAL_RTCEx_BKUPRead(&hrtc, RTC_BKP_DR0) == RTC_BKP_RTC_STARTUP_MAGIC_NUMBER)
+  {
+      // RTC already started before - init done
+      return;
+  }
+  // Write the RTC Magic number for next power up
+  HAL_RTCEx_BKUPWrite(&hrtc, RTC_BKP_DR0, RTC_BKP_RTC_STARTUP_MAGIC_NUMBER);
 
   /* USER CODE END Check_RTC_BKUP */
 
