@@ -5,7 +5,7 @@
 #ifndef _MSC_VER
 #include "WS2811.h"
 #include "RTC.h"
-#include "FRAM.h"
+#include "RtcBackupMemory.h"
 #endif
 
 uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
@@ -327,7 +327,7 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         break;
 
     case eAnimation_StartUp:
-        FRAM_ReadElement(eFRAM_isFirstTimeSetupRequired, &val);
+        RBMEM_ReadElement(eRBMEM_isFirstTimeSetupRequired, &val);
         requestedFlow = ledsFlowStartup;
         requestedFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
         // check if normal startup
@@ -724,7 +724,7 @@ uint32_t OOTBGetCarbLevelLedStatusMask(void)
 {
     // This code assumes that
     uint32_t val = 0;
-    FRAM_ReadElement(eFRAM_isCO2OOTBResetRequired, &val);
+    RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
     bool isCo2Warning = (val != 0);
 
     val = 0; // used as mask now
@@ -745,7 +745,7 @@ uint32_t OOTBGetCarbLevelLedStatusMask(void)
 uint32_t OOTBGetFilterStatusMask(void)
 {
     uint32_t val = 0;
-    FRAM_ReadElement(eFRAM_isFilterOOTBResetRequired, &val);
+    RBMEM_ReadElement(eRBMEM_isFilterOOTBResetRequired, &val);
     return ((val == 0) ? eLED_FilterWhite : eLED_FilterOrange) | ALL_RING_LEDS_MASK;
 
 

@@ -10,10 +10,9 @@
 #include "string.h"
 #include "EventQueue.h"
 #include "RxTxMsgs.h"
-#include "LP5009.h"// TODO remove this on new Pure board
 #include "WS2811.h"
 #include "LedsPlayer.h"
-#include "FRAM.h"
+#include "RtcBackupMemory.h"
 #include "RTC.h"
 /* Private includes ----------------------------------------------------------*/
 
@@ -36,7 +35,6 @@
 /* External variables ---------------------------------------------------------*/
 // TIM1 runs the main logic each 10ms
 extern TIM_HandleTypeDef htim14;
-extern I2C_HandleTypeDef hi2c1;
 
 extern int8_t filtered_x;
 extern int8_t filtered_y;
@@ -140,8 +138,8 @@ uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_
  */
 void MainLogicInit(void) {
 
-    // Initialize the FRAM Storage
-    gCarbonationLevel = (eCarbonationLevel)FRAM_Init();
+    // Initialize the RBMEM Storage
+    gCarbonationLevel = (eCarbonationLevel)RBMEM_Data_Init();
     gPrevCarbonationLevel = gCarbonationLevel;
 
 	// Initialize the state machine
@@ -508,11 +506,11 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
     case eUARTCommand_fmem:
         if (msg->params.fmem.isSet == 1) {
             // set
-            FRAM_WriteElement(msg->params.fmem.id, (uint32_t)(msg->params.fmem.value));
+            RBMEM_WriteElement(msg->params.fmem.id, (uint32_t)(msg->params.fmem.value));
         } else {
             // get
             uint32_t value = 0;
-            FRAM_ReadElement(msg->params.fmem.id, &value);
+            RBMEM_ReadElement(msg->params.fmem.id, &value);
             msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_fmem, (uint32_t[]){msg->params.fmem.id, value}, 2, false);
             COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
             echoCommand = false;

@@ -17,7 +17,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "EventQueue.h"
-#include "FRAM.h"
+#include "RtcBackupMemory.h"
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
@@ -189,15 +189,14 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
 void CheckLongPressButtonsPeriodic()
 {
     uint32_t ootb = 0;
-    FRAM_ReadElement(eFRAM_isFirstTimeSetupRequired, &ootb);
+    RBMEM_ReadElement(eRBMEM_isFirstTimeSetupRequired, &ootb);
 
     if (gButtonsFunction && IS_FILTER_BUTTON_PRESSED() && IS_CARB_LEVEL_BUTTON_PRESSED() && (ootb == 0))
     {
         if (gLastFilterKeyPressTick + RESET_TO_OOTB_MSEC  < HAL_GetTick()) { // Long press on filter and carb level
-            FRAM_WriteElement(eFRAM_magicNumber, 0);
-        } else {
-            return;
+            RBMEM_WriteElement(eRBMEM_RTC_Time_Start_magicNumber, 0);
         }
+        return;
     }
     if (IS_FILTER_BUTTON_PRESSED() && (gIgnoreFilterButtonRelease == false) && (gLastFilterKeyPressTick > 0)) {
         if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
@@ -217,7 +216,7 @@ void CheckLongPressButtonsPeriodic()
     if (gPrevCarbonationLevel != gCarbonationLevel)
     {
         gPrevCarbonationLevel = gCarbonationLevel;
-        FRAM_WriteElement(eFRAM_lastCarbonationLevel, gCarbonationLevel);
+        RBMEM_WriteElement(eRBMEM_lastCarbonationLevel, gCarbonationLevel);
     }
 }
 

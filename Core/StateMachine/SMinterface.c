@@ -8,7 +8,7 @@
 #include "main.h"
 #include "SMinterface.h"
 #include "SMSodaStreamPure.h"
-#include "FRAM.h"
+#include "RtcBackupMemory.h"
 #include "LedsPlayer.h"
 #include "RTC.h"
 // TODO replace this with WS2811 as needed #include "LP5009.h"// TODO remove this on new Pure board
@@ -71,7 +71,7 @@ bool Tilted()
 uint32_t val = 0;
 bool IsOOTBState()
 {
-    if (HAL_OK == FRAM_ReadElement(eFRAM_isFirstTimeSetupRequired, &val)) {
+    if (HAL_OK == RBMEM_ReadElement(eRBMEM_isFirstTimeSetupRequired, &val)) {
         return (val != 0);
     }
     return false; // in case of error - assume not OOTB
@@ -83,23 +83,23 @@ bool IsLedsSequencePlaying()
 
 void ClearFilterOOTBFlag()
 {
-    FRAM_WriteElement(eFRAM_isFilterOOTBResetRequired, 0);
-    // check if need to clear the eFRAM_isFirstTimeSetupRequired
-    FRAM_ReadElement(eFRAM_isCO2OOTBResetRequired, &val);
+    RBMEM_WriteElement(eRBMEM_isFilterOOTBResetRequired, 0);
+    // check if need to clear the eRBMEM_isFirstTimeSetupRequired
+    RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
     if (val == 0) // Both cleared
     {
-        FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired,0);
+        RBMEM_WriteElement(eRBMEM_isFirstTimeSetupRequired,0);
     }
 }
 
 void ClearCO2OOTBFlag()
 {
-    FRAM_WriteElement(eFRAM_isCO2OOTBResetRequired, 0);
-    // check if need to clear the eFRAM_isFirstTimeSetupRequired
-    FRAM_ReadElement(eFRAM_isFilterOOTBResetRequired, &val);
+    RBMEM_WriteElement(eRBMEM_isCO2OOTBResetRequired, 0);
+    // check if need to clear the eRBMEM_isFirstTimeSetupRequired
+    RBMEM_ReadElement(eRBMEM_isFilterOOTBResetRequired, &val);
     if (val == 0) // Both cleared
     {
-        FRAM_WriteElement(eFRAM_isFirstTimeSetupRequired,0);
+        RBMEM_WriteElement(eRBMEM_isFirstTimeSetupRequired,0);
     }
 
 }
