@@ -16,7 +16,6 @@ bool SMEventQueue_IsFull(void)
 {
     return ((gSMEventQueue.head + 1) % SM_EVENT_QUEUE_SIZE) == gSMEventQueue.tail;
 }
-
 bool SMEventQueue_Add(SMSodaStreamPure_EventId event)
 {
     bool inInterrupt = IsInInterruptContext();

@@ -62,9 +62,7 @@ bool IsBottleFull()
 }
 bool Tilted()
 {
-	// TODO uncomment!!
-	//return gIsTilted
-	return false;
+	return gIsTilted;
 }
 
 

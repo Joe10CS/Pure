@@ -575,7 +575,7 @@ State_Tilted --> State_HWWatchdog : Event_HWWatchdog
 
 State_Tilted --> State_SafetyFail : Event_SafetyFail
 
-State_Tilted --> State_Awake : do [! Tilted()]
+State_Tilted --> State_AutomaticMode.(ChoicePoint)(OOTBorNormal) : do [! Tilted()]
 
 State_AutomaticMode --> State_Tilted : do [Tilted()]
 
@@ -4211,8 +4211,8 @@ evaluateGuard = null;
     #STATE_TILTED_do()
     {
         // State_Tilted behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "! Tilted()") || this.evaluateGuard("State_Tilted","do [! Tilted()] TransitionTo(State_Awake)")] / { this.tracer?.edgeTransition("edge2"); } TransitionTo(State_Awake)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "! Tilted()") || this.evaluateGuard("State_Tilted","do [! Tilted()] TransitionTo(State_Awake)"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "! Tilted()") || this.evaluateGuard("State_Tilted","do [! Tilted()] TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))")] / { this.tracer?.edgeTransition("edge2"); } TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "! Tilted()") || this.evaluateGuard("State_Tilted","do [! Tilted()] TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))"))
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             this.#STATE_TILTED_exit();
@@ -4220,12 +4220,12 @@ evaluateGuard = null;
             // Step 2: Transition action: `this.tracer?.edgeTransition("edge2");`.
             this.tracer?.edgeTransition("edge2");
             
-            // Step 3: Enter/move towards transition target `State_Awake`.
+            // Step 3: Enter/move towards transition target `State_AutomaticMode.<ChoicePoint>(OOTBorNormal)`.
             this.#STATE_AUTOMATICMODE_enter();
-            this.#STATE_AWAKE_enter();
+            // State_AutomaticMode.<ChoicePoint>(OOTBorNormal) is a pseudo state and cannot have an `enter` trigger.
             
             // Finish transition by calling pseudo state transition function.
-            this.#State_Awake_InitialState_transition();
+            this.#State_AutomaticMode_ChoicePoint_OOTBorNormal__transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
         } // end of behavior for State_Tilted
         

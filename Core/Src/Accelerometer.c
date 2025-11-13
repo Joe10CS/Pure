@@ -58,6 +58,9 @@ uint8_t count_slanted_minus_x_minus_y = 0;
 /* Private function prototypes -----------------------------------------------*/
 void AccelerometerWriteRegister(uint8_t reg, uint8_t val);
 void AccelerometerReadRegister(uint8_t reg, uint8_t *val);
+
+bool IsSlantedFast();
+bool gIsSlanted = false;
 /* Private user code ---------------------------------------------------------*/
 
 void AccelerometerInit(void)
@@ -77,108 +80,76 @@ void AccelerometerInit(void)
 }
 
 
-//void AccelerometerIsSlanted(void) {
-//	for(;;) {
-//		osDelay(10);
-//		if (IsSlanted()) {
-//			TurnOnALLLED();
-//		} else {
-//			TurnOffAllLEDS();
-//		}
-//	}
-//	return FALSE;
-//}
 bool IsSlanted() {
 #ifndef DEBUG_NO_ACCELEROMETER
-	bool slanted = false;
-	AccelerometerReadRegister(LIS2DE12_OUT_Z_H, &raw_g);
-	gz = TWOS_COMPLEMENT_UINT8_TO_DEC(raw_g);
-	filtered_z = ACCEL_FILTER_DATA(filtered_z,gz);
-	AccelerometerReadRegister(LIS2DE12_OUT_X_H, &raw_g);
-	gx = TWOS_COMPLEMENT_UINT8_TO_DEC(raw_g);
-	filtered_x = ACCEL_FILTER_DATA(filtered_x,gx);
-	AccelerometerReadRegister(LIS2DE12_OUT_Y_H, &raw_g);
-	gy = TWOS_COMPLEMENT_UINT8_TO_DEC(raw_g);
-	filtered_y = ACCEL_FILTER_DATA(filtered_y,gy);
+    uint8_t raw_g;
 
-//	if (rec_cnt<NUM_RECORD) {
-//	    rec_gx[rec_cnt] = gx;
-//	    rec_gy[rec_cnt] = gy;
-//	    rec_filt_gx[rec_cnt] = ABS_VAL(filtered_x)+ABS_VAL(filtered_y);
-//	    rec_cnt++;
-//	}
+    // ----------------------------
+    // 1. Read + Convert + Filter Z
+    // ----------------------------
+    AccelerometerReadRegister(LIS2DE12_OUT_Z_H, &raw_g);
+    int8_t gz = TWOS_COMPLEMENT_UINT8_TO_DEC(raw_g);
+    filtered_z = ACCEL_FILTER_DATA(filtered_z, gz);
 
-	// filtered Z is enough - no need for time threshold
-	slanted |= (filtered_z >= 0);
+    // ----------------------------
+    // 2. Read + Convert + Filter X
+    // ----------------------------
+    AccelerometerReadRegister(LIS2DE12_OUT_X_H, &raw_g);
+    int8_t gx = TWOS_COMPLEMENT_UINT8_TO_DEC(raw_g);
+    filtered_x = ACCEL_FILTER_DATA(filtered_x, gx);
 
-	if (ABS_VAL(filtered_x) > SINGLE_AXIS_SLANT) {
-		if (filtered_x  > 0) {
-			count_slanted_plux_x++;
-			count_slanted_minus_x = 0;
-		} else {
-			count_slanted_plux_x = 0;
-			count_slanted_minus_x++;
-		}
-	}
-	if (ABS_VAL(filtered_y) > SINGLE_AXIS_SLANT) {
-		if (filtered_y  > 0) {
-			count_slanted_plux_y++;
-			count_slanted_minus_y = 0;
-		} else {
-			count_slanted_plux_y = 0;
-			count_slanted_minus_y++;
-		}
-	}
-	if ((ABS_VAL(filtered_x) + ABS_VAL(filtered_y)) > TWO_AXES_SLANT) {
-		if (filtered_x > 0) {
-			if (filtered_y > 0) {
-				count_slanted_plux_x_plus_y++;
-				count_slanted_minus_x_plus_y = 0;
-				count_slanted_plux_x_minus_y = 0;
-				count_slanted_minus_x_minus_y = 0;
-			} else {
-				count_slanted_plux_x_plus_y = 0;
-				count_slanted_minus_x_plus_y = 0;
-				count_slanted_plux_x_minus_y++;
-				count_slanted_minus_x_minus_y = 0;
-			}
-		} else {
-			if (filtered_y > 0) {
-				count_slanted_plux_x_plus_y = 0;
-				count_slanted_minus_x_plus_y++;
-				count_slanted_plux_x_minus_y = 0;
-				count_slanted_minus_x_minus_y = 0;
-			} else {
-				count_slanted_plux_x_plus_y = 0;
-				count_slanted_minus_x_plus_y = 0;
-				count_slanted_plux_x_minus_y = 0;
-				count_slanted_minus_x_minus_y++;
-			}
-		}
-	}
+    // ----------------------------
+    // 3. Read + Convert + Filter Y
+    // ----------------------------
+    AccelerometerReadRegister(LIS2DE12_OUT_Y_H, &raw_g);
+    int8_t gy = TWOS_COMPLEMENT_UINT8_TO_DEC(raw_g);
+    filtered_y = ACCEL_FILTER_DATA(filtered_y, gy);
 
-	if ( slanted||
-		(count_slanted_plux_x > SLANTED_THRESHOLD_TIME_COUNT) ||
-		(count_slanted_minus_x > SLANTED_THRESHOLD_TIME_COUNT) ||
-		(count_slanted_plux_y > SLANTED_THRESHOLD_TIME_COUNT) ||
-		(count_slanted_minus_y > SLANTED_THRESHOLD_TIME_COUNT) ||
-		(count_slanted_plux_x_plus_y  > SLANTED_THRESHOLD_TIME_COUNT) ||
-		(count_slanted_minus_x_plus_y > SLANTED_THRESHOLD_TIME_COUNT) ||
-		(count_slanted_plux_x_minus_y > SLANTED_THRESHOLD_TIME_COUNT) ||
-		(count_slanted_minus_x_minus_y > SLANTED_THRESHOLD_TIME_COUNT)) {
-		count_slanted_plux_x = 0;
-		count_slanted_minus_x = 0;
-		count_slanted_plux_y = 0;
-		count_slanted_minus_y = 0;
-		count_slanted_plux_x_plus_y = 0;
-		count_slanted_minus_x_plus_y = 0;
-		count_slanted_plux_x_minus_y = 0;
-		count_slanted_minus_x_minus_y = 0;
-		return true;
-	}
-#endif// DEBUG_NO_ACCELEROMETER
-	return false;
+    // ----------------------------------------------------------
+    // 4. Upside-down / free-fall detection (must come before tilt)
+    // ----------------------------------------------------------
+    if (filtered_z >= 0) {
+        gIsSlanted = true;
+        return true;
+    }
+
+    // ----------------------------------------------------------
+    // 5. Compute squares (integer-only, no overflow)
+    // ----------------------------------------------------------
+    int32_t x2 = filtered_x * filtered_x;
+    int32_t y2 = filtered_y * filtered_y;
+    int32_t z2 = filtered_z * filtered_z;
+
+    int32_t mag2 = x2 + y2 + z2;
+
+    // ----------------------------------------------------------
+    // 6. Angle thresholds (45° enter, 35° exit)
+    //     thresholds scaled by 1000
+    // ----------------------------------------------------------
+    const int32_t COS45_SQ = 500;   // 0.5 * 1000
+    const int32_t COS35_SQ = 671;   // 0.671 * 1000
+
+    if (!gIsSlanted) {
+        // ENTER tilt if z² <= 0.5 * mag²
+        if (z2 * 1000 <= COS45_SQ * mag2)
+            gIsSlanted = true;
+    }
+    else {
+        // EXIT tilt if z² >= 0.671 * mag²
+        if (z2 * 1000 >= COS35_SQ * mag2)
+            gIsSlanted = false;
+    }
+
+    return gIsSlanted;
+
+#else// DEBUG_NO_ACCELEROMETER
+    return false;
+#endif
+
 }
+
+
+
 
 void AccelerometerWriteRegister(uint8_t reg, uint8_t val) {
 	// reg |= 0x40; - needed if writing multiple data bytes and need to auto increment write address

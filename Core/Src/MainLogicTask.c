@@ -597,6 +597,8 @@ void SendDoneMessage(eDoneResults result)
 	COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 }
 
+//extern UART_HandleTypeDef huart2;
+//bool prevTilted = false;
 void CheckHWAndGenerateEventsAsNeeded()
 {
 
@@ -604,11 +606,20 @@ void CheckHWAndGenerateEventsAsNeeded()
 	if (gAccelerometerIsPresent)
 	{
 		gIsTilted = IsSlanted();
-	}
-	//if (gWaterLevelIsActive)
-	{
+
+//		// DEBUG REMOVE
+//		if (prevTilted != gIsTilted)
+//		{
+//		    prevTilted = gIsTilted;
+//		    HAL_UART_Transmit_DMA(&huart2, (const uint8_t *)(gIsTilted ? "not tilted->TILTED\r\n" : "TILTED->not tilted\r\n") , 20);
+//		}
+//		// DEBUG REMOVE
 
 	}
+	//if (gWaterLevelIsActive)
+//	{
+//
+//	}
 }
 
 //void DBGSendMessage(char *msg)
