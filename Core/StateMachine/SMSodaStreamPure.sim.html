@@ -527,7 +527,7 @@ State_SafetyFail : enter / #123; StopUVLed()#59; #125;
 
 State_SafetyFail : enter / #123; StopCarbonation()#59; #125;
 
-State_SafetyFail : enter / #123; LedsSequence(LEDS_Malfunction)#59; #125;
+State_SafetyFail : enter / #123; LedsSequence(LEDS_SafetyError)#59; #125;
 
 %% Initial state name as "." so that it fits in black circle shape.
 %% See https://github.com/StateSmith/StateSmith/issues/404
@@ -543,7 +543,7 @@ State_HWWatchdog : enter / #123; StopUVLed()#59; #125;
 
 State_HWWatchdog : enter / #123; StopCarbonation()#59; #125;
 
-State_HWWatchdog : enter / #123; LedsSequence(LEDS_Malfunction)#59; #125;
+State_HWWatchdog : enter / #123; LedsSequence(LEDS_HWWatchdog)#59; #125;
 
 state State_GUIControlMode {
 
@@ -4075,10 +4075,10 @@ evaluateGuard = null;
         } // end of behavior for State_HWWatchdog
         
         // State_HWWatchdog behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Malfunction);"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_HWWatchdog);"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Malfunction);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Malfunction);");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_HWWatchdog);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_HWWatchdog);");
         } // end of behavior for State_HWWatchdog
     }
     
@@ -4132,10 +4132,10 @@ evaluateGuard = null;
         } // end of behavior for State_SafetyFail
         
         // State_SafetyFail behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Malfunction);"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_SafetyError);"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Malfunction);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Malfunction);");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_SafetyError);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_SafetyError);");
         } // end of behavior for State_SafetyFail
     }
     

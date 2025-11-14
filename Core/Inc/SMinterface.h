@@ -43,7 +43,9 @@ typedef enum
 	LEDS_CO2Warning,
 	LEDS_allOff,
 	LEDS_CO2Level,
-	LEDS_Malfunction
+	LEDS_Malfunction,
+	LEDS_HWWatchdog,
+	LEDS_SafetyError
 }eLedsSequence;
 void FadeOutAmbiantLight();
 

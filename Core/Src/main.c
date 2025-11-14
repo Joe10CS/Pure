@@ -328,6 +328,11 @@ static void MX_IWDG_Init(void)
 
   /* USER CODE BEGIN IWDG_Init 0 */
 
+    // Uncomment these when debug
+    //#warning  Debug Mode, MX_IWDG_Init is skipped!
+    //return;
+
+
 #ifdef DEBUG_NO_SAFETY
 #warning  DEBUG_NO_SAFETY is defined, MX_IWDG_Init is skipped!
     return;

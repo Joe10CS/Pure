@@ -123,6 +123,7 @@ typedef enum {
 #define ALL_RING_LEDS_MASK (0xFF)
 #define ALL_CO2_MASK (0x3f300)
 #define ALL_FILTER_MASK (0xC00)
+#define ALL_ORANGE_CO2_AND_FILTER_MASK (0x2aa00)
 #define ALL_LEDS_MASK (0x3FFFF)
 #define ALL_WHITE_LEDS_MASK (0x155FF)
 // The values here should be bits corresponding to the actual LED hardware
@@ -179,6 +180,7 @@ typedef enum {
     eAnimation_CO2Warning, // CO2 warning animation, currently implemented only on OOTB state
     eAnimation_OOTBStatus, // Shows the current status of CO2 and Filter on OOTB procedure
     eAnimation_CO2Level, // Update the CO2 level LEDS in normal mode
+    eAnimation_DeviceError, // For HW or Safety Fault
 
 	// special animation to clear leds from last value -
 	// i.e if led is not at 100% it will go down from the last value it was

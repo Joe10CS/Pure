@@ -43,10 +43,10 @@ sLedsStep clearAllLedsStep = {
 // this is a generick blinking sequence, when playing, the ledIdMask is set dynamically
 #define LEDFLOW_BLINKING_LOOP_STEPS (4)
 sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
-        {eLED_FilterOrange,   0,   0, 0, 12, 120, eLEdEase_constant},
-        {eLED_FilterOrange,   120,   0, 255, 6, 64, eLedEase_OutExpo},
-        {eLED_FilterOrange,   184,   255, 255, 12, 120, eLEdEase_constant},
-        {eLED_FilterOrange,   184,   255, 0, 6, 64, eLedEase_OutExpo}
+        {ALL_ORANGE_CO2_AND_FILTER_MASK,     0,   0,   0, 65, 650, eLEdEase_constant},
+        {ALL_ORANGE_CO2_AND_FILTER_MASK,   650,   0, 255, 35, 350, eLedEase_OutExpo},
+        {ALL_ORANGE_CO2_AND_FILTER_MASK,  1000, 255, 255, 65, 650, eLEdEase_constant},
+        {ALL_ORANGE_CO2_AND_FILTER_MASK,  1650, 255,   0, 35, 350, eLedEase_OutExpo}
 };
 
 //#define LEDFLOW_RING_STARTUP_STEPS (5)
@@ -240,6 +240,11 @@ sLedsSequence sequenceCO2Level[LEDFLOW_DISPLAY_CO2_LEVEL_STEPS] = {
 
 
 
+#define LEDFLOW_DEVICE_ERROR_STEPS (1)
+sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
+        { LEDFLOW_BLINKING_LOOP_STEPS, 0, stepsBlinking, ENDLESS_LOOP, 0 },
+};
+
 // ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
 #define LEDS_FLOW_STARTUP_LEN (5)
 #define STARTUP_FLOW_STATUS_SEQ_IDX (4)
@@ -282,6 +287,10 @@ sLedsFlowDef ledsFlowCO2LevelStatus[LEDS_FLOW_CO2_ELVEL_LEN] = {
         {sequenceCO2Level, LEDFLOW_DISPLAY_CO2_LEVEL_STEPS}
 };
 
+#define LEDS_FLOW_DEVICE_ERROR_LEN (1)
+sLedsFlowDef ledsFlowDeviceErrorStatus[LEDS_FLOW_DEVICE_ERROR_LEN] = {
+        {sequenceDeviceError, LEDFLOW_DEVICE_ERROR_STEPS}
+};
 
 ///--- Global Animation Parameters ----------------------------------------------------------------------------------------
 uint8_t gLeds[NUMBER_OF_LEDS] = {0};
@@ -385,12 +394,19 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         requestedFlowTotalSteps = LEDS_FLOW_CO2_ELVEL_LEN;
         break;
 
+    case eAnimation_DeviceError:
+        requestedFlow = ledsFlowDeviceErrorStatus;
+        requestedFlowTotalSteps = LEDS_FLOW_DEVICE_ERROR_LEN;
+        break;
+
     // TODO - this is here to cover animations that are not yet implemented
     case eAnimation_StartUpCO2: // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
     case eAnimation_FilterWarning: // filter warning animation base on number of days left
     case eAnimation_CO2Warning: // CO2 warning animation, currently implemented only on OOTB state
         animation = eAnimation_none;
         break;
+
+
 
     default: // also for eAnimation_none
         requestedFlow = NULL;
@@ -495,7 +511,16 @@ void PlayLedsPeriodic(void)
         WS_SetLeds(gLeds, NUMBER_OF_LEDS);
         // To stop it when done (done after the above for loop since gCurrentAnimation may be used there)
         if (elapsed >= clearAllLedsStep.totalMs) {
-            gCurrentAnimation = eAnimation_none;
+            if (IsPendingAnimation()) { // if pending animation after the stop - play it
+                pCurrentFlow = pPendingFlow;
+                gCurrentFlowTotalSteps = gPendingFlowTotalSteps;
+                gCurrentAnimation = gPendingAnimation;
+                // this must be done after copying the pending to current
+                ZeroGlobalAnimationParams(false, true);
+                SetCurrentFlowLoopEntryMSValues(pCurrentFlow[0].seq, pCurrentFlow[0].length);
+            } else {
+                gCurrentAnimation = eAnimation_none;
+            }
         }
         return;
     }

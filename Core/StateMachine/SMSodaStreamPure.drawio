@@ -1,6 +1,6 @@
 <mxfile host="Electron" scale="1.2" border="0" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/28.2.7 Chrome/138.0.7204.251 Electron/37.7.1 Safari/537.36" version="28.2.7" pages="3">
   <diagram name="design" id="ahwWs56YI2XBYRBzwlqw">
-    <mxGraphModel dx="5360" dy="3526" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="5018" dy="3328" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -890,7 +890,7 @@
         <mxCell id="qZF7NaJGXNpq08xq_DYa-73" value="State_SafetyFail" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fillColor=#a20025;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#6F0000;fontColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="191.18" y="-629" width="310" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="qZF7NaJGXNpq08xq_DYa-74" value="enter / StopWaterPump();&#xa;enter / StopUVLed();&#xa;enter / StopCarbonation();&#xa;enter / LedsSequence(LEDS_Malfunction);&#xa;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-73" vertex="1" connectable="0">
+        <mxCell id="qZF7NaJGXNpq08xq_DYa-74" value="enter / StopWaterPump();&#xa;enter / StopUVLed();&#xa;enter / StopCarbonation();&#xa;enter / LedsSequence(LEDS_SafetyError);&#xa;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-73" vertex="1" connectable="0">
           <mxGeometry y="30" width="310" height="70" as="geometry" />
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-75" value="" style="endArrow=classic;html=1;rounded=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeWidth=2;curved=0;strokeColor=#FF0000;exitX=1;exitY=0.75;exitDx=0;exitDy=0;" parent="1" source="qZF7NaJGXNpq08xq_DYa-5" target="qZF7NaJGXNpq08xq_DYa-73" edge="1">
@@ -917,8 +917,8 @@
         <mxCell id="qZF7NaJGXNpq08xq_DYa-79" value="State_HWWatchdog" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fillColor=#a20025;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#6F0000;fontColor=#ffffff;" parent="1" vertex="1">
           <mxGeometry x="451.18000000000006" y="-921" width="310" height="120" as="geometry" />
         </mxCell>
-        <mxCell id="qZF7NaJGXNpq08xq_DYa-80" value="enter / StopWaterPump();&#xa;enter / StopUVLed();&#xa;enter / StopCarbonation();&#xa;enter / LedsSequence(LEDS_Malfunction);&#xa;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-79" vertex="1" connectable="0">
-          <mxGeometry y="30" width="310" height="70" as="geometry" />
+        <mxCell id="qZF7NaJGXNpq08xq_DYa-80" value="enter / StopWaterPump();&#xa;enter / StopUVLed();&#xa;enter / StopCarbonation();&#xa;enter / LedsSequence(LEDS_HWWatchdog);&#xa;" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" parent="qZF7NaJGXNpq08xq_DYa-79" vertex="1" connectable="0">
+          <mxGeometry y="30" width="300" height="70" as="geometry" />
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-81" value="" style="endArrow=classic;html=1;rounded=1;entryX=0.25;entryY=0;entryDx=0;entryDy=0;strokeWidth=2;curved=0;strokeColor=#FF0000;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="qZF7NaJGXNpq08xq_DYa-3" target="qZF7NaJGXNpq08xq_DYa-79" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">

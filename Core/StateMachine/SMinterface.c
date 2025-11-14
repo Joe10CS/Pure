@@ -211,9 +211,21 @@ void LedsSequence(eLedsSequence seq)
         StartAnimation(eAnimation_CO2Level, true);
         break;
     case LEDS_Malfunction:
-        // TODO turning all leds off is cirrect for tilt mode - need to check what about HW or Security faults
         StartAnimation(eAnimation_ClearLedsFromLastValue, true);
         break;
+    case LEDS_HWWatchdog:
+        // Turn Off Leds
+        StartAnimation(eAnimation_ClearLedsFromLastValue, true);
+        // Add a pending Error Sequance
+        StartAnimation(eAnimation_DeviceError, false); // false - add as pending
+        break;
+    case LEDS_SafetyError:
+        // Turn Off Leds
+        StartAnimation(eAnimation_ClearLedsFromLastValue, true);
+        // Add a pending Error Sequance
+        StartAnimation(eAnimation_DeviceError, false); // false - add as pending
+        break;
+
     }
 }
 
