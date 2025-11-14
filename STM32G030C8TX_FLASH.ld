@@ -147,6 +147,14 @@ SECTIONS
     _edata = .;        /* define a global symbol at data end */
 
   } >RAM AT> FLASH
+  
+  /* Place a 32-bit checksum word near the end of flash */
+  .check_sum :
+  {
+      . = ALIGN(64);
+      _Check_Sum = .;
+      LONG(0x376016D4);
+  } >FLASH
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);

@@ -186,9 +186,10 @@ void MainLogicPeriodic() {
 
 	if (gFirstTime)
 	{
-#ifdef DEBUG_WS_LEDS
-//		WS_SetLeds(mLedsp, 3); // TODO debug remove
+#ifndef DEBUG_NO_SAFETY
+	    SafetyFlash_Init();
 #endif
+
 		gFirstTime = false;
 		// Start reading from the UART
 		COMM_UART_StartRx();
@@ -199,6 +200,10 @@ void MainLogicPeriodic() {
 
 	//	StartAnimation(eAnimation_MakeADrinkProgress);
 	}
+#ifndef DEBUG_NO_SAFETY
+	SafetyFlash_Periodic();
+#endif
+
 	PlayLedsPeriodic();
 	CheckLongPressButtonsPeriodic();
 
