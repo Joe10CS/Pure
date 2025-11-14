@@ -7,9 +7,6 @@
 #define INC_COMMON_H_
 
 
-//#define DEBUG_NO_SAFETY
-//#define DEBUG_NO_ACCELEROMETER
-
 #define READY_STATE_TIMEOUT_MSECS (10000U)
 #define FILTER_TO_CARBONATION_DELAY_MSECS (1000U)
 #define MAX_NUMBER_OF_CARBONATION_STEPS (8)
@@ -43,4 +40,6 @@ typedef enum {
 void SendDoneMessage(eDoneResults result);
 void CheckLongPressButtonsPeriodic();
 bool IsAnyKeyPressed();
+
+extern uint32_t glb_safty_error_state;
 #endif /* INC_COMMON_H_ */

@@ -33,6 +33,11 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include <stdbool.h>
 #include "Common.h"
+#ifndef ALLOC_GLOBALS
+#include "stm32xx_STLparam.h"
+#include "stm32xx_STLlib.h"
+#endif
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -50,6 +55,19 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+
+#define SAFETY_OK_STATE (0)
+#define SAFETY_ERROR_STATE (0x55555555)
+void PURE_STL_Init(void);
+
+//#define DEBUG_NO_SAFETY
+#ifdef DEBUG_NO_SAFETY
+#warning  DEBUG_NO_SAFETY is defined!
+#endif
+//#define DEBUG_NO_ACCELEROMETER
+#ifdef DEBUG_NO_ACCELEROMETER
+#warning  DEBUG_NO_ACCELEROMETER is defined!
+#endif
 
 /* USER CODE END EM */
 
@@ -77,6 +95,8 @@ HAL_StatusTypeDef StartADCConversion();
 
 void WS_InitLeds(void);
 
+// dummy function used by STL
+extern void StartUpClock_Config();
 
 extern bool gIsGuiControlMode;
 extern eCarbonationLevel gCarbonationLevel;

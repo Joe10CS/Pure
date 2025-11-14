@@ -62,12 +62,16 @@ REM ECHO to see what is going on
 ECHO %SREC_PATH%\srec_cat.exe ^
 	%INPUT_HEX% ^
 	-crop 0x08000000 %CRC_ADDR% ^
-	-stm32-l-e %CRC_ADDR% ^
+	-byte_swap 4 ^
+	-stm32-b-e %CRC_ADDR% ^
+	-byte_swap 4 ^
 	-o %TMP_FILE% -intel	
 %SREC_PATH%\srec_cat.exe ^
 	%INPUT_HEX% ^
 	-crop 0x08000000 %CRC_ADDR% ^
-	-stm32-l-e %CRC_ADDR% ^
+	-byte_swap 4 ^
+	-stm32-b-e %CRC_ADDR% ^
+	-byte_swap 4 ^
 	-o %TMP_FILE% -intel	
 ) else (
 REM ECHO to see what is going on

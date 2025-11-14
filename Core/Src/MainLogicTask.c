@@ -77,6 +77,9 @@ uint16_t gPeriodicStatusSendInterval = 0;
 uint16_t gPeriodicStatusSendMask = 0;
 uint32_t gPeriodicStatusSendLastTickSent = 0;
 
+uint32_t glb_safty_error_state = SAFETY_OK_STATE;
+extern IWDG_HandleTypeDef hiwdg;
+
 extern void PlayLedsPeriodic();
 
 // Defines the state of the pin at home position, default is 1 (SET)
@@ -138,6 +141,10 @@ uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_
  */
 void MainLogicInit(void) {
 
+#ifndef DEBUG_NO_SAFETY
+    PURE_STL_Init();
+#endif
+
     // Initialize the RBMEM Storage
     gCarbonationLevel = (eCarbonationLevel)RBMEM_Data_Init();
     gPrevCarbonationLevel = gCarbonationLevel;
@@ -165,6 +172,9 @@ void MainLogicInit(void) {
 	// Initialize the filter RTC timer
 	//FilterRTCTimer_Init();
 
+#ifndef DEBUG_NO_SAFETY
+    STL_InitRunTimeChecks();
+#endif
 	// starts the main logic timer
 	HAL_TIM_Base_Start_IT(&htim14);
 
@@ -183,11 +193,15 @@ uint8_t mLedsp[NUMBER_OF_LEDS] = {0};
 
 void MainLogicPeriodic() {
 
+    // periodic reset watchdog
+#ifndef DEBUG_NO_SAFETY
+    HAL_IWDG_Refresh(&hiwdg);
+#endif
 
 	if (gFirstTime)
 	{
 #ifndef DEBUG_NO_SAFETY
-	    SafetyFlash_Init();
+        STL_FlashCrc32Init();
 #endif
 
 		gFirstTime = false;
@@ -201,7 +215,8 @@ void MainLogicPeriodic() {
 	//	StartAnimation(eAnimation_MakeADrinkProgress);
 	}
 #ifndef DEBUG_NO_SAFETY
-	SafetyFlash_Periodic();
+    // Periodic safety check
+    STL_DoRunTimeChecks();
 #endif
 
 	PlayLedsPeriodic();
@@ -632,3 +647,218 @@ void CheckHWAndGenerateEventsAsNeeded()
 //	sprintf((char *)gRawMsgForEcho, "$%s\r\n",msg);
 //	COMM_UART_QueueTxMessage(gRawMsgForEcho, strlen((const char *)gRawMsgForEcho));
 //}
+void PURE_STL_Init(void)
+{
+//  uint32_t crc_result;
+//  uint32_t index;
+//  ClockStatus clk_sts;
+
+  /* block run time tests performed at SysTick interrupt */
+  TickCounter= TickCounterInv= 0;
+
+//  /*--------------------------------------------------------------------------*/
+//  /*--------------------- Invariable memory CRC check ------------------------*/
+//  /*--------------------------------------------------------------------------*/
+//
+//  control_flow_call(CRC32_TEST_CALLER);
+//  /* Compute the 32-bit crc of the whole Flash by CRC unit except the checksum
+//     pattern stored at top of FLASH */
+//
+//  __CRC_CLK_ENABLE();
+//
+//  CrcHandle.Instance = CRC;
+//  CrcHandle.State = HAL_CRC_STATE_RESET;
+//    CrcHandle.Init.DefaultPolynomialUse    = DEFAULT_POLYNOMIAL_ENABLE;
+//    CrcHandle.Init.DefaultInitValueUse     = DEFAULT_INIT_VALUE_ENABLE;
+//    CrcHandle.Init.InputDataInversionMode  = CRC_INPUTDATA_INVERSION_NONE;
+//    CrcHandle.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLED;
+//    CrcHandle.InputDataFormat              = CRC_INPUTDATA_FORMAT_WORDS;
+//  HAL_CRC_Init(&CrcHandle);
+//
+//    /* the next for cycle replaces the standard HAL function call
+//       crc_result = HAL_CRC_Calculate(&CrcHandle, (uint32_t *)ROM_START, (uint32_t)ROM_SIZEinWORDS);
+//       due to bug at IAR linker - check sum computation can't support both big & little endian  */
+//
+//    for(index = 0; index < (uint32_t)ROM_SIZEinWORDS; index++)
+//    {
+//      CRC->DR = __REV(*((uint32_t *)ROM_START + index));
+//    }
+//    crc_result = CRC->DR;
+//
+//  control_flow_resume(CRC32_TEST_CALLER);
+//
+//  /* Store pattern for regular 32-bit crc computation */
+//  control_flow_call(CRC_TEST_CALLER);
+//  /* ==============================================================================*/
+//  /* MISRA violation of rule 10.1, 11.3 and 11.4: integral casting and pointer arithmetic
+//     is used here to manage the crc computation and Check Class B var integrity */
+//
+//  /* ==============================================================================*/
+//
+//    /* Computed 32-bit crc check is temporary stored at crc_result. This value must be copied
+//       into __Check_Sum address placed at the end of Flash area (see file startup_stm32xx.s)
+//       Condition here can be reversed for debugging */
+//
+//    if(crc_result != *(uint32_t *)(&REF_CRC32))
+//    {
+//      FailSafePOR();
+//    }
+//    else
+//    { /* Test OK */
+//
+//      /* If else statement is not executed, it will be detected by control flow monitoring */
+//      control_flow_resume(CRC_TEST_CALLER);
+//    }
+//
+//  HAL_CRC_DeInit(&CrcHandle);
+//
+//
+//  /*--------------------------------------------------------------------------*/
+//  /* --------------------- Variable memory functional test -------------------*/
+//  /*--------------------------------------------------------------------------*/
+//
+//  /* no stack operation can be performed during the test */
+//  __disable_irq();
+//
+//  /* WARNING: The stack is initialized into background pattern when exiting from this routine */
+//  if (STL_FullRamMarchC(RAM_START, RAM_END, BCKGRND, RAM_BCKUP) != SRAMTEST_SUCCESS)
+//  {
+//    FailSafePOR();
+//  }
+//
+//  /* restore interrupt capability */
+//  __enable_irq();
+//
+//
+//  /* Initialization of counters for control flow monitoring
+//     (destroyed during RAM test) */
+//  init_control_flow();
+
+  /*--------------------------------------------------------------------------*/
+  /*------------- Store reference 32-bit CRC in RAM after RAM test -----------*/
+  /*--------------------------------------------------------------------------*/
+  control_flow_call(CRC_STORE_CALLER);
+
+  /* restore destroyed content of HAL structure for CRC */
+  CrcHandle.Instance = CRC;
+  CrcHandle.State= HAL_CRC_STATE_READY;
+
+  /* read and store content of CRC calculation result */
+  RefCrc32 = HAL_CRC_Accumulate(&CrcHandle, 0u, 0u);
+  RefCrc32Inv = ~RefCrc32;
+
+  control_flow_resume(CRC_STORE_CALLER);
+
+//  /*--------------------------------------------------------------------------*/
+//  /*----------------------- Clock Frequency Self Test ------------------------*/
+//  /*--------------------------------------------------------------------------*/
+//  control_flow_call(CLOCK_TEST_CALLER);
+//
+//  /* refresh HAL static variables keeping system tick frequency value */
+//  uwTickFreq = HAL_TICK_FREQ_DEFAULT;
+//  uwTickPrio = TICK_INT_PRIORITY;
+//  HAL_SetTickFreq(HAL_TICK_FREQ_DEFAULT);
+//
+//  /* test LSI & HSE clock systems */
+//  clk_sts = STL_ClockStartUpTest();
+//
+//
+//  if(clk_sts != FREQ_OK)
+//  {
+//      FailSafePOR();
+//  }
+//
+//  control_flow_resume(CLOCK_TEST_CALLER);
+//
+//
+//  /*--------------------------------------------------------------------------*/
+//  /* --------------- Initialize stack overflow pattern ---------------------- */
+//  /*--------------------------------------------------------------------------*/
+
+  control_flow_call(STACK_OVERFLOW_TEST);
+
+  aStackOverFlowPtrn[0] = 0xEEEEEEEEuL;
+  aStackOverFlowPtrn[1] = 0xCCCCCCCCuL;
+  aStackOverFlowPtrn[2] = 0xBBBBBBBBuL;
+  aStackOverFlowPtrn[3] = 0xDDDDDDDDuL;
+
+//  control_flow_resume(STACK_OVERFLOW_TEST);
+//
+//  /*--------------------------------------------------------------------------*/
+//  /* -----  Verify Control flow before Starting main program execution ------ */
+//  /*--------------------------------------------------------------------------*/
+//
+//  if (control_flow_check_point(CHECKPOINT2) == ERROR)
+//  {
+//     FailSafePOR();
+//  }
+//
+//  /* startup test completed successfully - restart the application */
+//  GotoCompilerStartUp();
+
+}
+void StartUpClock_Config() {
+
+}
+
+void Pure_STL_SysTick_Handler(void) {
+    /* Verify TickCounter integrity */
+    if ((TickCounter ^ TickCounterInv) == 0xFFFFFFFFuL) {
+        TickCounter++;
+        TickCounterInv = ~TickCounter;
+
+        if (TickCounter >= SYSTICK_10ms_TB) {
+            uint32_t RamTestResult;
+
+            /* Reset timebase counter */
+            TickCounter = 0u;
+            TickCounterInv = 0xFFFFFFFFuL;
+
+            /* Set Flag read in main loop */
+            TimeBaseFlag = 0xAAAAAAAAuL;
+            TimeBaseFlagInv = 0x55555555uL;
+
+            ISRCtrlFlowCnt += RAM_MARCHC_ISR_CALLER;
+            __disable_irq();
+            RamTestResult = STL_TranspMarch();
+            __enable_irq();
+            ISRCtrlFlowCntInv -= RAM_MARCHC_ISR_CALLER;
+
+            switch (RamTestResult) {
+            case TEST_RUNNING:
+                break;
+            case TEST_OK:
+                break;
+            case TEST_FAILURE:
+            case CLASS_B_DATA_FAIL:
+            default:
+                FailSafePOR();
+                break;
+            } /* End of the switch */
+
+            /* Do we reached the end of RAM test? */
+            /* Verify 1st ISRCtrlFlowCnt integrity */
+            if ((ISRCtrlFlowCnt ^ ISRCtrlFlowCntInv) == 0xFFFFFFFFuL) {
+                if (RamTestResult == TEST_OK) {
+                    /* ==============================================================================*/
+                    /* MISRA violation of rule 17.4 - pointer arithmetic is used to check RAM test control flow */
+                    if (ISRCtrlFlowCnt != RAM_TEST_COMPLETED)
+                    /* ==============================================================================*/
+                    {
+                        FailSafePOR();
+                    } else /* Full RAM was scanned */
+                    {
+                        ISRCtrlFlowCnt = 0u;
+                        ISRCtrlFlowCntInv = 0xFFFFFFFFuL;
+                    }
+                } /* End of RAM completed if*/
+            } /* End of control flow monitoring */
+            else {
+                FailSafePOR();
+            }
+        } /* End of the 10 ms timebase interrupt */
+    }
+
+    /* USER CODE END SysTick_IRQn 1 */
+}
+
