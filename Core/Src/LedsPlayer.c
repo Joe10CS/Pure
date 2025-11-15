@@ -8,7 +8,9 @@
 #include "RtcBackupMemory.h"
 #endif
 
-uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
+// Easing functions data
+// Note: this defined as const to keep it in Flash memory
+const uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
         { // eLedEase_InOutQuad
                 0,0,0,0,0,0,0,0,1,1,1,1,1,1,2,2,2,2,3,3,3,3,4,4,5,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,13,13,14,15,15,16,17,17,18,19,20,20,21,22,23,24,25,25,26,27,28,29,30,31,
                 32,33,34,35,36,37,38,40,41,42,43,44,45,47,48,49,50,51,53,54,55,57,58,59,61,62,64,65,66,68,69,71,72,74,75,77,78,80,82,83,85,86,88,90,91,93,95,97,98,100,102,104,106,107,109,111,113,115,117,119,121,123,125,127,
@@ -42,7 +44,7 @@ sLedsStep clearAllLedsStep = {
 
 // this is a generick blinking sequence, when playing, the ledIdMask is set dynamically
 #define LEDFLOW_BLINKING_LOOP_STEPS (4)
-sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
+const sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
         {ALL_ORANGE_CO2_AND_FILTER_MASK,     0,   0,   0, 65, 650, eLEdEase_constant},
         {ALL_ORANGE_CO2_AND_FILTER_MASK,   650,   0, 255, 35, 350, eLedEase_OutExpo},
         {ALL_ORANGE_CO2_AND_FILTER_MASK,  1000, 255, 255, 65, 650, eLEdEase_constant},
@@ -59,7 +61,7 @@ sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
 //};
 
 #define LEDFLOW_STARTUP_CIRCLE_STEPS (5)
-sLedsStep stepsStartupCircle[LEDFLOW_STARTUP_CIRCLE_STEPS] = {
+const sLedsStep stepsStartupCircle[LEDFLOW_STARTUP_CIRCLE_STEPS] = {
         // Steps of "RING Strtup
         {eLED_Circle7,          0,   0, 255, 16, 160, eLedEase_InOutQuad},
         {eLED_Circle8 | eLED_Circle6,  80,   0, 255, 16, 160, eLedEase_InOutQuad},
@@ -119,7 +121,7 @@ sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
 // Modified values to make the progress according to the figma design
 // Factor: 1.8333 slower
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
-sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
+const sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
         {eLED_Circle3,   0, 255,   0, 22, 220, eLedEase_InOutQuad},
         {eLED_Circle4,   0,   0, 255, 11, 110, eLedEase_InOutQuad},
         {eLED_Circle4, 110, 255,   0, 22, 220, eLedEase_InOutQuad},
@@ -152,9 +154,10 @@ sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
 sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
         { 1,   0, (sLedsStep[]) { { eLED_Circle3, 0, 0, 255, 40, 400, eLedEase_OutExpo } }, 0, 0 },
-        { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 400, stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
+        { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 400, (sLedsStep *)stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
 };
-
+// Compilation warning note: the casting to (sLedsStep *) is needed to avoid a warning about initializing pointer to non-const from const array
+// because stepsRingProgress is defined as const to be in flash memory
 
 //#define LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN (2)
 //sLedsSequence sequenceMakeDrinkSuccessFinishRing[LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN] = {
@@ -173,20 +176,20 @@ sLedsSequence sequenceMakeDrinkSuccessInterstitial[LEDFLOW_RING_SUCCESS_INTERSTI
 };
 
 #define LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS (4)
-sLedsStep stepsRingSuccessInnerLoop[LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS] = {
-        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255,   0,  6, 64, eLedEase_InOutQuad},
-        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,  64,   0,   0,  6, 64, eLEdEase_constant},
-        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 128,   0, 255,  6, 64, eLedEase_OutExpo},
-        {eLED_Circle1 | eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle5 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 192, 255, 255, 12, 120, eLEdEase_constant}
+const sLedsStep stepsRingSuccessInnerLoop[LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS] = {
+        {ALL_RING_LEDS_MASK,   0, 255,   0,  6, 64, eLedEase_InOutQuad},
+        {ALL_RING_LEDS_MASK,  64,   0,   0,  6, 64, eLEdEase_constant},
+        {ALL_RING_LEDS_MASK, 128,   0, 255,  6, 64, eLedEase_OutExpo},
+        {ALL_RING_LEDS_MASK, 192, 255, 255, 12, 120, eLEdEase_constant}
 };
 #define LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT (3)
 
 #define LEDFLOW_RING_SUCCESS_SEQUENCE_LEN (7)
-sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
+const sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
         { 1, 360, (sLedsStep[]){ {eLED_Circle1 | eLED_Circle5, 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
         { 1, 420, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle4 | eLED_Circle8 | eLED_Circle6, 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
         { 1, 480, (sLedsStep[]){ {eLED_Circle3 | eLED_Circle7 , 0, 0, 255, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
-        { LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS, 840, stepsRingSuccessInnerLoop, LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT, 0 },
+        { LEDFLOW_RING_SUCCESS_INNER_LOOP_STEPS, 840, (sLedsStep *)stepsRingSuccessInnerLoop, LEDFLOW_RING_SUCCESS_INNER_LOOP_REPEAT, 0 },
         { 1, 2296, (sLedsStep[]){ {eLED_Circle1 | eLED_Circle5, 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
         { 1, 2356, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle4 | eLED_Circle8 | eLED_Circle6, 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
         { 1, 2416, (sLedsStep[]){ {eLED_Circle3 | eLED_Circle7 , 0, 255, 0, 12, 120, eLedEase_InOutQuad}}, 0, 0 },
@@ -195,7 +198,7 @@ sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
 
 //--------------------- Ring Loader Steps (Rinsing/Filtering) -------------------
 #define LEDFLOW_RING_LOADER_LOOP_STEPS (4)
-sLedsStep stepsRingLoaderLoop[LEDFLOW_RING_LOADER_LOOP_STEPS] = {
+const sLedsStep stepsRingLoaderLoop[LEDFLOW_RING_LOADER_LOOP_STEPS] = {
     {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255,   0, 32, 320, eLedEase_InOutQuad},
     {eLED_Circle1 | eLED_Circle5,   0,  0, 255, 32, 320, eLedEase_InOutQuad},
     {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 320,   0, 255, 32, 320, eLedEase_InOutQuad},
@@ -203,13 +206,13 @@ sLedsStep stepsRingLoaderLoop[LEDFLOW_RING_LOADER_LOOP_STEPS] = {
 };
 
 #define LEDFLOW_RING_LOADER_START_SEQUENCE_LEN (2)
-sLedsSequence sequenceRingLoaderStart[LEDFLOW_RING_LOADER_START_SEQUENCE_LEN] = {
+const sLedsSequence sequenceRingLoaderStart[LEDFLOW_RING_LOADER_START_SEQUENCE_LEN] = {
         { 1,   0, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0,   0, 255, 32, 320, eLedEase_InOutQuad}}, 0, 0 },
-        { LEDFLOW_RING_LOADER_LOOP_STEPS, 320, stepsRingLoaderLoop, ENDLESS_LOOP, 0 },
+        { LEDFLOW_RING_LOADER_LOOP_STEPS, 320, (sLedsStep *)stepsRingLoaderLoop, ENDLESS_LOOP, 0 },
 };
 
 #define LEDFLOW_RING_LOADER_END_SEQUENCE_LEN (1)
-sLedsSequence sequenceRingLoaderEnd[LEDFLOW_RING_LOADER_END_SEQUENCE_LEN] = {
+const sLedsSequence sequenceRingLoaderEnd[LEDFLOW_RING_LOADER_END_SEQUENCE_LEN] = {
         { 1,   0, (sLedsStep[]){ {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255, 0, 32, 320, eLedEase_InOutQuad}}, 0, 0 },
 };
 
@@ -241,15 +244,15 @@ sLedsSequence sequenceCO2Level[LEDFLOW_DISPLAY_CO2_LEVEL_STEPS] = {
 
 
 #define LEDFLOW_DEVICE_ERROR_STEPS (1)
-sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
-        { LEDFLOW_BLINKING_LOOP_STEPS, 0, stepsBlinking, ENDLESS_LOOP, 0 },
+const sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
+        { LEDFLOW_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsBlinking, ENDLESS_LOOP, 0 },
 };
 
 // ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
 #define LEDS_FLOW_STARTUP_LEN (5)
 #define STARTUP_FLOW_STATUS_SEQ_IDX (4)
 sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
-    { (sLedsSequence[]){{LEDFLOW_STARTUP_CIRCLE_STEPS, 0, stepsStartupCircle, 0, 0 }}, 1},
+    { (sLedsSequence[]){{LEDFLOW_STARTUP_CIRCLE_STEPS, 0, (sLedsStep *)stepsStartupCircle, 0, 0 }}, 1},
     { (sLedsSequence[]){{LEDFLOW_STARTUP_CARB_LEVEL_STEPS, 0, stepsStartupCarbLevel, 0, 0}}, 1},
     { (sLedsSequence[]){{LEDFLOW_STARTUP_FILTER_STEPS, 0, stepsStartupFilter, 0, 0 }}, 1 },
     { (sLedsSequence[]){{LEDFLOW_INTERSTITIAL_STEPS, 400, stepsInterstitial, 0, 0 }}, 1 },
@@ -264,17 +267,17 @@ sLedsFlowDef ledsFlowMakeADrinkProgrees[LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN] = {
 sLedsFlowDef ledsFlowMakeADrinkSuccess[LEDS_FLOW_MAKE_A_DRINK_SUCCESS_LEN] = {
         {sequenceMakeDrinkSuccessFinishRing, LEDFLOW_RING_SUCCESS_FINISH_RING_SEQUENCE_LEN},
         {sequenceMakeDrinkSuccessInterstitial, LEDFLOW_RING_SUCCESS_INTERSTITIAL_SEQUENCE_LEN},
-        {sequenceRingSuccess, LEDFLOW_RING_SUCCESS_SEQUENCE_LEN},
+        {(sLedsSequence *)sequenceRingSuccess, LEDFLOW_RING_SUCCESS_SEQUENCE_LEN},
 };
 
 #define LEDS_FLOW_START_LOADER_LEN (1)
 sLedsFlowDef ledsFlowStartLoader[LEDS_FLOW_START_LOADER_LEN] = {
-        {sequenceRingLoaderStart, LEDFLOW_RING_LOADER_START_SEQUENCE_LEN}
+        {(sLedsSequence *)sequenceRingLoaderStart, LEDFLOW_RING_LOADER_START_SEQUENCE_LEN}
 };
 
 #define LEDS_FLOW_END_LOADER_LEN (1)
 sLedsFlowDef ledsFlowEndLoader[LEDS_FLOW_END_LOADER_LEN] = {
-        {sequenceRingLoaderEnd, LEDFLOW_RING_LOADER_END_SEQUENCE_LEN}
+        {(sLedsSequence *)sequenceRingLoaderEnd, LEDFLOW_RING_LOADER_END_SEQUENCE_LEN}
 };
 
 #define LEDS_FLOW_DISPLAY_STATUS_LEN (1)
@@ -289,7 +292,7 @@ sLedsFlowDef ledsFlowCO2LevelStatus[LEDS_FLOW_CO2_ELVEL_LEN] = {
 
 #define LEDS_FLOW_DEVICE_ERROR_LEN (1)
 sLedsFlowDef ledsFlowDeviceErrorStatus[LEDS_FLOW_DEVICE_ERROR_LEN] = {
-        {sequenceDeviceError, LEDFLOW_DEVICE_ERROR_STEPS}
+        {(sLedsSequence *)sequenceDeviceError, LEDFLOW_DEVICE_ERROR_STEPS}
 };
 
 ///--- Global Animation Parameters ----------------------------------------------------------------------------------------
