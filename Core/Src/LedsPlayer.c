@@ -42,9 +42,18 @@ sLedsStep clearAllLedsStep = {
         eLED_ALL_LEDS,   0, 255, 0, 10, 100, eLedEase_OutExpo
 };
 
-// this is a generick blinking sequence, when playing, the ledIdMask is set dynamically
-#define LEDFLOW_BLINKING_LOOP_STEPS (4)
-const sLedsStep stepsBlinking[LEDFLOW_BLINKING_LOOP_STEPS] = {
+// this is a for the waring blinking loop (currently for Filter when near expiry)
+#define LEDFLOW_QUICK_BLINKING_LOOP_STEPS (4)
+const sLedsStep stepsQuickBlinking[LEDFLOW_QUICK_BLINKING_LOOP_STEPS] = {
+        {eLED_FilterOrange,   0,   0,   0, 12, 120, eLEdEase_constant},
+        {eLED_FilterOrange, 120,   0, 255,  6,  60, eLedEase_OutExpo},
+        {eLED_FilterOrange, 184, 255, 255, 12, 120, eLEdEase_constant},
+        {eLED_FilterOrange, 304, 255,   0,  6,  60, eLedEase_OutExpo}
+};
+
+// This is used for Device fault indication
+#define LEDFLOW_ERROR_BLINKING_LOOP_STEPS (4)
+const sLedsStep stepsErrorBlinckingLoop[LEDFLOW_ERROR_BLINKING_LOOP_STEPS] = {
         {ALL_ORANGE_CO2_AND_FILTER_MASK,     0,   0,   0, 65, 650, eLEdEase_constant},
         {ALL_ORANGE_CO2_AND_FILTER_MASK,   650,   0, 255, 35, 350, eLedEase_OutExpo},
         {ALL_ORANGE_CO2_AND_FILTER_MASK,  1000, 255, 255, 65, 650, eLEdEase_constant},
@@ -243,9 +252,29 @@ sLedsSequence sequenceCO2Level[LEDFLOW_DISPLAY_CO2_LEVEL_STEPS] = {
 
 
 
+#define LEDFLOW_FILTER_NORMAL_STEPS (3)
+const sLedsSequence sequenceFilterNormal[LEDFLOW_FILTER_NORMAL_STEPS] = {
+        // White Filter ON
+        { 1,    0, (sLedsStep[]){ {eLED_FilterWhite,   0,   0, 255,  10, 100, eLedEase_OutExpo}}, 0, 0 },
+        // White Filter stays ON
+        { 1,  100, (sLedsStep[]){ {eLED_FilterWhite,   0, 255, 255, 100, 1000, eLEdEase_constant}}, 0, 0 },
+        // White Filter fades to OFF slowly
+        { 1, 1100, (sLedsStep[]){ {eLED_FilterWhite,   0, 255,  0, 110, 1100, eLedEase_OutExpo}}, 0, 0 },
+};
+
+#define LEDFLOW_FILTER_WARNING_LOOP_STEPS (1)
+const sLedsSequence sequenceFilterWarningLoop[LEDFLOW_FILTER_WARNING_LOOP_STEPS] = {
+        { LEDFLOW_QUICK_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsQuickBlinking, 3, 0 },
+};
+
+#define LEDFLOW_FILTER_EXPITED_STEPS (1)
+const sLedsSequence sequenceFilterExpired[LEDFLOW_FILTER_EXPITED_STEPS] = {
+        { 1, 0, (sLedsStep[]){ {eLED_FilterOrange,   0,   0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0  },
+};
+
 #define LEDFLOW_DEVICE_ERROR_STEPS (1)
 const sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
-        { LEDFLOW_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsBlinking, ENDLESS_LOOP, 0 },
+        { LEDFLOW_ERROR_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsErrorBlinckingLoop, ENDLESS_LOOP, 0 },
 };
 
 // ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
@@ -288,6 +317,22 @@ sLedsFlowDef ledsFlowDisplayStatus[LEDS_FLOW_DISPLAY_STATUS_LEN] = {
 #define LEDS_FLOW_CO2_ELVEL_LEN (1)
 sLedsFlowDef ledsFlowCO2LevelStatus[LEDS_FLOW_CO2_ELVEL_LEN] = {
         {sequenceCO2Level, LEDFLOW_DISPLAY_CO2_LEVEL_STEPS}
+};
+
+
+#define LEDS_FLOW_SHOW_FILTER_NORMAL_LEN (1)
+sLedsFlowDef ledsFlowShowFilterNormal[LEDS_FLOW_SHOW_FILTER_NORMAL_LEN] = {
+        {(sLedsSequence *)sequenceFilterNormal, LEDFLOW_FILTER_NORMAL_STEPS}
+};
+
+#define LEDS_FLOW_SHOW_FILTER_WARNING_LEN (1)
+sLedsFlowDef ledsFlowShowFilterWarning[LEDS_FLOW_SHOW_FILTER_WARNING_LEN] = {
+        {(sLedsSequence *)sequenceFilterWarningLoop, LEDFLOW_FILTER_WARNING_LOOP_STEPS}
+};
+
+#define LEDS_FLOW_SHOW_FILTER_EXPIRED_LEN (1)
+sLedsFlowDef ledsFlowShowFilterExpired[LEDS_FLOW_SHOW_FILTER_EXPIRED_LEN] = {
+        {(sLedsSequence *)sequenceFilterExpired, LEDFLOW_FILTER_EXPITED_STEPS}
 };
 
 #define LEDS_FLOW_DEVICE_ERROR_LEN (1)
@@ -402,9 +447,26 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         requestedFlowTotalSteps = LEDS_FLOW_DEVICE_ERROR_LEN;
         break;
 
-    // TODO - this is here to cover animations that are not yet implemented
+    case eAnimation_CheckFilterStatus:
+        switch (GetFilterStatus())
+        {
+        case eFilterStatus_Expired:
+            requestedFlow = ledsFlowShowFilterExpired;
+            requestedFlowTotalSteps = LEDS_FLOW_SHOW_FILTER_EXPIRED_LEN;
+            break;
+        case eFilterStatus_Warning:
+            requestedFlow = ledsFlowShowFilterWarning;
+            requestedFlowTotalSteps = LEDS_FLOW_SHOW_FILTER_WARNING_LEN;
+            break;
+        default:
+            requestedFlow = ledsFlowShowFilterNormal;
+            requestedFlowTotalSteps = LEDS_FLOW_SHOW_FILTER_NORMAL_LEN;
+            break;
+        }
+        break;
+
+        // TODO - this is here to cover animations that are not yet implemented
     case eAnimation_StartUpCO2: // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
-    case eAnimation_FilterWarning: // filter warning animation base on number of days left
     case eAnimation_CO2Warning: // CO2 warning animation, currently implemented only on OOTB state
         animation = eAnimation_none;
         break;

@@ -194,7 +194,12 @@ void CheckLongPressButtonsPeriodic()
     if (gButtonsFunction && IS_FILTER_BUTTON_PRESSED() && IS_CARB_LEVEL_BUTTON_PRESSED() && (ootb == 0))
     {
         if (gLastFilterKeyPressTick + RESET_TO_OOTB_MSEC  < HAL_GetTick()) { // Long press on filter and carb level
-            RBMEM_WriteElement(eRBMEM_RTC_Time_Start_magicNumber, 0);
+            RBMEM_ReadElement(eRBMEM_RTC_Memory_magicNumber, &ootb);
+            if (ootb != 0) {
+                RBMEM_WriteElement(eRBMEM_RTC_Time_Start_magicNumber, 0);
+                RBMEM_WriteElement(eRBMEM_RTC_Memory_magicNumber, 0);
+                NVIC_SystemReset();
+            }
         }
         return;
     }

@@ -60,9 +60,9 @@ extern "C" {
 #define SAFETY_ERROR_STATE (0x55555555)
 void PURE_STL_Init(void);
 
-//#define DEBUG_NO_SAFETY
+#define DEBUG_NO_SAFETY
 #ifdef DEBUG_NO_SAFETY
-#warning  DEBUG_NO_SAFETY is defined!
+#warning  DEBUG_NO_SAFETY is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 //#define DEBUG_NO_ACCELEROMETER
 #ifdef DEBUG_NO_ACCELEROMETER

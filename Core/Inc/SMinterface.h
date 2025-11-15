@@ -39,7 +39,8 @@ typedef enum
 	LEDS_OOTBCO2Down,
 	LEDS_OOTBStatus,
 	LEDS_OOTBFilterDown,
-	LEDS_FIlterWarning,
+	LEDS_CheckFilterStatus,
+    LEDS_FIlterWarning, // deprecated - use LEDS_CheckFilterStatus
 	LEDS_CO2Warning,
 	LEDS_allOff,
 	LEDS_CO2Level,

@@ -8,7 +8,14 @@ extern "C" {
 #include "main.h"
 
 #define FILTER_LIFETIME_DAYS   (180)
-#define FILTER_WARNING_DAYS     (14)
+#define FILTER_WARNING_DAYS     (18)
+
+typedef enum {
+    eFilterStatus_OK,
+    eFilterStatus_Warning,
+    eFilterStatus_Expired,
+} eFilterStatus;
+
 
 /* ============================================================
  *  RTC Interface - Minimal version for Filter Timer tracking
@@ -17,6 +24,8 @@ extern "C" {
  *  - Computes days since replacement and days left
  *  - Warning when filter is near expiration
  * ============================================================ */
+
+
 
 /**
  * @brief Resets the RTC date/time to 1-Jan-2000 00:00:00.
@@ -40,8 +49,10 @@ int16_t GetFilterDaysLeft(void);
  * @return true if within warning period, false otherwise.
  */
 bool IsInFilterReplacementWarningPeriod(void);
-
 bool IsFilterExpired(void);
+bool IsFilterTimeOK();
+
+eFilterStatus GetFilterStatus(void);
 
 uint32_t ConvertDateToDays(uint16_t y, uint8_t m, uint8_t d);
 
