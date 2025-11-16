@@ -225,7 +225,8 @@ void LedsSequence(eLedsSequence seq)
         // Add a pending Error Sequance
         StartAnimation(eAnimation_DeviceError, false); // false - add as pending
         break;
-
+     default:
+         break;
     }
 }
 

@@ -26,8 +26,7 @@
 #define PERIODIC_STATUS_SEND_MASK_RTCTILT 	(4)
 #define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
-#define DEBUG_WS_LEDS
-#define DEBUG_STATE_MACHINE
+//#define DEBUG_STATE_MACHINE
 
 
 /* Private macro -------------------------------------------------------------*/
@@ -158,19 +157,9 @@ void MainLogicInit(void) {
 	AccelerometerInit();
 	gAccelerometerIsPresent = AccelerometerIsPresent();
 
-	// TODO [START] remove this on new Pure board
-	// Initialize the LED chip LP5009
-	//HAL_StatusTypeDef st = LP5009_Init(&hi2c1);
-	//gLP5009InitOK = (st == HAL_OK);
-	// TODO [END] remove this on new Pure board
 
-#ifdef DEBUG_WS_LEDS
 	// Pure VDL LEds
 	WS_InitLeds();
-#endif
-
-	// Initialize the filter RTC timer
-	//FilterRTCTimer_Init();
 
 #ifndef DEBUG_NO_SAFETY
     STL_InitRunTimeChecks();
@@ -185,9 +174,7 @@ SMSodaStreamPure_StateId dbgCurrentState = SMSodaStreamPure_StateId_ROOT;
 SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 #endif
 
-#ifdef DEBUG_WS_LEDS
 uint8_t mLedsp[NUMBER_OF_LEDS] = {0};
-#endif
 
 //	WS_SetLeds(mLedsp, 9); // TODO debug remove
 

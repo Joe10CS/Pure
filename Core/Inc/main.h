@@ -60,7 +60,7 @@ extern "C" {
 #define SAFETY_ERROR_STATE (0x55555555)
 void PURE_STL_Init(void);
 
-#define DEBUG_NO_SAFETY
+//#define DEBUG_NO_SAFETY
 #ifdef DEBUG_NO_SAFETY
 #warning  DEBUG_NO_SAFETY is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
@@ -86,12 +86,6 @@ void AccelerometerInit(void);
 bool AccelerometerIsPresent(void);
 
 HAL_StatusTypeDef StartADCConversion();
-
-// Filter RTC
-//void FilterRTCTimer_Init(void);
-//void FilterRTC_Replaced_StartTimer(void);
-//bool FilterRTC_IsDue(void);
-//uint32_t FilterRTC_SecondsElapsed(void);
 
 void WS_InitLeds(void);
 
