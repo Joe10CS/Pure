@@ -7,8 +7,8 @@ extern "C" {
 
 #include "main.h"
 
-#define FILTER_LIFETIME_DAYS   (180)
-#define FILTER_WARNING_DAYS     (18)
+#define FILTER_LIFETIME_DAYS   (90)
+#define FILTER_WARNING_DAYS     (9)
 
 typedef enum {
     eFilterStatus_OK,
