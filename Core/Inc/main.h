@@ -71,6 +71,8 @@ void PURE_STL_Init(void);
 #ifdef DEBUG_NO_SAFETY
 #warning  DEBUG_NO_SAFETY is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
+
+// Comment this in release builds
 //#define DEBUG_NO_ACCELEROMETER
 #ifdef DEBUG_NO_ACCELEROMETER
 #warning  DEBUG_NO_ACCELEROMETER is defined!

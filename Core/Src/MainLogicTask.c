@@ -614,7 +614,7 @@ void CheckHWAndGenerateEventsAsNeeded()
 {
 
 	// check for tilt and set event if needed
-	if (gAccelerometerIsPresent)
+	if (gAccelerometerIsPresent && (HAL_GetTick() > 100)) // wait 100 msecs after powerup
 	{
 		gIsTilted = IsSlanted();
 
