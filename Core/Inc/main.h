@@ -60,7 +60,14 @@ extern "C" {
 #define SAFETY_ERROR_STATE (0x55555555)
 void PURE_STL_Init(void);
 
-//#define DEBUG_NO_SAFETY
+// Comment this in release builds
+//#define DEBUG_STATE_MACHINE
+#ifdef DEBUG_STATE_MACHINE
+#warning  DEBUG_STATE_MACHINE is defined xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+#endif
+
+// Comment this in release builds
+#define DEBUG_NO_SAFETY
 #ifdef DEBUG_NO_SAFETY
 #warning  DEBUG_NO_SAFETY is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif

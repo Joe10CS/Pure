@@ -22,6 +22,7 @@ uint32_t gPumpStartTimeTick = 0;
 uint32_t gLastPumpTimeMSecs = 0;
 eBottleSize gLastDetectedBottleSize = eBottle_1_Litter; // default
 bool gButtonsFunction = false;
+bool gMakeADrinkInProgress = false;
 
 uint32_t gReadyTimerStartTick = 0;
 uint32_t gFilterToCarbDelayStartTick = 0;
@@ -243,6 +244,10 @@ void ButtonsFunction(bool isFunctioning)
 	gButtonsFunction = isFunctioning;
 }
 
+void SetMakeADrinkInProgress(bool inProgress)
+{
+    gMakeADrinkInProgress = inProgress;
+}
 void StartCarbStageTimer()
 {
 	gCarbCycleTickStart = HAL_GetTick();

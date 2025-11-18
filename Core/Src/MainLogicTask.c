@@ -26,8 +26,6 @@
 #define PERIODIC_STATUS_SEND_MASK_RTCTILT 	(4)
 #define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
-//#define DEBUG_STATE_MACHINE
-
 
 /* Private macro -------------------------------------------------------------*/
 
@@ -45,7 +43,6 @@ extern uint16_t gKeyPressButMainMS;
 extern uint16_t gKeyPressButCarbLevelMS;
 extern uint16_t gKeyPressButFilterMS;
 
-bool gMakeADrinkInProgress = false;
 uint32_t echoParams[6];
 /* Private variables ---------------------------------------------------------*/
 SMSodaStreamPure gStateMachine;  // the state machine instance
@@ -220,13 +217,8 @@ void MainLogicPeriodic() {
 		uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, 0, gStateMachine.state_id}, 3,false);
 		dbgCurrentState = gStateMachine.state_id;
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
-        if ((SMSodaStreamPure_StateId_STATE_FILTERING == dbgCurrentState) || (SMSodaStreamPure_StateId_STATE_CARBONATING == dbgCurrentState))
-        {
-            gMakeADrinkInProgress = true;
-        }
         if (SMSodaStreamPure_StateId_STATE_SHOWSTATUS == dbgCurrentState)
         {
-            gMakeADrinkInProgress = false;
             glb_last_RxMessage.cmd = eUARTCommand_flsc;
             ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
         }
@@ -245,13 +237,8 @@ void MainLogicPeriodic() {
 			uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, ev, gStateMachine.state_id}, 3, false);
 			dbgCurrentState = gStateMachine.state_id;
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
-	        if ((SMSodaStreamPure_StateId_STATE_FILTERING == dbgCurrentState) || (SMSodaStreamPure_StateId_STATE_CARBONATING == dbgCurrentState))
-	        {
-	            gMakeADrinkInProgress = true;
-	        }
 	        if (SMSodaStreamPure_StateId_STATE_SHOWSTATUS == dbgCurrentState)
 	        {
-	            gMakeADrinkInProgress = false;
 		        glb_last_RxMessage.cmd = eUARTCommand_flsc;
 		        ProcessNewRxMessage(&glb_last_RxMessage, gRawMsgForEcho, gRawMessageLen);
 			}

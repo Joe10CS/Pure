@@ -63,6 +63,7 @@ void StartWaterPump();
 void StopWaterPump();
 void SendDonePumpOK();
 void ButtonsFunction(bool isFunctioning);
+void SetMakeADrinkInProgress(bool inProgress);
 void StartCarbStageTimer();
 bool CarbonationOffCycleExpired(uint16_t carbCycle);
 bool CarbonationOnCycleExpired(uint16_t carbCycle);
