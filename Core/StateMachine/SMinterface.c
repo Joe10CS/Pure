@@ -23,6 +23,11 @@ uint32_t gLastPumpTimeMSecs = 0;
 eBottleSize gLastDetectedBottleSize = eBottle_1_Litter; // default
 bool gButtonsFunction = false;
 bool gMakeADrinkInProgress = false;
+uint32_t gCurrentCarbonationOnTimeMSecs = 0;
+bool gCurrentCarbonationOnTimeMSecsUpdated = false;
+uint32_t gCO2CounterBeforeCurrnetCarbonationMSecs = 0;
+bool gIsAlreadyInCO2CouterWarningState = false;
+uint32_t gCO2MaxCounter = 0;
 
 uint32_t gReadyTimerStartTick = 0;
 uint32_t gFilterToCarbDelayStartTick = 0;
@@ -39,8 +44,30 @@ extern uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycle
 char dbgMsg[40];
 extern void DBGSendMessage(char *msg);
 
-void StartCarbonation() {}
-void StopCarbonation() {}
+void StartCarbonation()
+{
+    gCurrentCarbonationOnTimeMSecs = 0;
+
+
+    gIsAlreadyInCO2CouterWarningState = RBMEM_IsCO2CounterExpired();
+    if (! gIsAlreadyInCO2CouterWarningState)
+    {
+        RBMEM_ReadElement(eRBMEM_total_CO2_msecs_used, &gCO2CounterBeforeCurrnetCarbonationMSecs);
+        RBMEM_ReadElement(eRBMEM_total_CO2_msecs_max, &gCO2MaxCounter);
+    }
+
+}
+void StopCarbonation()
+{
+    // if carbonation was interrupted - the last cycle was not recorded
+    if (!gCurrentCarbonationOnTimeMSecsUpdated)
+    {
+        gCurrentCarbonationOnTimeMSecs += (HAL_GetTick() - gCarbCycleTickStart); // add last cycle partial time
+        gCurrentCarbonationOnTimeMSecsUpdated = true;
+    }
+    RBMEM_AddMSecsToCO2Counter(gCurrentCarbonationOnTimeMSecs); // add milliseconds to CO2 counter
+    gCurrentCarbonationOnTimeMSecs = 0;
+}
 
 
 void StartUVLEd()
@@ -205,11 +232,20 @@ void LedsSequence(eLedsSequence seq)
     case LEDS_CO2Warning:
         StartAnimation(eAnimation_CO2Warning, true);
         break;
+    case LEDS_CO2WarningWhileMakeingADrink:
+        StartAnimation(eAnimation_CO2WarningWhileMakeingADrink, true);
+        break;
     case LEDS_allOff:
         StartAnimation(eAnimation_ClearLedsFromLastValue, true);
         break;
     case LEDS_CO2Level:
         StartAnimation(eAnimation_CO2Level, true);
+        break;
+    case LEDS_CO2WarnOff:
+        StartAnimation(eAnimation_ClearCO2Warning, true);
+        break;
+    case LEDS_FilterWarnOff:
+        StartAnimation(eAnimation_ClearFilterWarning, true);
         break;
     case LEDS_Malfunction:
         StartAnimation(eAnimation_ClearLedsFromLastValue, true);
@@ -248,9 +284,16 @@ void SetMakeADrinkInProgress(bool inProgress)
 {
     gMakeADrinkInProgress = inProgress;
 }
-void StartCarbStageTimer()
+void StartCarbStageTimer(bool isOnCycle)
 {
 	gCarbCycleTickStart = HAL_GetTick();
+	if (isOnCycle)
+    {
+	    // Set the flag to indicate that the current carbonation on time was not updated yet
+	    // (will be updated when the on cycle expires)
+	    // If the carbonation is stopped before the on cycle expires - the time will be added then
+        gCurrentCarbonationOnTimeMSecsUpdated = false;
+    }
 }
 
 bool CarbonationOffCycleExpired(uint16_t carbCycle)
@@ -268,6 +311,19 @@ bool CarbonationOnCycleExpired(uint16_t carbCycle)
 	int row_index = (gCarbonationLevel - 1) + ((gLastDetectedBottleSize == eBottle_1_Litter) ? 0 : 3);
 	if (gCarbCycleTickStart + gCarbTimeTable[row_index][eCycle_on][carbCycle] < HAL_GetTick())
 	{
+	    gCurrentCarbonationOnTimeMSecsUpdated = true;
+	    gCurrentCarbonationOnTimeMSecs += gCarbTimeTable[row_index][eCycle_on][carbCycle];
+	    if (!gIsAlreadyInCO2CouterWarningState)
+	    {
+	        uint32_t totalCO2MsecsUsed = gCO2CounterBeforeCurrnetCarbonationMSecs + gCurrentCarbonationOnTimeMSecs;
+            if (totalCO2MsecsUsed >= gCO2MaxCounter)
+            {
+                // entered expired state
+                gIsAlreadyInCO2CouterWarningState = true;
+                // Start CO2 expired leds sequence
+                LedsSequence(LEDS_CO2WarningWhileMakeingADrink);
+            }
+	    }
 		return true;
 	}
 	return false;
@@ -298,7 +354,10 @@ bool ReadyTimerExpired()
 }
 void StartWaterPumpingTimer() {}
 
-void RestartCO2Counter(){/* TODO implement */}
+void RestartCO2Counter()
+{
+    RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, 0);
+}
 
 bool IsGuiControlMode()
 {

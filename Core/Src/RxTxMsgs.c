@@ -60,6 +60,8 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
 		// extra commands for for debugging and testing
 		{4, {'A','N','I','M'}, 3},  // eUARTCommand_anim
         {4, {'F','D','A','Y'}, 2},  // eUARTCommand_fday
+        {4, {'C','S','E','C'}, 2},  // eUARTCommand_csec
+        {4, {'C','M','A','X'}, 1},  // eUARTCommand_cmax
         {4, {'F','M','E','M'}, 3},  // eUARTCommand_fmem
         {4, {'F','L','S','C'}, 0},  // eUARTCommand_flsc
         {4, {'D','B','U','G'}, 2},  // eUARTCommand_dbug

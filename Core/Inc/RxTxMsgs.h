@@ -68,10 +68,10 @@ typedef enum {
 	eUARTCommand_swsp,
 	eUARTCommand_lptm,
 	eUARTCommand_done, // just for replay
-
-    // extra commands for for debugging and testing
 	eUARTCommand_anim,
     eUARTCommand_fday, // Get or set the number of days since last filter change
+    eUARTCommand_csec, // Get or set the CO2 used seconds counter
+    eUARTCommand_cmax, // Set the CO2 max seconds counter
     eUARTCommand_fmem, // Get or set fram memory value
     eUARTCommand_flsc, // Get false press counters
  	eUARTCommand_dbug, // debug messages
@@ -158,6 +158,15 @@ typedef struct {
 
 typedef struct {
     uint16_t isSet; // 1 - set, 0 - get
+    uint16_t secs; //  n - for set in seconds, don't care for get
+} sCO2SecondsParams;
+
+typedef struct {
+    uint16_t secs; //  seconds
+} sMaxCO2SecondsParams;
+
+typedef struct {
+    uint16_t isSet; // 1 - set, 0 - get
     uint16_t id; //  n - id to get or set
     uint16_t value; //  n - for set, don't care for get
 } sFRAMMemParams;
@@ -172,6 +181,8 @@ typedef union {
 	sSetLEdParams sled;
 	sAnimationParams animation;
 	sFilterDaysParams fday;
+	sCO2SecondsParams csec;
+	sMaxCO2SecondsParams cmax;
 	sFRAMMemParams fmem;
 	// !@#!@#  CDM stuff below
 

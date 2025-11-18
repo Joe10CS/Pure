@@ -42,8 +42,11 @@ typedef enum
 	LEDS_CheckFilterStatus,
     LEDS_FIlterWarning, // deprecated - use LEDS_CheckFilterStatus
 	LEDS_CO2Warning,
+    LEDS_CO2WarningWhileMakeingADrink,
 	LEDS_allOff,
 	LEDS_CO2Level,
+	LEDS_CO2WarnOff,
+    LEDS_FilterWarnOff,
 	LEDS_Malfunction,
 	LEDS_HWWatchdog,
 	LEDS_SafetyError
@@ -64,7 +67,7 @@ void StopWaterPump();
 void SendDonePumpOK();
 void ButtonsFunction(bool isFunctioning);
 void SetMakeADrinkInProgress(bool inProgress);
-void StartCarbStageTimer();
+void StartCarbStageTimer(bool isOnCycle);
 bool CarbonationOffCycleExpired(uint16_t carbCycle);
 bool CarbonationOnCycleExpired(uint16_t carbCycle);
 bool IsCarbonationLastCycle(uint16_t carbCycle);

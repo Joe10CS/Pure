@@ -270,6 +270,8 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	bool echoCommand = true;
 	bool illegalCommand = false;
 	uint8_t msg_len = 0;
+    uint32_t value32 = 0; // general purpose 32 bits value
+    uint32_t value32a = 0; // general purpose 32 bits value
 	/*
 	eUARTCommand_rsts,
 	 *
@@ -497,15 +499,30 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
             echoCommand = false;
         }
         break;
+	case eUARTCommand_csec:
+        if (msg->params.csec.isSet == 1) {
+            // set
+            RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, msg->params.csec.secs * 1000);
+        } else {
+            // get seconds since last CO2 replacement
+            RBMEM_ReadElement(eRBMEM_total_CO2_msecs_used,&value32);
+            RBMEM_ReadElement(eRBMEM_total_CO2_msecs_max,&value32a);
+            msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_csec, (uint32_t[]){(value32+500)/1000,value32a/1000}, 2, false);
+            COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+            echoCommand = false;
+        }
+        break;
+    case eUARTCommand_cmax:
+        RBMEM_WriteElement(eRBMEM_total_CO2_msecs_max, msg->params.cmax.secs * 1000);
+        break;
     case eUARTCommand_fmem:
         if (msg->params.fmem.isSet == 1) {
             // set
             RBMEM_WriteElement(msg->params.fmem.id, (uint32_t)(msg->params.fmem.value));
         } else {
             // get
-            uint32_t value = 0;
-            RBMEM_ReadElement(msg->params.fmem.id, &value);
-            msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_fmem, (uint32_t[]){msg->params.fmem.id, value}, 2, false);
+            RBMEM_ReadElement(msg->params.fmem.id, &value32);
+            msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_fmem, (uint32_t[]){msg->params.fmem.id, value32}, 2, false);
             COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
             echoCommand = false;
         }

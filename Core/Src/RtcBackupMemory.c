@@ -4,6 +4,7 @@
  */
 
 #include "RtcBackupMemory.h"
+#include "RTC.h"
 
 extern RTC_HandleTypeDef hrtc;
 
@@ -61,6 +62,13 @@ HAL_StatusTypeDef RBMEM_WriteElement(eRBMEM_Element elem, uint32_t value)
         HAL_RTCEx_BKUPWrite(&hrtc, RBMEM_RTC_DR_MAGIC_MEM, value);
         return HAL_OK;
 
+    case eRBMEM_total_CO2_msecs_used:
+        HAL_RTCEx_BKUPWrite(&hrtc, RBMEM_RTC_DR_TOTAL_CO2, value);
+        return HAL_OK;
+    case eRBMEM_total_CO2_msecs_max:
+        HAL_RTCEx_BKUPWrite(&hrtc, RBMEM_RTC_DR_MAX_CO2, value);
+        return HAL_OK;
+
     default:
         return HAL_ERROR;
     }
@@ -103,11 +111,35 @@ HAL_StatusTypeDef RBMEM_ReadElement(eRBMEM_Element elem, uint32_t *value)
         *value = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_MAGIC_MEM);
         break;
 
+    case eRBMEM_total_CO2_msecs_used:
+        *value = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_TOTAL_CO2);
+        break;
+    case eRBMEM_total_CO2_msecs_max:
+        *value = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_MAX_CO2);
+        break;
     default:
         return HAL_ERROR;
     }
 
     return HAL_OK;
+}
+
+HAL_StatusTypeDef RBMEM_AddMSecsToCO2Counter(uint32_t value)
+{
+    if (value > 0)
+    {
+        uint32_t currentVal = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_TOTAL_CO2);
+        currentVal += value;
+        HAL_RTCEx_BKUPWrite(&hrtc, RBMEM_RTC_DR_TOTAL_CO2, currentVal);
+    }
+    return HAL_OK;
+}
+
+bool RBMEM_IsCO2CounterExpired()
+{
+    uint32_t totalCO2Msecs = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_TOTAL_CO2);
+    uint32_t maxCO2Msecs = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_MAX_CO2);
+    return (totalCO2Msecs >= maxCO2Msecs);
 }
 
 
@@ -125,6 +157,10 @@ HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void)
 
     // Set default carbonation level
     status |= RBMEM_WriteElement(eRBMEM_lastCarbonationLevel, DEFAULT_lastCarbonationLevel);
+
+    // Set default total CO2 used
+    status |= RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, 0);
+    status |= RBMEM_WriteElement(eRBMEM_total_CO2_msecs_max, CO2_LIFETIME_MSECS); // default max
 
     return status;
 }

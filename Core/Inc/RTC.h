@@ -10,6 +10,8 @@ extern "C" {
 #define FILTER_LIFETIME_DAYS   (90)
 #define FILTER_WARNING_DAYS     (9)
 
+#define CO2_LIFETIME_MSECS   (170000)
+
 typedef enum {
     eFilterStatus_OK,
     eFilterStatus_Warning,

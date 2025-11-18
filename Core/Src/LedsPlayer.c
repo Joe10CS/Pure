@@ -104,29 +104,6 @@ sLedsStep stepsShowStatusNormal[LEDFLOW_SHOWSTATUS_NORMAL_STEPS] = {
         {eLED_ALL_LEDS,      0,   0, 255, 10, 100, eLedEase_OutExpo},
 };
 
-#if 0
-// Original values taken from the Excel file
-#define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
-sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
-        {eLED_Circle3,   0, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle4,   0,   0, 255,  6,  64, eLedEase_InOutQuad},
-        {eLED_Circle4,  64, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle5,  64,   0, 255,  6,  64, eLedEase_InOutQuad},
-        {eLED_Circle5, 128, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle6, 128,   0, 255,  6,  64, eLedEase_InOutQuad},
-        {eLED_Circle6, 192, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle7, 192,   0, 255,  6,  64, eLedEase_InOutQuad},
-        {eLED_Circle7, 256, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle8, 256,   0, 255,  6,  64, eLedEase_InOutQuad},
-        {eLED_Circle8, 320, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle1, 320,   0, 255,  6,  64, eLedEase_InOutQuad},
-        {eLED_Circle1, 384, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle2, 384,   0, 255,  6,  64, eLedEase_InOutQuad},
-        {eLED_Circle2, 448, 255,   0, 13, 128, eLedEase_InOutQuad},
-        {eLED_Circle3, 448,   0, 255,  6,  64, eLedEase_InOutQuad}
-};
-#define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (64)
-#endif
 // Modified values to make the progress according to the figma design
 // Factor: 1.8333 slower
 #define LEDFLOW_RING_PROGRESS_LOOP_STEPS (16)
@@ -150,20 +127,19 @@ const sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
 };
 #define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (110)
 
-#if 0
-// Original values taken from the Excel file
-#define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
-sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
-        { 1,   0, (sLedsStep[]){ {eLED_Circle3, 0, 0, 255, 24, 240, eLedEase_OutExpo}}, 0, 0 },
-        { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 240, stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
-};
-#endif
 // Modified values to make the progress according to the figma design
 // Factor: 1.8333 slower
-#define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (2)
+#define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (4)
+#define IN_RING_CO2_WARNING_OFF_STEP_INDEX (2)
+#define IN_RING_CO2_WARNING_ON_STEP_INDEX  (3)
 sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
         { 1,   0, (sLedsStep[]) { { eLED_Circle3, 0, 0, 255, 40, 400, eLedEase_OutExpo } }, 0, 0 },
         { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 400, (sLedsStep *)stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
+        // two dummy steps to enable turning off the CO2 level white leds and turning on the orange the orange leds in case CO2
+        // counter exceeded during drink making
+        // note that the masks here must be 0 so they have no affect as long as the the warning is not needed
+        { 1, 0, (sLedsStep[]){ {0, 0, 255, 0, 10, 100, eLedEase_OutExpo}}, 0, 0 },
+        { 1, 0, (sLedsStep[]){ {0, 0, 0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
 };
 // Compilation warning note: the casting to (sLedsStep *) is needed to avoid a warning about initializing pointer to non-const from const array
 // because stepsRingProgress is defined as const to be in flash memory
@@ -277,6 +253,16 @@ const sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
         { LEDFLOW_ERROR_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsErrorBlinckingLoop, ENDLESS_LOOP, 0 },
 };
 
+
+// Modifiable normal filter clear animation to be used when clearing warning
+// this is for normal operation not for OOB
+#define LEDFLOW_SIMPLE_CLEAR_STEPS (1)
+sLedsSequence sequenceSimpleClear[LEDFLOW_SIMPLE_CLEAR_STEPS] = {
+        // White Filter ON
+        { 1,    0, (sLedsStep[]){ {eAnimation_OOTBFilterDown, 0, 255,  0,  10, 100, eLedEase_OutExpo}}, 0, 0 }
+};
+
+
 // ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
 #define LEDS_FLOW_STARTUP_LEN (5)
 #define STARTUP_FLOW_STATUS_SEQ_IDX (4)
@@ -340,6 +326,11 @@ sLedsFlowDef ledsFlowDeviceErrorStatus[LEDS_FLOW_DEVICE_ERROR_LEN] = {
         {(sLedsSequence *)sequenceDeviceError, LEDFLOW_DEVICE_ERROR_STEPS}
 };
 
+#define LEDS_FLOW_SIMPLE_CLEAR_LEN (1)
+sLedsFlowDef ledsFlowSimpleClear[LEDS_FLOW_SIMPLE_CLEAR_LEN] = {
+        {(sLedsSequence *)sequenceSimpleClear, LEDFLOW_SIMPLE_CLEAR_STEPS}
+};
+
 ///--- Global Animation Parameters ----------------------------------------------------------------------------------------
 uint8_t gLeds[NUMBER_OF_LEDS] = {0};
 uint32_t gAnimationStartingMS = 0;
@@ -401,6 +392,9 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
     case eAnimation_MakeADrinkProgress:
         requestedFlow = ledsFlowMakeADrinkProgrees;
         requestedFlowTotalSteps = LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN;
+        // Make sure that the CO2 warning steps are cleared (no effect) unless need to set them later
+        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].ledIdMask = 0;
+        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].ledIdMask = 0;
         break;
 
     case eAnimation_MakeADrinkSuccess:
@@ -464,6 +458,30 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
             break;
         }
         break;
+        //eAnimation_ClearFilterWarning, // special animation to clear only the filter led from the orange value
+
+        case eAnimation_ClearFilterWarning:
+            ledsFlowSimpleClear[0].seq[0].subSeq[0].ledIdMask = eLED_FilterOrange;
+            requestedFlow = ledsFlowSimpleClear;
+            requestedFlowTotalSteps = LEDS_FLOW_SIMPLE_CLEAR_LEN;
+            break;
+        case eAnimation_ClearCO2Warning:
+            ledsFlowSimpleClear[0].seq[0].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;
+            requestedFlow = ledsFlowSimpleClear;
+            requestedFlowTotalSteps = LEDS_FLOW_SIMPLE_CLEAR_LEN;
+            break;
+        case eAnimation_CO2WarningWhileMakeingADrink:
+            // This is a special case that suppose to happen while making a drink and the CO2 counter exceeded maximum
+            // so need at the point to update ht e ring sequence to play the warning using the last two steps of the ring progress sequence
+            // that by default have no effect since their masks are 0
+            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask();// turn off the white CO2 leds by their current level
+            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;// turn on all the orange CO2 leds
+            // Set the timings so it will will be played immediately in the current loop one after the other
+            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS = HAL_GetTick() - gAnimationStartingMS;
+            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].delayMS =
+                    ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS +
+                    ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].totalMs;
+            return; // do not continue to start a new animation or queue it
 
         // TODO - this is here to cover animations that are not yet implemented
     case eAnimation_StartUpCO2: // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
@@ -842,20 +860,27 @@ uint32_t OOTBGetFilterStatusMask(void)
 }
 uint32_t GetCarbLevelLedStatusMask(void)
 {
-    // This code assumes that
-    uint32_t mask = 0;
-    mask |= eLED_LevelNoneWhite;
-    if (gCarbonationLevel >= eLevel_Low) {
-        mask  = 0; // clear the "none"
-        mask |= eLED_LevelLowWhite;
+    uint32_t val = 0;
+    RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
+    if ((val == 1) || RBMEM_IsCO2CounterExpired()) {
+        // OOB led was not cleared yet or CO2 is expired
+        // Set all CO2 level leds to orange
+        val = ALL_CO2_ORANGE_LEDS_MASK;
+    } else {
+        // Set CO2 level leds according to current level
+        val |= eLED_LevelNoneWhite;
+        if (gCarbonationLevel >= eLevel_Low) {
+            val  = 0; // clear the "none"
+            val |= eLED_LevelLowWhite;
+        }
+        if (gCarbonationLevel >= eLevel_medium) {
+            val |= eLED_LevelMedWhite;
+        }
+        if (gCarbonationLevel >= eLevel_high) {
+            val |= eLED_LevelHighWhite;
+        }
     }
-    if (gCarbonationLevel >= eLevel_medium) {
-        mask |= eLED_LevelMedWhite;
-    }
-    if (gCarbonationLevel >= eLevel_high) {
-        mask |= eLED_LevelHighWhite;
-    }
-    return mask;
+    return val;
 }
 
 void GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask)

@@ -126,6 +126,7 @@ typedef enum {
 #define ALL_ORANGE_CO2_AND_FILTER_MASK (0x2aa00)
 #define ALL_LEDS_MASK (0x3FFFF)
 #define ALL_WHITE_LEDS_MASK (0x155FF)
+#define ALL_CO2_ORANGE_LEDS_MASK (0x28200)
 // The values here should be bits corresponding to the actual LED hardware
 typedef enum {
     eLED_Circle1 = eLEd_LED1,
@@ -178,9 +179,12 @@ typedef enum {
     eAnimation_StartUpCO2, // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
     eAnimation_CheckFilterStatus, // Show the currnet filter status (Noraml - white that shows and fades, warning - orange blinking, expired - solid orange)
     eAnimation_CO2Warning, // CO2 warning animation, currently implemented only on OOTB state
+    eAnimation_CO2WarningWhileMakeingADrink, // CO2 warning animation while making a drink - add the CO2 white off and orange on while ring is playing
     eAnimation_OOTBStatus, // Shows the current status of CO2 and Filter on OOTB procedure
     eAnimation_CO2Level, // Update the CO2 level LEDS in normal mode
     eAnimation_DeviceError, // For HW or Safety Fault
+    eAnimation_ClearCO2Warning, // special animation to clear only the CO2 3 leds from the orange values
+    eAnimation_ClearFilterWarning, // special animation to clear only the filter led from the orange value
 
 	// special animation to clear leds from last value -
 	// i.e if led is not at 100% it will go down from the last value it was
