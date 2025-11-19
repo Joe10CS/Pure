@@ -364,8 +364,12 @@ bool IsGuiControlMode()
 	return gIsGuiControlMode;
 }
 
+uint32_t dsc = 0;
+bool     dsl = false;
 void SolenoidPump(int isOn)
 {
+    dsc++;
+    dsl = (isOn == 1);
 	HAL_GPIO_WritePin(Pump_CMD_GPIO_Port, Pump_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 void SolenoidPumpUVPower(int isOn)
