@@ -517,8 +517,14 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
         break;
     case eUARTCommand_fmem:
         if (msg->params.fmem.isSet == 1) {
-            // set
-            RBMEM_WriteElement(msg->params.fmem.id, (uint32_t)(msg->params.fmem.value));
+            if (msg->params.fmem.id == 99) {
+                RBMEM_ResetDataToDefaults();
+                NVIC_SystemReset();
+            } else {
+                // set
+                RBMEM_WriteElement(msg->params.fmem.id,
+                        (uint32_t) (msg->params.fmem.value));
+            }
         } else {
             // get
             RBMEM_ReadElement(msg->params.fmem.id, &value32);

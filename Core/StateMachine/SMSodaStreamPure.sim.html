@@ -287,8 +287,6 @@ state State_AutomaticMode {
 
         State_Rinsing : exit / #123; StopUVLed()#59; #125;
 
-        State_Rinsing : exit / #123; LedsSequence(LEDS_RinsingEnd)#59; #125;
-
         State_ExitFilteringOnly
 
         State_ExitFilteringOnly : State_ExitFilteringOnly
@@ -539,6 +537,12 @@ state State_AutomaticMode {
 
         State_Solenoid_Off : enter / #123; SolenoidPump(0)#59; #125;
 
+        State_RinsingEndLeds
+
+        State_RinsingEndLeds : State_RinsingEndLeds
+
+        State_RinsingEndLeds : enter / #123; LedsSequence(LEDS_RinsingEnd)#59; #125;
+
 }
 
 State_SafetyFail
@@ -609,9 +613,9 @@ State_AutomaticMode --> State_SafetyFail : Event_SafetyFail
 
 State_AutomaticMode --> State_GUIControlMode : Event_Enter_GUI_Controlled_Mode
 
-State_Rinsing --> State_AutomaticMode.(ChoicePoint)(OOTBorNormal) : do [IsBottleFull()||WaterPumpTimerExpired()]
+State_Rinsing --> State_RinsingEndLeds : do [IsBottleFull()||WaterPumpTimerExpired()]
 
-State_Rinsing --> State_AutomaticMode.(ChoicePoint)(OOTBorNormal) : Event_AnyKeyPress
+State_Rinsing --> State_RinsingEndLeds : Event_AnyKeyPress
 
 State_ExitFilteringOnly --> State_MakeDrinkDone : do
 
@@ -720,6 +724,8 @@ State_ResetCO2Counter --> State_Awake : do [!IsLedsSequencePlaying()]
 State_ResetFilterWarning --> State_Rinsing : do [!IsLedsSequencePlaying()]
 
 State_Solenoid_Off --> State_Exit_Carbonating : do
+
+State_RinsingEndLeds --> State_AutomaticMode.(ChoicePoint)(OOTBorNormal) : do [!IsLedsSequencePlaying()]
 
 ROOT.(InitialState) --> State_AutomaticMode
 
@@ -836,20 +842,21 @@ evaluateGuard = null;
         STATE_RESETCO2COUNTER : 25,
         STATE_RESETFILTERWARNING : 26,
         STATE_RINSING : 27,
-        STATE_SETLEVEL : 28,
-        STATE_SHOWSTATUS : 29,
-        STATE_SLEEPING : 30,
-        STATE_SOLENOID_OFF : 31,
-        STATE_GUICONTROLMODE : 32,
-        STATE_GUIMODEWAITCOMMANDS : 33,
-        STATE_STOPWATERPUMP : 34,
-        STATE_HWWATCHDOG : 35,
-        STATE_SAFETYFAIL : 36,
-        STATE_TILTED : 37,
+        STATE_RINSINGENDLEDS : 28,
+        STATE_SETLEVEL : 29,
+        STATE_SHOWSTATUS : 30,
+        STATE_SLEEPING : 31,
+        STATE_SOLENOID_OFF : 32,
+        STATE_GUICONTROLMODE : 33,
+        STATE_GUIMODEWAITCOMMANDS : 34,
+        STATE_STOPWATERPUMP : 35,
+        STATE_HWWATCHDOG : 36,
+        STATE_SAFETYFAIL : 37,
+        STATE_TILTED : 38,
     }
     static { Object.freeze(this.StateId); }
     
-    static StateIdCount = 38;
+    static StateIdCount = 39;
     static { Object.freeze(this.StateIdCount); }
     
     // Used internally by state machine. Feel free to inspect, but don't modify.
@@ -870,12 +877,12 @@ evaluateGuard = null;
             // ROOT.<InitialState> is a pseudo state and cannot have an `enter` trigger.
             
             // ROOT.<InitialState> behavior
-            // uml: / { this.tracer?.edgeTransition("edge63"); } TransitionTo(State_AutomaticMode)
+            // uml: / { this.tracer?.edgeTransition("edge64"); } TransitionTo(State_AutomaticMode)
             {
                 // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge63");`.
-                this.tracer?.edgeTransition("edge63");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge64");`.
+                this.tracer?.edgeTransition("edge64");
                 
                 // Step 3: Enter/move towards transition target `State_AutomaticMode`.
                 this.#STATE_AUTOMATICMODE_enter();
@@ -1227,6 +1234,17 @@ evaluateGuard = null;
                 }
                 break;
             
+            // STATE: State_RinsingEndLeds
+            case SMSodaStreamPure.StateId.STATE_RINSINGENDLEDS:
+                switch (eventId)
+                {
+                    case SMSodaStreamPure.EventId.DO: this.#STATE_RINSINGENDLEDS_do(); break;
+                    case SMSodaStreamPure.EventId.EVENT_HWWATCHDOG: this.#STATE_AUTOMATICMODE_event_hwwatchdog(); break; // First ancestor handler for this event
+                    case SMSodaStreamPure.EventId.EVENT_SAFETYFAIL: this.#STATE_AUTOMATICMODE_event_safetyfail(); break; // First ancestor handler for this event
+                    case SMSodaStreamPure.EventId.EVENT_ENTER_GUI_CONTROLLED_MODE: this.#STATE_AUTOMATICMODE_event_enter_gui_controlled_mode(); break; // First ancestor handler for this event
+                }
+                break;
+            
             // STATE: State_SetLevel
             case SMSodaStreamPure.StateId.STATE_SETLEVEL:
                 switch (eventId)
@@ -1386,6 +1404,8 @@ evaluateGuard = null;
                 
                 case SMSodaStreamPure.StateId.STATE_RINSING: this.#STATE_RINSING_exit(); break;
                 
+                case SMSodaStreamPure.StateId.STATE_RINSINGENDLEDS: this.#STATE_RINSINGENDLEDS_exit(); break;
+                
                 case SMSodaStreamPure.StateId.STATE_SETLEVEL: this.#STATE_SETLEVEL_exit(); break;
                 
                 case SMSodaStreamPure.StateId.STATE_SHOWSTATUS: this.#STATE_SHOWSTATUS_exit(); break;
@@ -1487,12 +1507,12 @@ evaluateGuard = null;
             this.#STATE_GUICONTROLMODE_enter();
             
             // State_GUIControlMode.<InitialState> behavior
-            // uml: / { this.tracer?.edgeTransition("edge66"); } TransitionTo(State_GuiModeWaitCommands)
+            // uml: / { this.tracer?.edgeTransition("edge67"); } TransitionTo(State_GuiModeWaitCommands)
             {
                 // Step 1: Exit states until we reach `State_GUIControlMode` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge66");`.
-                this.tracer?.edgeTransition("edge66");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge67");`.
+                this.tracer?.edgeTransition("edge67");
                 
                 // Step 3: Enter/move towards transition target `State_GuiModeWaitCommands`.
                 this.#STATE_GUIMODEWAITCOMMANDS_enter();
@@ -3751,13 +3771,6 @@ evaluateGuard = null;
         } // end of behavior for State_Rinsing
         
         // State_Rinsing behavior
-        // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_RinsingEnd);"); }
-        {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_RinsingEnd);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_RinsingEnd);");
-        } // end of behavior for State_Rinsing
-        
-        // State_Rinsing behavior
         // uml: exit / { this.tracer?.exitState('State_Rinsing'); }
         {
             // Step 1: execute action `this.tracer?.exitState('State_Rinsing');`
@@ -3772,8 +3785,8 @@ evaluateGuard = null;
         let consume_event = false;
         
         // State_Rinsing behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()||WaterPumpTimerExpired()") || this.evaluateGuard("State_Rinsing","do [IsBottleFull()||WaterPumpTimerExpired()] TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))")] / { this.tracer?.edgeTransition("edge7"); } TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()||WaterPumpTimerExpired()") || this.evaluateGuard("State_Rinsing","do [IsBottleFull()||WaterPumpTimerExpired()] TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()||WaterPumpTimerExpired()") || this.evaluateGuard("State_Rinsing","do [IsBottleFull()||WaterPumpTimerExpired()] TransitionTo(State_RinsingEndLeds)")] / { this.tracer?.edgeTransition("edge7"); } TransitionTo(State_RinsingEndLeds)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()||WaterPumpTimerExpired()") || this.evaluateGuard("State_Rinsing","do [IsBottleFull()||WaterPumpTimerExpired()] TransitionTo(State_RinsingEndLeds)"))
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_RINSING_exit();
@@ -3781,12 +3794,11 @@ evaluateGuard = null;
             // Step 2: Transition action: `this.tracer?.edgeTransition("edge7");`.
             this.tracer?.edgeTransition("edge7");
             
-            // Step 3: Enter/move towards transition target `State_AutomaticMode.<ChoicePoint>(OOTBorNormal)`.
-            // State_AutomaticMode.<ChoicePoint>(OOTBorNormal) is a pseudo state and cannot have an `enter` trigger.
+            // Step 3: Enter/move towards transition target `State_RinsingEndLeds`.
+            this.#STATE_RINSINGENDLEDS_enter();
             
-            // Finish transition by calling pseudo state transition function.
-            this.#State_AutomaticMode_ChoicePoint_OOTBorNormal__transition();
-            return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
         } // end of behavior for State_Rinsing
         
         // Check if event has been consumed before calling ancestor handler.
@@ -3799,7 +3811,7 @@ evaluateGuard = null;
     #STATE_RINSING_event_anykeypress()
     {
         // State_Rinsing behavior
-        // uml: Event_AnyKeyPress / { this.tracer?.edgeTransition("edge8"); } TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))
+        // uml: Event_AnyKeyPress / { this.tracer?.edgeTransition("edge8"); } TransitionTo(State_RinsingEndLeds)
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_RINSING_exit();
@@ -3807,15 +3819,79 @@ evaluateGuard = null;
             // Step 2: Transition action: `this.tracer?.edgeTransition("edge8");`.
             this.tracer?.edgeTransition("edge8");
             
+            // Step 3: Enter/move towards transition target `State_RinsingEndLeds`.
+            this.#STATE_RINSINGENDLEDS_enter();
+            
+            // Step 4: complete transition. Ends event dispatch. No other behaviors are checked.
+            return;
+        } // end of behavior for State_Rinsing
+        
+        // No ancestor handles this event.
+    }
+    
+    
+    ////////////////////////////////////////////////////////////////////////////////
+    // event handlers for state STATE_RINSINGENDLEDS
+    ////////////////////////////////////////////////////////////////////////////////
+    
+    #STATE_RINSINGENDLEDS_enter()
+    {
+        this.stateId = SMSodaStreamPure.StateId.STATE_RINSINGENDLEDS;
+        
+        // State_RinsingEndLeds behavior
+        // uml: enter / { this.tracer?.enterState('State_RinsingEndLeds'); }
+        {
+            // Step 1: execute action `this.tracer?.enterState('State_RinsingEndLeds');`
+            this.tracer?.enterState('State_RinsingEndLeds');
+        } // end of behavior for State_RinsingEndLeds
+        
+        // State_RinsingEndLeds behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_RinsingEnd);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_RinsingEnd);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_RinsingEnd);");
+        } // end of behavior for State_RinsingEndLeds
+    }
+    
+    #STATE_RINSINGENDLEDS_exit()
+    {
+        // State_RinsingEndLeds behavior
+        // uml: exit / { this.tracer?.exitState('State_RinsingEndLeds'); }
+        {
+            // Step 1: execute action `this.tracer?.exitState('State_RinsingEndLeds');`
+            this.tracer?.exitState('State_RinsingEndLeds');
+        } // end of behavior for State_RinsingEndLeds
+        
+        this.stateId = SMSodaStreamPure.StateId.STATE_AUTOMATICMODE;
+    }
+    
+    #STATE_RINSINGENDLEDS_do()
+    {
+        let consume_event = false;
+        
+        // State_RinsingEndLeds behavior
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "!IsLedsSequencePlaying()") || this.evaluateGuard("State_RinsingEndLeds","do [!IsLedsSequencePlaying()] TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))")] / { this.tracer?.edgeTransition("edge63"); } TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "!IsLedsSequencePlaying()") || this.evaluateGuard("State_RinsingEndLeds","do [!IsLedsSequencePlaying()] TransitionTo(State_AutomaticMode.<ChoicePoint>(OOTBorNormal))"))
+        {
+            // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
+            this.#STATE_RINSINGENDLEDS_exit();
+            
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge63");`.
+            this.tracer?.edgeTransition("edge63");
+            
             // Step 3: Enter/move towards transition target `State_AutomaticMode.<ChoicePoint>(OOTBorNormal)`.
             // State_AutomaticMode.<ChoicePoint>(OOTBorNormal) is a pseudo state and cannot have an `enter` trigger.
             
             // Finish transition by calling pseudo state transition function.
             this.#State_AutomaticMode_ChoicePoint_OOTBorNormal__transition();
             return; // event processing immediately stops when a transition finishes. No other behaviors for this state are checked.
-        } // end of behavior for State_Rinsing
+        } // end of behavior for State_RinsingEndLeds
         
-        // No ancestor handles this event.
+        // Check if event has been consumed before calling ancestor handler.
+        if (!consume_event)
+        {
+            this.#STATE_AUTOMATICMODE_do();
+        }
     }
     
     
@@ -4120,13 +4196,13 @@ evaluateGuard = null;
     #STATE_GUICONTROLMODE_event_exit_gui_controlled_mode()
     {
         // State_GUIControlMode behavior
-        // uml: Event_Exit_GUI_Controlled_Mode / { this.tracer?.edgeTransition("edge64"); } TransitionTo(State_AutomaticMode)
+        // uml: Event_Exit_GUI_Controlled_Mode / { this.tracer?.edgeTransition("edge65"); } TransitionTo(State_AutomaticMode)
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             this.#exitUpToStateHandler(SMSodaStreamPure.StateId.ROOT);
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge64");`.
-            this.tracer?.edgeTransition("edge64");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge65");`.
+            this.tracer?.edgeTransition("edge65");
             
             // Step 3: Enter/move towards transition target `State_AutomaticMode`.
             this.#STATE_AUTOMATICMODE_enter();
@@ -4142,13 +4218,13 @@ evaluateGuard = null;
     #STATE_GUICONTROLMODE_event_hwwatchdog()
     {
         // State_GUIControlMode behavior
-        // uml: Event_HWWatchdog / { this.tracer?.edgeTransition("edge65"); } TransitionTo(State_HWWatchdog)
+        // uml: Event_HWWatchdog / { this.tracer?.edgeTransition("edge66"); } TransitionTo(State_HWWatchdog)
         {
             // Step 1: Exit states until we reach `ROOT` state (Least Common Ancestor for transition).
             this.#exitUpToStateHandler(SMSodaStreamPure.StateId.ROOT);
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge65");`.
-            this.tracer?.edgeTransition("edge65");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge66");`.
+            this.tracer?.edgeTransition("edge66");
             
             // Step 3: Enter/move towards transition target `State_HWWatchdog`.
             this.#STATE_HWWATCHDOG_enter();
@@ -4199,25 +4275,25 @@ evaluateGuard = null;
     #STATE_GUIMODEWAITCOMMANDS_event_bottlefullsensor()
     {
         // State_GuiModeWaitCommands behavior
-        // uml: Event_BottleFullSensor / { this.tracer?.edgeTransition("edge70"); } TransitionTo(State_GUIControlMode.<ChoicePoint>())
+        // uml: Event_BottleFullSensor / { this.tracer?.edgeTransition("edge71"); } TransitionTo(State_GUIControlMode.<ChoicePoint>())
         {
             // Step 1: Exit states until we reach `State_GUIControlMode` state (Least Common Ancestor for transition).
             this.#STATE_GUIMODEWAITCOMMANDS_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge70");`.
-            this.tracer?.edgeTransition("edge70");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge71");`.
+            this.tracer?.edgeTransition("edge71");
             
             // Step 3: Enter/move towards transition target `State_GUIControlMode.<ChoicePoint>()`.
             // State_GUIControlMode.<ChoicePoint>() is a pseudo state and cannot have an `enter` trigger.
             
             // State_GUIControlMode.<ChoicePoint>() behavior
-            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "pumpStopsOnSensor") || this.evaluateGuard("State_GUIControlMode.<ChoicePoint>()","[pumpStopsOnSensor] TransitionTo(State_StopWaterPump)")] / { this.tracer?.edgeTransition("edge67"); } TransitionTo(State_StopWaterPump)
+            // uml: [this.tracer?.log("🛡️ User evaluating guard: " + "pumpStopsOnSensor") || this.evaluateGuard("State_GUIControlMode.<ChoicePoint>()","[pumpStopsOnSensor] TransitionTo(State_StopWaterPump)")] / { this.tracer?.edgeTransition("edge68"); } TransitionTo(State_StopWaterPump)
             if (this.tracer?.log("🛡️ User evaluating guard: " + "pumpStopsOnSensor") || this.evaluateGuard("State_GUIControlMode.<ChoicePoint>()","[pumpStopsOnSensor] TransitionTo(State_StopWaterPump)"))
             {
                 // Step 1: Exit states until we reach `State_GUIControlMode` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge67");`.
-                this.tracer?.edgeTransition("edge67");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge68");`.
+                this.tracer?.edgeTransition("edge68");
                 
                 // Step 3: Enter/move towards transition target `State_StopWaterPump`.
                 this.#STATE_STOPWATERPUMP_enter();
@@ -4227,12 +4303,12 @@ evaluateGuard = null;
             } // end of behavior for State_GUIControlMode.<ChoicePoint>()
             
             // State_GUIControlMode.<ChoicePoint>() behavior
-            // uml: else / { this.tracer?.edgeTransition("edge68"); } TransitionTo(State_GuiModeWaitCommands)
+            // uml: else / { this.tracer?.edgeTransition("edge69"); } TransitionTo(State_GuiModeWaitCommands)
             {
                 // Step 1: Exit states until we reach `State_GUIControlMode` state (Least Common Ancestor for transition). Already at LCA, no exiting required.
                 
-                // Step 2: Transition action: `this.tracer?.edgeTransition("edge68");`.
-                this.tracer?.edgeTransition("edge68");
+                // Step 2: Transition action: `this.tracer?.edgeTransition("edge69");`.
+                this.tracer?.edgeTransition("edge69");
                 
                 // Step 3: Enter/move towards transition target `State_GuiModeWaitCommands`.
                 this.#STATE_GUIMODEWAITCOMMANDS_enter();
@@ -4298,13 +4374,13 @@ evaluateGuard = null;
     #STATE_STOPWATERPUMP_do()
     {
         // State_StopWaterPump behavior
-        // uml: do / { this.tracer?.edgeTransition("edge69"); } TransitionTo(State_GuiModeWaitCommands)
+        // uml: do / { this.tracer?.edgeTransition("edge70"); } TransitionTo(State_GuiModeWaitCommands)
         {
             // Step 1: Exit states until we reach `State_GUIControlMode` state (Least Common Ancestor for transition).
             this.#STATE_STOPWATERPUMP_exit();
             
-            // Step 2: Transition action: `this.tracer?.edgeTransition("edge69");`.
-            this.tracer?.edgeTransition("edge69");
+            // Step 2: Transition action: `this.tracer?.edgeTransition("edge70");`.
+            this.tracer?.edgeTransition("edge70");
             
             // Step 3: Enter/move towards transition target `State_GuiModeWaitCommands`.
             this.#STATE_GUIMODEWAITCOMMANDS_enter();
@@ -4586,6 +4662,7 @@ evaluateGuard = null;
             case SMSodaStreamPure.StateId.STATE_RESETCO2COUNTER: return "STATE_RESETCO2COUNTER";
             case SMSodaStreamPure.StateId.STATE_RESETFILTERWARNING: return "STATE_RESETFILTERWARNING";
             case SMSodaStreamPure.StateId.STATE_RINSING: return "STATE_RINSING";
+            case SMSodaStreamPure.StateId.STATE_RINSINGENDLEDS: return "STATE_RINSINGENDLEDS";
             case SMSodaStreamPure.StateId.STATE_SETLEVEL: return "STATE_SETLEVEL";
             case SMSodaStreamPure.StateId.STATE_SHOWSTATUS: return "STATE_SHOWSTATUS";
             case SMSodaStreamPure.StateId.STATE_SLEEPING: return "STATE_SLEEPING";
@@ -4880,6 +4957,12 @@ evaluateGuard = null;
     "Event_SafetyFail"
   ],
   "State_Solenoid_Off": [
+    "do",
+    "Event_Enter_GUI_Controlled_Mode",
+    "Event_HWWatchdog",
+    "Event_SafetyFail"
+  ],
+  "State_RinsingEndLeds": [
     "do",
     "Event_Enter_GUI_Controlled_Mode",
     "Event_HWWatchdog",

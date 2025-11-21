@@ -149,6 +149,28 @@ typedef enum {
     eLED_FilterOrange = eLEd_LED12,
     eLED_ALL_LEDS = ALL_LEDS_MASK
 }eLedIds;
+
+// leds by order for accessing gLeds[] array
+typedef enum {
+    eLEDnum_Circle1 = 0,
+    eLEDnum_Circle2,
+    eLEDnum_Circle3,
+    eLEDnum_Circle4,
+    eLEDnum_Circle5,
+    eLEDnum_Circle6,
+    eLEDnum_Circle7,
+    eLEDnum_Circle8,
+    eLEDnum_LevelHighWhite,
+    eLEDnum_LevelHighOrange,
+    eLEDnum_FilterWhite,
+    eLEDnum_FilterOrange,
+    eLEDnum_LevelNoneWhite,
+    eLEDnum_LevelNoneOrange,
+    eLEDnum_LevelLowWhite,
+    eLEDnum_LevellowOrange,
+    eLEDnum_LevelMedWhite,
+    eLEDnum_LevelMedOrange,
+}eLedyNums;
 #endif
 // U15 B - LED9 - Hw - Carbonation Level High white led - 0x00100
 // U16 R - LED10 - Ho - Carbonation Level High orange led - 0x00200

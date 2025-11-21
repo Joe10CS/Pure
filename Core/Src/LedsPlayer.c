@@ -6,6 +6,9 @@
 #include "WS2811.h"
 #include "RTC.h"
 #include "RtcBackupMemory.h"
+#ifdef DEBUG_STATE_MACHINE
+#include "RxTxMsgs.h"
+#endif
 #endif
 
 // Easing functions data
@@ -25,22 +28,10 @@ const uint8_t gLedEaseData[eLedEase_num_of_ease][LEDS_EASE_VECTOR_SIZE] = {
         }
 };
 
-/*
-typedef struct {
-	int32_t ledIdMask;
-	uint16_t delayMS;     // steps to wait before starting
-	uint8_t startPercent;   // starting intensity 0-255
-	uint8_t endPercent;     // ending intensity 0-255
-	uint8_t totalSteps10ms; // total playing steps
-	uint16_t totalMs;      // actual length in ms for precision
-	eLedEaseFuncs easeFunc; // ease function
-}sLedsStep;
- */
-
-
 sLedsStep clearAllLedsStep = {
         eLED_ALL_LEDS,   0, 255, 0, 10, 100, eLedEase_OutExpo
 };
+
 
 // this is a for the waring blinking loop (currently for Filter when near expiry)
 #define LEDFLOW_QUICK_BLINKING_LOOP_STEPS (4)
@@ -259,19 +250,24 @@ const sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
 #define LEDFLOW_SIMPLE_CLEAR_STEPS (1)
 sLedsSequence sequenceSimpleClear[LEDFLOW_SIMPLE_CLEAR_STEPS] = {
         // White Filter ON
-        { 1,    0, (sLedsStep[]){ {eAnimation_OOTBFilterDown, 0, 255,  0,  10, 100, eLedEase_OutExpo}}, 0, 0 }
+        { 1,    0, (sLedsStep[]){ {0, 0, 255,  0,  10, 100, eLedEase_OutExpo}}, 0, 0 } // mask is 0, will be set at run time
 };
 
 
 // ////////////////////////////////////////////////////////  Main Animations  ////////////////////////////////////////////////////////
-#define LEDS_FLOW_STARTUP_LEN (5)
-#define STARTUP_FLOW_STATUS_SEQ_IDX (4)
+
+// These flows are played one after another - not in parallel
+
+#define LEDS_FLOW_STARTUP_LEN (6)
+#define STARTUP_FLOW_WARN_OFF_IDX (0)
+#define STARTUP_FLOW_STATUS_SEQ_IDX (5)
 sLedsFlowDef ledsFlowStartup[LEDS_FLOW_STARTUP_LEN] = {
+    { (sLedsSequence[]){{1, 0, (sLedsStep[]){ {0, 0, 255,  0,  10, 100, eLedEase_OutExpo}}, 0, 0 }}, 1}, // first optional step of turning off warning leds if needed
     { (sLedsSequence[]){{LEDFLOW_STARTUP_CIRCLE_STEPS, 0, (sLedsStep *)stepsStartupCircle, 0, 0 }}, 1},
     { (sLedsSequence[]){{LEDFLOW_STARTUP_CARB_LEVEL_STEPS, 0, stepsStartupCarbLevel, 0, 0}}, 1},
     { (sLedsSequence[]){{LEDFLOW_STARTUP_FILTER_STEPS, 0, stepsStartupFilter, 0, 0 }}, 1 },
-    { (sLedsSequence[]){{LEDFLOW_INTERSTITIAL_STEPS, 400, stepsInterstitial, 0, 0 }}, 1 },
-    { (sLedsSequence[]){{LEDFLOW_SHOWSTATUS_NORMAL_STEPS, 400, stepsShowStatusNormal, 0, 0 }}, 1 }
+    { (sLedsSequence[]){{LEDFLOW_INTERSTITIAL_STEPS, 400, stepsInterstitial, 0, 0 }}, 1 }, // Delay of 400 keep previous state for 400ms
+    { (sLedsSequence[]){{LEDFLOW_SHOWSTATUS_NORMAL_STEPS, 400, stepsShowStatusNormal, 0, 0 }}, 1 } // All ON by the mask: This step is used only on normal startup, skipped on OOTB
 };
 #define LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN (1)
 sLedsFlowDef ledsFlowMakeADrinkProgrees[LEDS_FLOW_MAKE_A_DRINK_PROGRESS_LEN] = {
@@ -350,6 +346,11 @@ sLedsFlowDef *pPendingFlow = NULL;  // A flow of sequences
 eAnimations gPendingAnimation = eAnimation_none;
 
 
+
+#ifdef DEBUG_STATE_MACHINE
+extern uint8_t gRawMsgForEcho[MAX_RX_BUFFER_LEN];
+#endif
+
 void ZeroGlobalAnimationParams(bool zeroCurrent, bool zeroPendingToo);
 void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
 bool IsPendingAnimation(void);
@@ -363,6 +364,12 @@ eAnimations gLastAnimation = eAnimation_none; // TODO DEBUG Remove
 
 void StartAnimation(eAnimations animation, bool forceStopPrevious)
 {
+#ifdef DEBUG_STATE_MACHINE
+    // DEBUG REMOVE
+    uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){9999, animation, (forceStopPrevious?0:1)}, 3,false);
+    COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+    // DEBUG REMOVE
+#endif
     uint16_t requestedFlowTotalSteps = 0;
     sLedsFlowDef *requestedFlow = NULL;  // A flow of sequences
     uint32_t val;
@@ -378,11 +385,30 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         RBMEM_ReadElement(eRBMEM_isFirstTimeSetupRequired, &val);
         requestedFlow = ledsFlowStartup;
         requestedFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
+        // by default don't include the warning leds off step
+        ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].ledIdMask = 0;
+        ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalSteps10ms = 1;
+        ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 10;
+
         // check if normal startup
         if (val == 0) {
+            // if CO2 counter expired and the leds are currently on then need to turn on the orange leds
+            if (RBMEM_IsCO2CounterExpired() && (gLeds[eLEDnum_LevellowOrange] != 0)) // Check only the CO2 low orange led (they are all on together)
+            {
+                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].ledIdMask = ALL_ORANGE_CO2_AND_FILTER_MASK;
+                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalSteps10ms = 10;
+                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 100;
+            }
             // update the status display
             ledsFlowStartup[STARTUP_FLOW_STATUS_SEQ_IDX].seq[0].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask() | GetFilterStatusMask() | ALL_RING_LEDS_MASK;
         } else {
+            // if in OOTB and CO2 reset is required then orange leds are on - need to turn them off first
+            RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
+            if (val != 0) {
+                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].ledIdMask = ALL_ORANGE_CO2_AND_FILTER_MASK;
+                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalSteps10ms = 10;
+                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 100;
+            }
             // ignore the last step of status (shown on other flows)
             requestedFlowTotalSteps--;
         }
@@ -460,28 +486,38 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         break;
         //eAnimation_ClearFilterWarning, // special animation to clear only the filter led from the orange value
 
-        case eAnimation_ClearFilterWarning:
+    case eAnimation_ClearFilterWarning:
+        // turn it off only if it is currently on/fading
+        if (gLeds[eLEDnum_FilterOrange] != 0) {
+            // only if the orange filter led is currently on
             ledsFlowSimpleClear[0].seq[0].subSeq[0].ledIdMask = eLED_FilterOrange;
+            // start from current value - this covers the case of starting the rinsing while in the warning period
+            // and the orange led was flashing on/off and we just stated when it was fading somewhere in between
+            ledsFlowSimpleClear[0].seq[0].subSeq[0].startPercent = gLeds[eLEDnum_FilterOrange];
             requestedFlow = ledsFlowSimpleClear;
             requestedFlowTotalSteps = LEDS_FLOW_SIMPLE_CLEAR_LEN;
-            break;
-        case eAnimation_ClearCO2Warning:
-            ledsFlowSimpleClear[0].seq[0].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;
-            requestedFlow = ledsFlowSimpleClear;
-            requestedFlowTotalSteps = LEDS_FLOW_SIMPLE_CLEAR_LEN;
-            break;
-        case eAnimation_CO2WarningWhileMakeingADrink:
-            // This is a special case that suppose to happen while making a drink and the CO2 counter exceeded maximum
-            // so need at the point to update ht e ring sequence to play the warning using the last two steps of the ring progress sequence
-            // that by default have no effect since their masks are 0
-            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask();// turn off the white CO2 leds by their current level
-            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;// turn on all the orange CO2 leds
-            // Set the timings so it will will be played immediately in the current loop one after the other
-            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS = HAL_GetTick() - gAnimationStartingMS;
-            ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].delayMS =
-                    ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS +
-                    ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].totalMs;
-            return; // do not continue to start a new animation or queue it
+        }
+        else {
+            return; // nothing to do
+        }
+        break;
+    case eAnimation_ClearCO2Warning:
+        ledsFlowSimpleClear[0].seq[0].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;
+        requestedFlow = ledsFlowSimpleClear;
+        requestedFlowTotalSteps = LEDS_FLOW_SIMPLE_CLEAR_LEN;
+        break;
+    case eAnimation_CO2WarningWhileMakeingADrink:
+        // This is a special case that suppose to happen while making a drink and the CO2 counter exceeded maximum
+        // so need at the point to update ht e ring sequence to play the warning using the last two steps of the ring progress sequence
+        // that by default have no effect since their masks are 0
+        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask();// turn off the white CO2 leds by their current level
+        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;// turn on all the orange CO2 leds
+        // Set the timings so it will will be played immediately in the current loop one after the other
+        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS = HAL_GetTick() - gAnimationStartingMS;
+        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].delayMS =
+                ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS +
+                ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].totalMs;
+        return; // do not continue to start a new animation or queue it
 
         // TODO - this is here to cover animations that are not yet implemented
     case eAnimation_StartUpCO2: // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
