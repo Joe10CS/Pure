@@ -5,7 +5,9 @@
 extern "C" {
 #endif
 
+#ifndef _MSC_VER
 #include "main.h"
+#endif
 
 #define FILTER_LIFETIME_DAYS   (90)
 #define FILTER_WARNING_DAYS     (9)

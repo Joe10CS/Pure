@@ -9,7 +9,9 @@
 #define INC_RTCBACKUPMEMORY_H_
 
 #include "stdbool.h"
+#ifndef _MSC_VER
 #include "stm32g0xx_hal.h"
+#endif
 
 #define RTC_BKP_RTC_STARTUP_MAGIC_NUMBER (0xC0DE32F2)
 #define RBM_DATA_MAGIC_NUMBER    (0xFEEDCAFE)

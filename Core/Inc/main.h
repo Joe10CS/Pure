@@ -61,13 +61,13 @@ extern "C" {
 void PURE_STL_Init(void);
 
 // Comment this in release builds
-#define DEBUG_STATE_MACHINE
+//#define DEBUG_STATE_MACHINE
 #ifdef DEBUG_STATE_MACHINE
 #warning  DEBUG_STATE_MACHINE is defined xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 #endif
 
 // Comment this in release builds
-#define DEBUG_NO_SAFETY
+//#define DEBUG_NO_SAFETY
 #ifdef DEBUG_NO_SAFETY
 #warning  DEBUG_NO_SAFETY is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif

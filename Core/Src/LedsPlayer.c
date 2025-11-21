@@ -4,12 +4,14 @@
 #include "LedsPlayer.h"
 #ifndef _MSC_VER
 #include "WS2811.h"
-#include "RTC.h"
-#include "RtcBackupMemory.h"
 #ifdef DEBUG_STATE_MACHINE
 #include "RxTxMsgs.h"
 #endif
-#endif
+#else
+#include <stdint.h>
+#endif // _MSC_VER
+#include "RTC.h"
+#include "RtcBackupMemory.h"
 
 // Easing functions data
 // Note: this defined as const to keep it in Flash memory
@@ -176,9 +178,9 @@ const sLedsSequence sequenceRingSuccess[LEDFLOW_RING_SUCCESS_SEQUENCE_LEN] = {
 #define LEDFLOW_RING_LOADER_LOOP_STEPS (4)
 const sLedsStep stepsRingLoaderLoop[LEDFLOW_RING_LOADER_LOOP_STEPS] = {
     {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8,   0, 255,   0, 32, 320, eLedEase_InOutQuad},
-    {eLED_Circle1 | eLED_Circle5,   0,  0, 255, 32, 320, eLedEase_InOutQuad},
+    {eLED_Circle1 | eLED_Circle5,                                                               0,   0, 255, 32, 320, eLedEase_InOutQuad},
     {eLED_Circle2 | eLED_Circle3 | eLED_Circle4 | eLED_Circle6 | eLED_Circle7 | eLED_Circle8, 320,   0, 255, 32, 320, eLedEase_InOutQuad},
-    {eLED_Circle1 | eLED_Circle5, 320, 255,  0, 32, 640, eLedEase_InOutQuad},
+    {eLED_Circle1 | eLED_Circle5,                                                             320, 255,   0, 32, 320, eLedEase_InOutQuad},
 };
 
 #define LEDFLOW_RING_LOADER_START_SEQUENCE_LEN (2)
@@ -502,9 +504,15 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         }
         break;
     case eAnimation_ClearCO2Warning:
-        ledsFlowSimpleClear[0].seq[0].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;
-        requestedFlow = ledsFlowSimpleClear;
-        requestedFlowTotalSteps = LEDS_FLOW_SIMPLE_CLEAR_LEN;
+        // turn it off only if it is currently on
+        if (gLeds[eLEDnum_LevellowOrange] != 0) { // Check only the low orange led (they are all on together)
+            ledsFlowSimpleClear[0].seq[0].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;
+            requestedFlow = ledsFlowSimpleClear;
+            requestedFlowTotalSteps = LEDS_FLOW_SIMPLE_CLEAR_LEN;
+        }
+        else {
+            return; // nothing to do
+        }
         break;
     case eAnimation_CO2WarningWhileMakeingADrink:
         // This is a special case that suppose to happen while making a drink and the CO2 counter exceeded maximum
