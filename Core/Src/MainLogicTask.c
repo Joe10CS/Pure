@@ -78,6 +78,9 @@ extern IWDG_HandleTypeDef hiwdg;
 
 extern void PlayLedsPeriodic();
 
+uint8_t msg_len = 0;
+
+
 // Defines the state of the pin at home position, default is 1 (SET)
 /* Private function prototypes -----------------------------------------------*/
 void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t rawMessageLen);
@@ -214,7 +217,7 @@ void MainLogicPeriodic() {
 	// DEBUG REMOVE
 	if (dbgCurrentState != gStateMachine.state_id)
 	{
-		uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, 0, gStateMachine.state_id}, 3,false);
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, 0, gStateMachine.state_id}, 3,false);
 		dbgCurrentState = gStateMachine.state_id;
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
         if (SMSodaStreamPure_StateId_STATE_SHOWSTATUS == dbgCurrentState)
@@ -234,7 +237,7 @@ void MainLogicPeriodic() {
 		// DEBUG REMOVE
 		if ((dbgCurrentState != gStateMachine.state_id) || (ev != SMSodaStreamPure_EventId_DO))
 		{
-			uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, ev, gStateMachine.state_id}, 3, false);
+			msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){dbgCurrentState, ev, gStateMachine.state_id}, 3, false);
 			dbgCurrentState = gStateMachine.state_id;
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 	        if (SMSodaStreamPure_StateId_STATE_SHOWSTATUS == dbgCurrentState)
@@ -269,7 +272,6 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 	// All command are echo by default, unless a response is sent (or error)
 	bool echoCommand = true;
 	bool illegalCommand = false;
-	uint8_t msg_len = 0;
     uint32_t value32 = 0; // general purpose 32 bits value
     uint32_t value32a = 0; // general purpose 32 bits value
 	/*
@@ -541,6 +543,17 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
         echoCommand = false;
         break;
 
+    case eUARTCommand_dbug:
+        // msg->params.list[0] holds the requested debug command
+        // msg->params.list[1] the parameter
+        switch (msg->params.list[0])
+        {
+        case 1: // set green led on/off
+            HAL_GPIO_WritePin(GPIOB, Debug_LED_Pin, msg->params.list[1] == 0 ? GPIO_PIN_RESET : GPIO_PIN_SET);
+            break;
+        }
+        break;
+
 	default:
 	}
 	if (illegalCommand) {
@@ -564,7 +577,7 @@ void HandleStatusSend()
 			// send messages by mask
 			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_STATEBUTS)
 			{
-				uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
+				msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
 					eUARTCommand_rsts,
 					(uint32_t[]){PERIODIC_STATUS_SEND_MASK_STATEBUTS,
 					1,  // TODO add error states instead of 1
@@ -578,7 +591,7 @@ void HandleStatusSend()
 			}
 			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_ADC)
 			{
-				uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
+				msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
 					eUARTCommand_rsts,
 					(uint32_t[]){PERIODIC_STATUS_SEND_MASK_ADC,gReadWaterLevelADC,gReadUVCurrentADC,gReadWaterPumpCurrentADC},
 					4,
@@ -587,7 +600,7 @@ void HandleStatusSend()
 			}
 			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_RTCTILT)
 			{
-				uint8_t msg_len = (uint8_t)BuildReplySigned((char*)gRawMsgForEcho,
+				msg_len = (uint8_t)BuildReplySigned((char*)gRawMsgForEcho,
 					eUARTCommand_rsts,
 					(int32_t[]){PERIODIC_STATUS_SEND_MASK_RTCTILT,
 						(int32_t)GetDaysSinceFilterReplacement(),
@@ -606,7 +619,7 @@ void HandleStatusSend()
 
 void SendDoneMessage(eDoneResults result)
 {
-	uint8_t msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
+	msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho,
 	        eUARTCommand_done,
 		(uint32_t[]){result},
 		1,

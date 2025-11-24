@@ -118,33 +118,6 @@ typedef struct {
 	uint16_t intensity;
 } sSetLEdParams;
 
-
-// !@#!@#  CDM stuff below
-typedef struct {
-	uint16_t cycleTime;
-	uint16_t numberOfCycles;;
-	uint16_t firstPSTimeout;
-	uint16_t motorSpeedPercent;
-	uint16_t numberOfPSCycles;
-	uint16_t PSTotlaCyclesTimeout;
-} sCarbParams;
-
-typedef struct {
-	uint16_t motorDiection;
-	uint16_t motorSpeedPercent;
-	uint16_t motorTime;
-} sStartParams;
-
-typedef struct {
-	uint16_t numOfInjectSignals;
-	uint16_t motorSpeedPercent;
-} sInjectSyrupParams;
-
-typedef struct {
-	uint16_t motorSpeedPercent;
-	uint16_t homePinState;
-} sHomeParams;
-
 typedef struct {
     uint16_t animationNum; // if start: eAnimations if stop: 0 - immediate, 1 - let loop end
     uint16_t isStart; // 1 - start, 0 - stop
@@ -175,7 +148,7 @@ typedef union {
 	sOnOffParams onOff;
 	sPumpParams pump;
 	sPeriodicStatusParams periodicStatus;
-	uint16_t list[MAX_NUMBER_OF_PARAMETERS];
+	uint16_t list[MAX_NUMBER_OF_PARAMETERS]; // for carbonation time table: eUARTCommand_stbl also used bye UARTCommand_dbug (that use only first two params)
 	sConfigureParams config;
 	sSetRGBLEdParams srgb;
 	sSetLEdParams sled;
@@ -184,12 +157,7 @@ typedef union {
 	sCO2SecondsParams csec;
 	sMaxCO2SecondsParams cmax;
 	sFRAMMemParams fmem;
-	// !@#!@#  CDM stuff below
 
-    sCarbParams carbParams;
-    sStartParams startParams;
-    sInjectSyrupParams injectSytupParams;
-    sHomeParams homeParams;
 } uParams;
 
 typedef struct {

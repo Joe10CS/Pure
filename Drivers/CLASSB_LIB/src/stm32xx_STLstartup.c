@@ -58,6 +58,8 @@ void SystemClock_Config(void);
    extern void __libc_init_array (void);
 #endif /* GCC Compiler */
    
+extern int main(void); // YCS - added to remove compiler warning
+
 /******************************************************************************/
 /**
   * @brief  This routine is executed in case of failure is detected by one of

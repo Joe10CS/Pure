@@ -126,7 +126,7 @@ HAL_StatusTypeDef RBMEM_ReadElement(eRBMEM_Element elem, uint32_t *value)
 
 HAL_StatusTypeDef RBMEM_AddMSecsToCO2Counter(uint32_t value)
 {
-    if (value > 0)
+    if ((value > 0) && (value < CO2_MAX_SINGLE_PULSE_MSECS))
     {
         uint32_t currentVal = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_TOTAL_CO2);
         currentVal += value;

@@ -211,12 +211,19 @@ sLedsSequence sequenceDisplayStatus[LEDFLOW_DISPLAY_STATUS_STEPS] = {
 
 #define CO2_LEVEL_ON_IDX (0)
 #define CO2_LEVEL_OFF_IDX (1)
-#define LEDFLOW_DISPLAY_CO2_LEVEL_STEPS (2)
+#define CO2_LEVEL_OFF_ON_CO2_EXPIRED_IDX (2)
+#define LEDFLOW_DISPLAY_CO2_LEVEL_STEPS (4)
+#define LEDFLOW_DISPLAY_CO2_LEVEL_STEPS_NO_CO2_EXPIRED (2)  // used when CO2 is not expired - only ON and OFF steps
+// note that all leds masks (except last one) here are only placeholders - they will be set at run time
 sLedsSequence sequenceCO2Level[LEDFLOW_DISPLAY_CO2_LEVEL_STEPS] = {
         // ON LEDS
         { 1, 0, (sLedsStep[]){ {eLED_LevelNoneWhite,   0,   0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
         // OFF LEDS
         { 1, 0, (sLedsStep[]){ {eLED_LevelNoneWhite,   0, 255,   0, 10, 100, eLedEase_OutExpo}}, 0, 0 },
+        // OFF the leds we turned ON in in first step after a delay of 500 ms
+        { 1, 0, (sLedsStep[]){ {eLED_LevelNoneWhite,   500, 255,   0, 10, 100, eLedEase_OutExpo}}, 0, 0 },
+        // ON the orange leds after a delay the off step is finished
+        { 1, 0, (sLedsStep[]){ {ALL_CO2_ORANGE_LEDS_MASK,   600,   0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
 };
 
 
@@ -300,7 +307,7 @@ sLedsFlowDef ledsFlowDisplayStatus[LEDS_FLOW_DISPLAY_STATUS_LEN] = {
 
 #define LEDS_FLOW_CO2_ELVEL_LEN (1)
 sLedsFlowDef ledsFlowCO2LevelStatus[LEDS_FLOW_CO2_ELVEL_LEN] = {
-        {sequenceCO2Level, LEDFLOW_DISPLAY_CO2_LEVEL_STEPS}
+        {sequenceCO2Level, LEDFLOW_DISPLAY_CO2_LEVEL_STEPS},
 };
 
 
@@ -360,7 +367,7 @@ uint32_t OOTBGetCarbLevelLedStatusMask(void);
 uint32_t OOTBGetFilterStatusMask(void);
 uint32_t GetCarbLevelLedStatusMask(void);
 uint32_t GetFilterStatusMask(void);
-void GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
+bool GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
 
 eAnimations gLastAnimation = eAnimation_none; // TODO DEBUG Remove
 
@@ -457,13 +464,25 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         break;
 
     case eAnimation_CO2Level:
-        GetCO2ChangedOnOffMasks(
+    {
+        bool co2Expired = GetCO2ChangedOnOffMasks(
                 &ledsFlowCO2LevelStatus[0].seq[CO2_LEVEL_ON_IDX].subSeq[0].ledIdMask,
                 &ledsFlowCO2LevelStatus[0].seq[CO2_LEVEL_OFF_IDX].subSeq[0].ledIdMask);
+        if (co2Expired) {
+            // use all 4 steps (OFF mask, ON mask, OFF mask, Orange ON)
+            ledsFlowCO2LevelStatus[0].length = LEDFLOW_DISPLAY_CO2_LEVEL_STEPS;
+            // Update the CO2 epired level off step to the same mask as the first ON step
+            ledsFlowCO2LevelStatus[0].seq[CO2_LEVEL_OFF_ON_CO2_EXPIRED_IDX].subSeq[0].ledIdMask =
+                    ledsFlowCO2LevelStatus[0].seq[CO2_LEVEL_ON_IDX].subSeq[0].ledIdMask;
+        } else {
+            // use only ON and OFF steps
+            ledsFlowCO2LevelStatus[0].length = LEDFLOW_DISPLAY_CO2_LEVEL_STEPS_NO_CO2_EXPIRED;
+        }
         requestedFlow = ledsFlowCO2LevelStatus;
         requestedFlowTotalSteps = LEDS_FLOW_CO2_ELVEL_LEN;
-        break;
 
+        break;
+    }
     case eAnimation_DeviceError:
         requestedFlow = ledsFlowDeviceErrorStatus;
         requestedFlowTotalSteps = LEDS_FLOW_DEVICE_ERROR_LEN;
@@ -927,31 +946,41 @@ uint32_t GetCarbLevelLedStatusMask(void)
     return val;
 }
 
-void GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask)
+bool GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask)
 {
+    bool isCO2Expired = false;
+    // if already showing a warning of CO2 expired, need also to turn off the orange leds
+    if (gLeds[eLEDnum_LevellowOrange] != 0) { // Check only the low orange led (they are all on together)
+        *offMask = ALL_CO2_ORANGE_LEDS_MASK;
+        isCO2Expired = true;
+    } else {
+        *offMask = 0;
+    }
     switch (gCarbonationLevel)
     {
     case eLevel_off:
         *onMask = eLED_LevelNoneWhite;
-        *offMask = eLED_LevelLowWhite | eLED_LevelMedWhite | eLED_LevelHighWhite;
+        if (!isCO2Expired) {
+            *offMask |= eLED_LevelLowWhite | eLED_LevelMedWhite | eLED_LevelHighWhite;
+        }
         break;
     case eLevel_Low:
         *onMask = eLED_LevelLowWhite;
-        *offMask = eLED_LevelNoneWhite;
+        if (!isCO2Expired) {
+            *offMask |= eLED_LevelNoneWhite;
+        }
         break;
     case eLevel_medium:
-        *onMask = eLED_LevelMedWhite;
-        *offMask = 0;
+        *onMask = eLED_LevelMedWhite | (isCO2Expired ? eLED_LevelLowWhite : 0);
         break;
     case eLevel_high:
-        *onMask = eLED_LevelHighWhite;
-        *offMask = 0;
+        *onMask = eLED_LevelHighWhite  | (isCO2Expired ? (eLED_LevelLowWhite | eLED_LevelMedWhite): 0);;
         break;
     default:
         *onMask = 0;
-        *offMask = 0;
         break;
     }
+    return isCO2Expired;
 }
 
 

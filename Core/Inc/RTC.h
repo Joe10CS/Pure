@@ -13,6 +13,7 @@ extern "C" {
 #define FILTER_WARNING_DAYS     (9)
 
 #define CO2_LIFETIME_MSECS   (170000)
+#define CO2_MAX_SINGLE_PULSE_MSECS   (15000)
 
 typedef enum {
     eFilterStatus_OK,

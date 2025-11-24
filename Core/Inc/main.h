@@ -119,6 +119,8 @@ extern uint32_t mPumpStartTimeTick;
 #define Pump_CMD_GPIO_Port GPIOA
 #define Pump_FDBK_Pin GPIO_PIN_0
 #define Pump_FDBK_GPIO_Port GPIOB
+#define Debug_LED_Pin GPIO_PIN_1
+#define Debug_LED_GPIO_Port GPIOB
 #define WATER_LVL_ADC1_IN10_Pin GPIO_PIN_2
 #define WATER_LVL_ADC1_IN10_GPIO_Port GPIOB
 #define WaterPMP_FDBK_Pin GPIO_PIN_10
@@ -145,13 +147,15 @@ extern uint32_t mPumpStartTimeTick;
 #define Main_SW_GPIO_Port GPIOC
 #define LED_PWM_Pin GPIO_PIN_11
 #define LED_PWM_GPIO_Port GPIOA
+#define ACCL_INT1_Pin GPIO_PIN_0
+#define ACCL_INT1_GPIO_Port GPIOD
 #define BTN4_Pin GPIO_PIN_3
 #define BTN4_GPIO_Port GPIOB
 #define BTN4_EXTI_IRQn EXTI2_3_IRQn
 #define UV_LED_EN_Pin GPIO_PIN_5
 #define UV_LED_EN_GPIO_Port GPIOB
-#define LED_EN_Pin GPIO_PIN_9
-#define LED_EN_GPIO_Port GPIOB
+#define ACCL_INT2_Pin GPIO_PIN_8
+#define ACCL_INT2_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

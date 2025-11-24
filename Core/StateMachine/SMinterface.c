@@ -11,6 +11,9 @@
 #include "RtcBackupMemory.h"
 #include "LedsPlayer.h"
 #include "RTC.h"
+#ifdef DEBUG_STATE_MACHINE
+#include "RxTxMsgs.h"
+#endif
 // TODO replace this with WS2811 as needed #include "LP5009.h"// TODO remove this on new Pure board
 
 
@@ -41,13 +44,16 @@ extern bool gIsTilted;
 
 extern SMSodaStreamPure gStateMachine;
 extern uint16_t gCarbTimeTable[eLevel_number_of_levels*2][eCycle_number_of_cycles][MAX_NUMBER_OF_CARBONATION_STEPS];
-char dbgMsg[40];
+
+#ifdef DEBUG_STATE_MACHINE
+extern uint8_t msg_len;
+extern uint8_t gRawMsgForEcho[MAX_RX_BUFFER_LEN];
+#endif
 extern void DBGSendMessage(char *msg);
 
 void StartCarbonation()
 {
     gCurrentCarbonationOnTimeMSecs = 0;
-
 
     gIsAlreadyInCO2CouterWarningState = RBMEM_IsCO2CounterExpired();
     if (! gIsAlreadyInCO2CouterWarningState)
@@ -66,6 +72,10 @@ void StopCarbonation()
         gCurrentCarbonationOnTimeMSecsUpdated = true;
     }
     RBMEM_AddMSecsToCO2Counter(gCurrentCarbonationOnTimeMSecs); // add milliseconds to CO2 counter
+#ifdef DEBUG_STATE_MACHINE
+    msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){gCurrentCarbonationOnTimeMSecs}, 1, false);
+    COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+#endif
     gCurrentCarbonationOnTimeMSecs = 0;
 }
 
