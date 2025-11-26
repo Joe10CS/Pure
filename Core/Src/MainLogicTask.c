@@ -26,7 +26,7 @@
 #define PERIODIC_STATUS_SEND_MASK_RTCTILT 	(4)
 #define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
-//#define DEBUG_STATE_MACHINE
+#define DEBUG_STATE_MACHINE
 
 
 /* Private macro -------------------------------------------------------------*/
