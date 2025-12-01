@@ -173,9 +173,9 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
                 } else {
                     gKeyPressButFilterMS = (uint16_t)(HAL_GetTick() - gLastFilterKeyPressTick);
                     // TODO Temporary test of not using the filter buttton for cancelling carbonation
-                    if (! gMakeADrinkInProgress) {
+                    //if (! gMakeADrinkInProgress) { // <---------------------------------------------------- this enable the filter button to cancel carbonation while carbonating
                         SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-                    }
+                    //}
                 }
             } else {
                 gFalseButFilterCounter++;
