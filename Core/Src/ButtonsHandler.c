@@ -46,6 +46,18 @@ bool gIgnoreCarbonationLevelRelease = true;
 
 bool gIgnoreMainButtonRelease = true;
 
+uint16_t gDbgEventAnyMainButton = 0;
+uint16_t gDbgEventAnyCarbLevelButton = 0;
+uint16_t gDbgEventAnyFilterButton = 0;
+
+
+uint16_t gDbgMainButtonPressed = 0;
+uint16_t gDbgCarbLevelButtonPressed = 0;
+uint16_t gDbgFilterButtonPressed = 0;
+uint16_t gDbgMainButtonReleased = 0;
+uint16_t gDbgCarbLevelButtonReleased = 0;
+uint16_t gDbgFilterButtonReleased = 0;
+
 uint16_t gFalseButMainCounter = 0;
 uint16_t gFalseButCarbLevelCounter = 0;
 uint16_t gFalseButFilterCounter = 0;
@@ -70,6 +82,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
         if (gLastMainButtonKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
             gLastMainButtonKeyPressTick = HAL_GetTick();
             gIgnoreMainButtonRelease = false;
+            gDbgMainButtonPressed++;
 //            //COMM_UART_QueueTxMessage((uint8_t *)"$BTN4 High falling\r\n", 20);
 //            if (gButtonsFunction)
 //            {
@@ -87,6 +100,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 		if (gCarbonationLevelPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
 		    gCarbonationLevelPressTick = HAL_GetTick();
             gIgnoreCarbonationLevelRelease = false;
+			gDbgCarbLevelButtonPressed++;
 			if (gButtonsFunction)
 			{
                 SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELDOWN);
@@ -101,6 +115,7 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
         if (gLastFilterKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
             gLastFilterKeyPressTick = HAL_GetTick();
             gIgnoreFilterButtonRelease = false;
+        	gDbgFilterButtonPressed++;
             if (gButtonsFunction)
             {
                 SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERDOWN);
@@ -121,6 +136,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
         // Act upon release
         if (!gIgnoreMainButtonRelease) {
             gIgnoreMainButtonRelease = true;
+            gDbgMainButtonReleased++;
             // Ignore it if too Short press
             if (gLastMainButtonKeyPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
                 if (gButtonsFunction) {
@@ -128,6 +144,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
                 } else {
                     gKeyPressButMainMS = (uint16_t)(HAL_GetTick() - gLastMainButtonKeyPressTick);
                     SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+                    gDbgEventAnyMainButton++;
                 }
             } else {
                 gFalseButMainCounter++;
@@ -138,6 +155,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
         // Act upon release
         if (!gIgnoreCarbonationLevelRelease) {
             gIgnoreCarbonationLevelRelease = true;
+            gDbgCarbLevelButtonReleased++;
             // Ignore it if too Short press
             if (gCarbonationLevelPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
                 if (gButtonsFunction)
@@ -152,6 +170,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
                 } else {
                     gKeyPressButCarbLevelMS = (uint16_t)(HAL_GetTick() - gCarbonationLevelPressTick);
                     SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+                    gDbgEventAnyCarbLevelButton++;
                 }
             } else {
                 gFalseButCarbLevelCounter++;
@@ -161,6 +180,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
     case GPIO_PIN_15: // BTN3 - Filter Button
         if (!gIgnoreFilterButtonRelease) {
             gIgnoreFilterButtonRelease = true;
+            gDbgFilterButtonReleased++;
             // Ignore it if too Short press
             if (gLastFilterKeyPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
                 if (gButtonsFunction)
@@ -175,6 +195,7 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
                     // TODO Temporary test of not using the filter buttton for cancelling carbonation
                     //if (! gMakeADrinkInProgress) { // <---------------------------------------------------- this enable the filter button to cancel carbonation while carbonating
                         SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+                        gDbgEventAnyFilterButton++;
                     //}
                 }
             } else {

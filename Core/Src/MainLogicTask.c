@@ -44,6 +44,9 @@ extern uint16_t gFalseButFilterCounter;
 extern uint16_t gKeyPressButMainMS;
 extern uint16_t gKeyPressButCarbLevelMS;
 extern uint16_t gKeyPressButFilterMS;
+extern uint16_t gDbgEventAnyMainButton;
+extern uint16_t gDbgEventAnyCarbLevelButton;
+extern uint16_t gDbgEventAnyFilterButton;
 
 bool gMakeADrinkInProgress = false;
 uint32_t echoParams[6];
@@ -524,7 +527,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
         }
         break;
     case eUARTCommand_flsc:
-        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gFalseButMainCounter,(uint32_t)gFalseButCarbLevelCounter,(uint32_t)gFalseButFilterCounter}, 3, false);
+        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gDbgEventAnyMainButton,(uint32_t)gDbgEventAnyCarbLevelButton,(uint32_t)gDbgEventAnyFilterButton}, 3, false);
         COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
         msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gKeyPressButMainMS,(uint32_t)gKeyPressButCarbLevelMS,(uint32_t)gKeyPressButFilterMS}, 3, false);
         COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
