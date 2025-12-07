@@ -73,6 +73,12 @@ uint16_t gPeriodicStatusSendInterval = 0;
 uint16_t gPeriodicStatusSendMask = 0;
 uint32_t gPeriodicStatusSendLastTickSent = 0;
 
+extern uint16_t gDbgFilterAnyKey;
+extern uint32_t gDbgFilterPressTime;
+extern uint16_t gDbgFilterRise;
+extern uint16_t gDbgFilterFall;
+
+
 uint32_t glb_safty_error_state = SAFETY_OK_STATE;
 extern IWDG_HandleTypeDef hiwdg;
 
@@ -207,7 +213,7 @@ void MainLogicPeriodic() {
 #endif
 
 	PlayLedsPeriodic();
-	CheckLongPressButtonsPeriodic();
+	CheckButtonsPressPeriodic();
 
 	CheckHWAndGenerateEventsAsNeeded();
 
@@ -536,7 +542,8 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
         }
         break;
     case eUARTCommand_flsc:
-        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gFalseButMainCounter,(uint32_t)gFalseButCarbLevelCounter,(uint32_t)gFalseButFilterCounter}, 3, false);
+        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gDbgFilterPressTime,(uint32_t)gDbgFilterFall,(uint32_t)gDbgFilterRise,(uint32_t)gDbgFilterAnyKey}, 4, false);
+//        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gFalseButMainCounter,(uint32_t)gFalseButCarbLevelCounter,(uint32_t)gFalseButFilterCounter}, 3, false);
         COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
         msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gKeyPressButMainMS,(uint32_t)gKeyPressButCarbLevelMS,(uint32_t)gKeyPressButFilterMS}, 3, false);
         COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);

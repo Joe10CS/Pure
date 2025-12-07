@@ -26,6 +26,9 @@
 #define DEBOUNCE_BUTTONS_PERIOD_MSEC (300)
 #define LONG_PRESS_PERIOD_MSEC (3000)
 
+#define BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY (5)
+#define BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY (300)
+
 #define RESET_TO_OOTB_MSEC (5000)
 
 #define BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC (70)
@@ -45,6 +48,15 @@ uint32_t gCarbonationLevelPressTick = 0;
 bool gIgnoreCarbonationLevelRelease = true;
 
 bool gIgnoreMainButtonRelease = true;
+
+uint16_t gDbgFilterAnyKey = 0;
+uint32_t gDbgFilterPressTime = 0;
+uint16_t gDbgFilterFall = 0;
+uint16_t gDbgFilterRise = 0;
+
+uint16_t gFilterButtonPressCount = 0;
+bool gFilterAnyKeyAlreadySent = false;
+bool gFilterLongPressAlreadySent = false;
 
 uint16_t gFalseButMainCounter = 0;
 uint16_t gFalseButCarbLevelCounter = 0;
@@ -98,18 +110,20 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 		break;
 
     case GPIO_PIN_15: // BTN3 - Filter Button
-        if (gLastFilterKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
-            gLastFilterKeyPressTick = HAL_GetTick();
-            gIgnoreFilterButtonRelease = false;
-            if (gButtonsFunction)
-            {
-                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERDOWN);
-                return;
-            }
-            //SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-        } else { // if debounced the press, debounce the release too            TODO probably not needed since the ignore is true all the time unless it's a valid press.
-            gIgnoreFilterButtonRelease = true;
-        }
+//        gDbgFilterPressTime = HAL_GetTick();
+//        gDbgFilterFall++;
+//        if (gLastFilterKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
+//            gLastFilterKeyPressTick = HAL_GetTick();
+//            gIgnoreFilterButtonRelease = false;
+//            if (gButtonsFunction)
+//            {
+//                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERDOWN);
+//                return;
+//            }
+//            //SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+//        } else { // if debounced the press, debounce the release too            TODO probably not needed since the ignore is true all the time unless it's a valid press.
+//            gIgnoreFilterButtonRelease = true;
+//        }
         break;
 	}
 }
@@ -159,34 +173,37 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
         }
         break;
     case GPIO_PIN_15: // BTN3 - Filter Button
-        if (!gIgnoreFilterButtonRelease) {
-            gIgnoreFilterButtonRelease = true;
-            // Ignore it if too Short press
-            if (gLastFilterKeyPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
-                if (gButtonsFunction)
-                {
-                    // Handle filter short press
-                    if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC > HAL_GetTick()) { // Short press
-                            // Short press - has no specific action
-                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONSHORTPRESSED);
-                    }
-                } else {
-                    gKeyPressButFilterMS = (uint16_t)(HAL_GetTick() - gLastFilterKeyPressTick);
-                    // TODO Temporary test of not using the filter buttton for cancelling carbonation
-                    if (! gMakeADrinkInProgress) {
-                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-                    }
-                }
-            } else {
-                gFalseButFilterCounter++;
-            }
-        }
+//        gDbgFilterPressTime = HAL_GetTick() - gDbgFilterPressTime;
+//        gDbgFilterRise++;
+//        if (!gIgnoreFilterButtonRelease) {
+//            gIgnoreFilterButtonRelease = true;
+//            // Ignore it if too Short press
+//            if (gLastFilterKeyPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
+//                if (gButtonsFunction)
+//                {
+//                    // Handle filter short press
+//                    if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC > HAL_GetTick()) { // Short press
+//                            // Short press - has no specific action
+//                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONSHORTPRESSED);
+//                    }
+//                } else {
+//                    gKeyPressButFilterMS = (uint16_t)(HAL_GetTick() - gLastFilterKeyPressTick);
+//                    // TODO Temporary test of not using the filter buttton for cancelling carbonation
+//                    //if (! gMakeADrinkInProgress) {
+//                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+//                        gDbgFilterAnyKey++;
+//                    //}
+//                }
+//            } else {
+//                gFalseButFilterCounter++;
+//            }
+//        }
         break;
 	}
 
 }
 
-void CheckLongPressButtonsPeriodic()
+void CheckButtonsPressPeriodic()
 {
     uint32_t ootb = 0;
     RBMEM_ReadElement(eRBMEM_isFirstTimeSetupRequired, &ootb);
@@ -203,13 +220,61 @@ void CheckLongPressButtonsPeriodic()
         }
         return;
     }
-    if (IS_FILTER_BUTTON_PRESSED() && (gIgnoreFilterButtonRelease == false) && (gLastFilterKeyPressTick > 0)) {
-        if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
-            gIgnoreFilterButtonRelease = true;
-            SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
+//    if (IS_FILTER_BUTTON_PRESSED() && (gIgnoreFilterButtonRelease == false) && (gLastFilterKeyPressTick > 0)) {
+//        if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
+//            gIgnoreFilterButtonRelease = true;
+//            SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
+//        }
+//
+//    }
+    if (IS_FILTER_BUTTON_PRESSED()) {
+        gFilterButtonPressCount++;
+        if (gFilterButtonPressCount == BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY) {// 50 ms debounce passed
+            if (gButtonsFunction) {
+                // Normal operation -> send "button down"
+                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERDOWN);
+            } else {
+                // Buttons disabled (e.g., carbonation) -> emergency ANYKEY event
+                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+                gFilterAnyKeyAlreadySent = true; // Prevent sending again on release
+            }
+        }
+        // LONG PRESS reached while button is still pressed (only in functional mode)
+         if (gButtonsFunction && !gFilterLongPressAlreadySent && (gFilterButtonPressCount >= BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY)) {
+             SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
+             gFilterLongPressAlreadySent = true;  // suppress later events
+         }
+
+    } else { // button not pressed
+        // If there was a press previously and the release is beyond debounce time
+        if (gFilterButtonPressCount >= BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY) {
+            // If long-press wasn't already sent → it is a short press
+            if (!gFilterLongPressAlreadySent) {
+                if (gButtonsFunction) {
+                    // Normal mode -> classify short vs long press
+                    if (gFilterButtonPressCount < BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY) {
+                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONSHORTPRESSED);
+                    } else {
+                        // if long press time passed but long press event not sent (rare case)
+                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
+                    }
+                } else {
+                    // Buttons disabled mode (e.g., carbonation)
+                    // -> If ANYKEY already sent on press: DO NOTHING.
+                    // -> If debounce passed but no ANYKEY was sent (rare case): send once here.
+                    if (!gFilterAnyKeyAlreadySent) {
+                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+                    }
+                }
+            }
         }
 
+        // Reset press counter & state
+        gFilterButtonPressCount = 0;
+        gFilterAnyKeyAlreadySent = false;
+        gFilterLongPressAlreadySent = false;
     }
+
     if (IS_CARB_LEVEL_BUTTON_PRESSED() && (gIgnoreCarbonationLevelRelease == false) && (gCarbonationLevelPressTick > 0)) {
         if (gCarbonationLevelPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
             gIgnoreCarbonationLevelRelease = true;

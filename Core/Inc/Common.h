@@ -39,7 +39,7 @@ typedef enum {
 }eDoneResults;
 
 void SendDoneMessage(eDoneResults result);
-void CheckLongPressButtonsPeriodic();
+void CheckButtonsPressPeriodic();
 bool IsAnyKeyPressed();
 
 extern uint32_t glb_safty_error_state;

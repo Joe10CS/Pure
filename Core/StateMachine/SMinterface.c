@@ -73,8 +73,8 @@ void StopCarbonation()
     }
     RBMEM_AddMSecsToCO2Counter(gCurrentCarbonationOnTimeMSecs); // add milliseconds to CO2 counter
 #ifdef DEBUG_STATE_MACHINE
-    msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){gCurrentCarbonationOnTimeMSecs}, 1, false);
-    COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+ //   msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){gCurrentCarbonationOnTimeMSecs}, 1, false);
+ //   COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 #endif
     gCurrentCarbonationOnTimeMSecs = 0;
 }
