@@ -49,7 +49,7 @@ extern "C" {
 /* USER CODE BEGIN EC */
 /* USER CODE BEGIN EC */
 // 6 full ADC scan cycles for 3 channels
-#define ADC_DMA_BUFFER_SIZE   ((uint32_t)  18)
+#define ADC_DMA_BUFFER_SIZE   ((uint32_t)  32)  // Must be multiple of 4
 
 /* USER CODE END EC */
 
@@ -131,8 +131,8 @@ extern uint32_t mPumpStartTimeTick;
 #define WATER_LVL_ADC1_IN10_GPIO_Port GPIOB
 #define WaterPMP_FDBK_Pin GPIO_PIN_10
 #define WaterPMP_FDBK_GPIO_Port GPIOB
-#define UV_CURR_ADC1_IN15_Pin GPIO_PIN_11
-#define UV_CURR_ADC1_IN15_GPIO_Port GPIOB
+#define UV_CURR_ADC__IN15_Pin GPIO_PIN_11
+#define UV_CURR_ADC__IN15_GPIO_Port GPIOB
 #define WaterLVL_CMD_Pin GPIO_PIN_12
 #define WaterLVL_CMD_GPIO_Port GPIOB
 #define BTN1_Pin GPIO_PIN_13

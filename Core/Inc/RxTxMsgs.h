@@ -74,6 +74,7 @@ typedef enum {
     eUARTCommand_cmax, // Set the CO2 max seconds counter
     eUARTCommand_fmem, // Get or set fram memory value
     eUARTCommand_flsc, // Get false press counters
+    eUARTCommand_vbat, // Get last vbat value
  	eUARTCommand_dbug, // debug messages
 
 

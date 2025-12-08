@@ -60,6 +60,7 @@ bool gAccelerometerIsPresent = false;
 extern volatile uint16_t gReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
 extern volatile uint16_t gReadWaterPumpCurrentADC;
 extern volatile uint16_t gReadUVCurrentADC;
+extern volatile uint16_t gReadVBATADC;
 extern uint32_t gLastPumpTimeMSecs;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
@@ -407,6 +408,11 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
+    case eUARTCommand_vbat: // Get Info - non state machine related command
+        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_vbat, (uint32_t[]){gReadVBATADC}, 1, false);
+        COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+        echoCommand = false;
+        break;
 	case eUARTCommand_rrtc: // Get Info - non state machine related command
 	{
 	    extern RTC_HandleTypeDef hrtc;

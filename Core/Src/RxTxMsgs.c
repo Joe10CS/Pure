@@ -64,6 +64,7 @@ sCommandDef gCDMCommands[eUARTCommand_num_commands] =
         {4, {'C','M','A','X'}, 1},  // eUARTCommand_cmax
         {4, {'F','M','E','M'}, 3},  // eUARTCommand_fmem
         {4, {'F','L','S','C'}, 0},  // eUARTCommand_flsc
+        {4, {'V','B','A','T'}, 0},  // eUARTCommand_vbat
         {4, {'D','B','U','G'}, 2},  // eUARTCommand_dbug
 };
 

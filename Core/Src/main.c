@@ -67,6 +67,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 volatile uint16_t gReadWaterLevelADC;     // Stores the averaged value from ADC_CHANNEL_10 (PB2)
 volatile uint16_t gReadWaterPumpCurrentADC;
 volatile uint16_t gReadUVCurrentADC;
+volatile uint16_t gReadVBATADC;
 uint16_t gWaterLevelSensorThreahsold = 372; // 30/10/2025 changed from 500 to Itzik request
 bool mWaterLevelAboveThroshold = false;
 #define WATER_FULL_EVENT_DEBOUNCE_MSEC (50)
@@ -279,7 +280,20 @@ static void MX_ADC1_Init(void)
   {
     Error_Handler();
   }
+
+  /** Configure Regular Channel
+  */
+  sConfig.Channel = ADC_CHANNEL_VBAT;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN ADC1_Init 2 */
+
+      // ** Direct Register Write: Enable the internal VREFINT and VBAT paths **
+      // This explicitly sets the VREFEN and VBATEN bits in the ADC Common CCR.
+      // This is the direct equivalent of the missing __HAL_ADC_COMMON_CONFIG macro.
+      ADC->CCR |= ADC_CCR_VBATEN;
 
   /* USER CODE END ADC1_Init 2 */
 
@@ -883,9 +897,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef *hadc)
 
     // Index 14 = latest CH0 sample (even)
     // Index 15 = latest CH10 sample (odd)
-    gReadWaterPumpCurrentADC = aADCxConvertedData[15];// IN0
-    gReadWaterLevelADC = aADCxConvertedData[16];      // IN10
-    gReadUVCurrentADC = aADCxConvertedData[17];        // IN15
+
+    // Ver 4.93: Added VBAT and increased buffer size to 32, updated indices accordingly
+
+    gReadWaterPumpCurrentADC = aADCxConvertedData[28];   // IN0
+    gReadWaterLevelADC       = aADCxConvertedData[29];   // IN10
+    gReadVBATADC             = aADCxConvertedData[30];   // VBAT
+    gReadUVCurrentADC        = aADCxConvertedData[31];   // IN15
 
     CheckAndSentWaterFullSensorEvent();
 }
@@ -911,9 +929,13 @@ void HAL_ADC_ConvHalfCpltCallback(ADC_HandleTypeDef *hadc)
 
     // Index 6 = latest CH0 sample (even)
     // Index 7 = latest CH10 sample (odd)
-    gReadWaterPumpCurrentADC = aADCxConvertedData[6];// IN0
-    gReadWaterLevelADC = aADCxConvertedData[7];      // IN10
-    gReadUVCurrentADC = aADCxConvertedData[8];        // IN15
+
+    // Ver 4.93: Added VBAT and increased buffer size to 32, updated indices accordingly
+
+    gReadWaterPumpCurrentADC = aADCxConvertedData[12];   // IN0
+    gReadWaterLevelADC       = aADCxConvertedData[13];   // IN10
+    gReadVBATADC             = aADCxConvertedData[14];   // VBAT
+    gReadUVCurrentADC        = aADCxConvertedData[15];   // IN15
 
     CheckAndSentWaterFullSensorEvent();
 }

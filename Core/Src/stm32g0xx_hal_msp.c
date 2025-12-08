@@ -115,7 +115,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* hadc)
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(WaterPMP_CURR_ADC1_IN0_GPIO_Port, &GPIO_InitStruct);
 
-    GPIO_InitStruct.Pin = WATER_LVL_ADC1_IN10_Pin|UV_CURR_ADC1_IN15_Pin;
+    GPIO_InitStruct.Pin = WATER_LVL_ADC1_IN10_Pin|UV_CURR_ADC__IN15_Pin;
     GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
     GPIO_InitStruct.Pull = GPIO_NOPULL;
     HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
@@ -169,7 +169,7 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc)
     */
     HAL_GPIO_DeInit(WaterPMP_CURR_ADC1_IN0_GPIO_Port, WaterPMP_CURR_ADC1_IN0_Pin);
 
-    HAL_GPIO_DeInit(GPIOB, WATER_LVL_ADC1_IN10_Pin|UV_CURR_ADC1_IN15_Pin);
+    HAL_GPIO_DeInit(GPIOB, WATER_LVL_ADC1_IN10_Pin|UV_CURR_ADC__IN15_Pin);
 
     /* ADC1 DMA DeInit */
     HAL_DMA_DeInit(hadc->DMA_Handle);
