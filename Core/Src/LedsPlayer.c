@@ -369,8 +369,6 @@ uint32_t GetCarbLevelLedStatusMask(void);
 uint32_t GetFilterStatusMask(void);
 bool GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
 
-eAnimations gLastAnimation = eAnimation_none; // TODO DEBUG Remove
-
 void StartAnimation(eAnimations animation, bool forceStopPrevious)
 {
 #ifdef DEBUG_STATE_MACHINE
@@ -571,7 +569,6 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
     }
     // else: start immediately (cancelling any pending)
     gCurrentAnimation = animation;
-    gLastAnimation = gCurrentAnimation; // TODO DEBUG Remove
     pCurrentFlow = requestedFlow;
     gCurrentFlowTotalSteps = requestedFlowTotalSteps;
 

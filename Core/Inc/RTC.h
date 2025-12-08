@@ -61,7 +61,7 @@ eFilterStatus GetFilterStatus(void);
 
 uint32_t ConvertDateToDays(uint16_t y, uint8_t m, uint8_t d);
 
-// TODO debug method - remove
+// Used only by the FDAY uart command
 void SetDaysSinceLastFilterReplacement(uint32_t daysSinceReplacement);
 #ifdef __cplusplus
 }

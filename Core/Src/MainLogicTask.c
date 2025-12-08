@@ -24,7 +24,6 @@
 #define PERIODIC_STATUS_SEND_MASK_STATEBUTS (1)
 #define PERIODIC_STATUS_SEND_MASK_ADC 		(2)
 #define PERIODIC_STATUS_SEND_MASK_RTCTILT 	(4)
-#define PERIODIC_STATUS_SEND_MASK_LEDS   	(8)
 
 
 /* Private macro -------------------------------------------------------------*/
@@ -38,7 +37,6 @@ extern int8_t filtered_y;
 extern int8_t filtered_z;
 extern uint16_t gFalseButMainCounter;
 extern uint16_t gFalseButCarbLevelCounter;
-extern uint16_t gFalseButFilterCounter;
 extern uint16_t gKeyPressButMainMS;
 extern uint16_t gKeyPressButCarbLevelMS;
 extern uint16_t gKeyPressButFilterMS;
@@ -72,12 +70,6 @@ uint32_t gBottleSizeThresholdmSecs = 15000;
 uint16_t gPeriodicStatusSendInterval = 0;
 uint16_t gPeriodicStatusSendMask = 0;
 uint32_t gPeriodicStatusSendLastTickSent = 0;
-
-extern uint16_t gDbgFilterAnyKey;
-extern uint32_t gDbgFilterPressTime;
-extern uint16_t gDbgFilterRise;
-extern uint16_t gDbgFilterFall;
-
 
 uint32_t glb_safty_error_state = SAFETY_OK_STATE;
 extern IWDG_HandleTypeDef hiwdg;
@@ -181,8 +173,6 @@ SMSodaStreamPure_StateId dbgNewState = SMSodaStreamPure_StateId_ROOT;
 #endif
 
 uint8_t mLedsp[NUMBER_OF_LEDS] = {0};
-
-//	WS_SetLeds(mLedsp, 9); // TODO debug remove
 
 void MainLogicPeriodic() {
 
@@ -542,10 +532,14 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
         }
         break;
     case eUARTCommand_flsc:
-        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gDbgFilterPressTime,(uint32_t)gDbgFilterFall,(uint32_t)gDbgFilterRise,(uint32_t)gDbgFilterAnyKey}, 4, false);
+#ifdef DEBUG_BUTTONS_HANDLER
+//        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gDbgFilterPressTime,(uint32_t)gDbgFilterFall,(uint32_t)gDbgFilterRise,(uint32_t)gDbgFilterAnyKey}, 4, false);
 //        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gFalseButMainCounter,(uint32_t)gFalseButCarbLevelCounter,(uint32_t)gFalseButFilterCounter}, 3, false);
-        COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
-        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gKeyPressButMainMS,(uint32_t)gKeyPressButCarbLevelMS,(uint32_t)gKeyPressButFilterMS}, 3, false);
+//        COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+//        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){(uint32_t)gKeyPressButMainMS,(uint32_t)gKeyPressButCarbLevelMS,(uint32_t)gKeyPressButFilterMS}, 3, false);
+#else
+        msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_flsc, (uint32_t[]){0,0,0}, 3, false);
+#endif
         COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
         echoCommand = false;
         break;
@@ -615,10 +609,6 @@ void HandleStatusSend()
 					5,
 					false);
 				COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
-			}
-			if (gPeriodicStatusSendMask & PERIODIC_STATUS_SEND_MASK_LEDS)
-			{
-				// TODO not implemented yet
 			}
 		}
 	}

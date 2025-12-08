@@ -142,8 +142,6 @@ int main(void)
   MX_IWDG_Init();
   MX_TIM17_Init();
   /* USER CODE BEGIN 2 */
-//  LP5009_Init(&hi2c1);
-//  LP5009_AllLedsOff(&hi2c1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -402,7 +400,6 @@ static void MX_RTC_Init(void)
   // Clear RSF - ST recommendation to ensure a fresh synchronization cycle:
   RTC->ICSR &= ~RTC_ICSR_RSF;  //
   // Wait for register sync (safe 100ms timeout)
-  // TODO add watchdog reset as needed
   uint32_t timeout = HAL_GetTick() + 100;
   while ((RTC->ICSR & RTC_ICSR_RSF) == 0 && HAL_GetTick() < timeout);
   if (RBMEM_IsRTCMagicNunberOK())
@@ -761,9 +758,15 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(WaterLVL_CMD_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BTN1_Pin BTN2_Pin BTN3_Pin */
-  GPIO_InitStruct.Pin = BTN1_Pin|BTN2_Pin|BTN3_Pin;
+  /*Configure GPIO pin : BTN1_Pin */
+  GPIO_InitStruct.Pin = BTN1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(BTN1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : BTN2_Pin BTN3_Pin */
+  GPIO_InitStruct.Pin = BTN2_Pin|BTN3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 

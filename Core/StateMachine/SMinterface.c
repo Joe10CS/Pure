@@ -14,9 +14,6 @@
 #ifdef DEBUG_STATE_MACHINE
 #include "RxTxMsgs.h"
 #endif
-// TODO replace this with WS2811 as needed #include "LP5009.h"// TODO remove this on new Pure board
-
-
 
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
 eCarbonationLevel gPrevCarbonationLevel = eLevel_Low; // stam
@@ -176,7 +173,6 @@ void StopWaterPump()
 			gLastDetectedBottleSize = eBottle_1_Litter;
 		} else {
 			gLastDetectedBottleSize = eBottle_0_5_Litter;
-			//// TODO replace this with WS2811 as needed LP5009_SetLed(&hi2c1, (uint8_t)(3), 0);
 		}
 		gPumpStartTimeTick = 0;
 	}

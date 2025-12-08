@@ -67,7 +67,13 @@ void PURE_STL_Init(void);
 #endif
 
 // Comment this in release builds
-//#define DEBUG_NO_SAFETY
+//#define DEBUG_BUTTONS_HANDLER
+#ifdef DEBUG_BUTTONS_HANDLER
+#warning  DEBUG_BUTTONS_HANDLER is defined BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+#endif
+
+// Comment this in release builds
+#define DEBUG_NO_SAFETY
 #ifdef DEBUG_NO_SAFETY
 #warning  DEBUG_NO_SAFETY is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
@@ -134,10 +140,8 @@ extern uint32_t mPumpStartTimeTick;
 #define BTN1_EXTI_IRQn EXTI4_15_IRQn
 #define BTN2_Pin GPIO_PIN_14
 #define BTN2_GPIO_Port GPIOB
-#define BTN2_EXTI_IRQn EXTI4_15_IRQn
 #define BTN3_Pin GPIO_PIN_15
 #define BTN3_GPIO_Port GPIOB
-#define BTN3_EXTI_IRQn EXTI4_15_IRQn
 #define Pump_WD_FDBK_Pin GPIO_PIN_8
 #define Pump_WD_FDBK_GPIO_Port GPIOA
 #define Pump_WD_FDBK_EXTI_IRQn EXTI4_15_IRQn

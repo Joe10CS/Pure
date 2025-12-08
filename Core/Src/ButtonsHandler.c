@@ -44,23 +44,21 @@ uint32_t gLastMainButtonKeyPressTick = 0;
 uint32_t gLastFilterKeyPressTick = 0;
 bool gIgnoreFilterButtonRelease = true;
 
-uint32_t gCarbonationLevelPressTick = 0;
-bool gIgnoreCarbonationLevelRelease = true;
+//uint32_t gCarbonationLevelPressTick = 0;
+//bool gIgnoreCarbonationLevelRelease = true;
 
 bool gIgnoreMainButtonRelease = true;
 
-uint16_t gDbgFilterAnyKey = 0;
-uint32_t gDbgFilterPressTime = 0;
-uint16_t gDbgFilterFall = 0;
-uint16_t gDbgFilterRise = 0;
-
+// These variables are used to track button press counts and states - in polling mode
 uint16_t gFilterButtonPressCount = 0;
 bool gFilterAnyKeyAlreadySent = false;
 bool gFilterLongPressAlreadySent = false;
+uint16_t gCO2LevelButtonPressCount = 0;
+bool gCO2LevelAnyKeyAlreadySent = false;
+bool gCO2LevelLongPressAlreadySent = false;
 
 uint16_t gFalseButMainCounter = 0;
 uint16_t gFalseButCarbLevelCounter = 0;
-uint16_t gFalseButFilterCounter = 0;
 uint16_t gKeyPressButMainMS = 0;
 uint16_t gKeyPressButCarbLevelMS = 0;
 uint16_t gKeyPressButFilterMS = 0;
@@ -75,55 +73,35 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin) {
 	case GPIO_PIN_8: // Pump_WD_FDBK - error on 1
-//		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG);
+//		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG); // TODO - handle watchdog event??
 		break;
 
     case GPIO_PIN_13: // BTN1 - Main button
         if (gLastMainButtonKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
             gLastMainButtonKeyPressTick = HAL_GetTick();
             gIgnoreMainButtonRelease = false;
-//            //COMM_UART_QueueTxMessage((uint8_t *)"$BTN4 High falling\r\n", 20);
-//            if (gButtonsFunction)
-//            {
-//                gIgnoreMainButtonRelease = false;
-//                return;
-//            }
-//            gIgnoreMainButtonRelease = true;
-//            //SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
         }
         break;
 
     case GPIO_PIN_14: // BTN2 (PB14) - carbonation level single button that toggles the levels
 	                  // Short press - cycle through levels
 	                  // Long press - restarts the CO2 count-down
-		if (gCarbonationLevelPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
-		    gCarbonationLevelPressTick = HAL_GetTick();
-            gIgnoreCarbonationLevelRelease = false;
-			if (gButtonsFunction)
-			{
-                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELDOWN);
-                return;
-			}
-//			gIgnoreCarbonationLevelRelease = true;
-			//SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-		}
+
+        // Handling in interrupt is disabled - handled in periodic check (polling)
+
+//		if (gCarbonationLevelPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
+//		    gCarbonationLevelPressTick = HAL_GetTick();
+//            gIgnoreCarbonationLevelRelease = false;
+//			if (gButtonsFunction)
+//			{
+//                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELDOWN);
+//                return;
+//			}
+//		}
 		break;
 
     case GPIO_PIN_15: // BTN3 - Filter Button
-//        gDbgFilterPressTime = HAL_GetTick();
-//        gDbgFilterFall++;
-//        if (gLastFilterKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {
-//            gLastFilterKeyPressTick = HAL_GetTick();
-//            gIgnoreFilterButtonRelease = false;
-//            if (gButtonsFunction)
-//            {
-//                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERDOWN);
-//                return;
-//            }
-//            //SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-//        } else { // if debounced the press, debounce the release too            TODO probably not needed since the ignore is true all the time unless it's a valid press.
-//            gIgnoreFilterButtonRelease = true;
-//        }
+        // Handling in interrupt is disabled - handled in periodic check (polling)
         break;
 	}
 }
@@ -149,55 +127,33 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
         }
         break;
     case GPIO_PIN_14: // BTN2 - Carbonation level button
-        // Act upon release
-        if (!gIgnoreCarbonationLevelRelease) {
-            gIgnoreCarbonationLevelRelease = true;
-            // Ignore it if too Short press
-            if (gCarbonationLevelPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
-                if (gButtonsFunction)
-                {
-                    if (gCarbonationLevelPressTick + LONG_PRESS_PERIOD_MSEC > HAL_GetTick()) { // Short press
-                        gCarbonationLevel++;
-                        if (gCarbonationLevel == eLevel_number_of_levels) {
-                            gCarbonationLevel = eLevel_off;
-                        }
-                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);
-                    }
-                } else {
-                    gKeyPressButCarbLevelMS = (uint16_t)(HAL_GetTick() - gCarbonationLevelPressTick);
-                    SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-                }
-            } else {
-                gFalseButCarbLevelCounter++;
-            }
-        }
-        break;
-    case GPIO_PIN_15: // BTN3 - Filter Button
-//        gDbgFilterPressTime = HAL_GetTick() - gDbgFilterPressTime;
-//        gDbgFilterRise++;
-//        if (!gIgnoreFilterButtonRelease) {
-//            gIgnoreFilterButtonRelease = true;
+        // Handling in interrupt is disabled - handled in periodic check (polling)
+
+//        // Act upon release
+//        if (!gIgnoreCarbonationLevelRelease) {
+//            gIgnoreCarbonationLevelRelease = true;
 //            // Ignore it if too Short press
-//            if (gLastFilterKeyPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
+//            if (gCarbonationLevelPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
 //                if (gButtonsFunction)
 //                {
-//                    // Handle filter short press
-//                    if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC > HAL_GetTick()) { // Short press
-//                            // Short press - has no specific action
-//                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONSHORTPRESSED);
+//                    if (gCarbonationLevelPressTick + LONG_PRESS_PERIOD_MSEC > HAL_GetTick()) { // Short press
+//                        gCarbonationLevel++;
+//                        if (gCarbonationLevel == eLevel_number_of_levels) {
+//                            gCarbonationLevel = eLevel_off;
+//                        }
+//                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);
 //                    }
 //                } else {
-//                    gKeyPressButFilterMS = (uint16_t)(HAL_GetTick() - gLastFilterKeyPressTick);
-//                    // TODO Temporary test of not using the filter buttton for cancelling carbonation
-//                    //if (! gMakeADrinkInProgress) {
-//                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
-//                        gDbgFilterAnyKey++;
-//                    //}
+//                    gKeyPressButCarbLevelMS = (uint16_t)(HAL_GetTick() - gCarbonationLevelPressTick);
+//                    SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
 //                }
 //            } else {
-//                gFalseButFilterCounter++;
+//                gFalseButCarbLevelCounter++;
 //            }
 //        }
+        break;
+    case GPIO_PIN_15: // BTN3 - Filter Button
+        // Handling in interrupt is disabled - handled in periodic check (polling)
         break;
 	}
 
@@ -210,7 +166,11 @@ void CheckButtonsPressPeriodic()
 
     if (gButtonsFunction && IS_FILTER_BUTTON_PRESSED() && IS_CARB_LEVEL_BUTTON_PRESSED() && (ootb == 0))
     {
-        if (gLastFilterKeyPressTick + RESET_TO_OOTB_MSEC  < HAL_GetTick()) { // Long press on filter and carb level
+        if (gLastFilterKeyPressTick == 0) {
+            // This is the case when the carb level buttons where pressed first when filter is in polling mode
+            // In this case we didn't continue to the next check and gLastFilterKeyPressTick was never set
+            gLastFilterKeyPressTick = HAL_GetTick();
+        } else if (gLastFilterKeyPressTick + RESET_TO_OOTB_MSEC  < HAL_GetTick()) { // Long press on filter and carb level
             RBMEM_ReadElement(eRBMEM_RTC_Memory_magicNumber, &ootb);
             if (ootb != 0) {
                 RBMEM_WriteElement(eRBMEM_RTC_Time_Start_magicNumber, 0);
@@ -220,16 +180,67 @@ void CheckButtonsPressPeriodic()
         }
         return;
     }
-//    if (IS_FILTER_BUTTON_PRESSED() && (gIgnoreFilterButtonRelease == false) && (gLastFilterKeyPressTick > 0)) {
-//        if (gLastFilterKeyPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
-//            gIgnoreFilterButtonRelease = true;
-//            SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
-//        }
-//
-//    }
+    // Carbonation level button handling in polling mode
+    if (IS_CARB_LEVEL_BUTTON_PRESSED()) {
+        gCO2LevelButtonPressCount++;
+        if (gCO2LevelButtonPressCount == BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY) {// 50 ms debounce passed
+            if (gButtonsFunction) {
+                // Normal operation -> send "button down"
+                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELDOWN);
+            } else {
+                // Buttons disabled (e.g., carbonation) -> emergency ANYKEY event
+                SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+                gCO2LevelAnyKeyAlreadySent = true; // Prevent sending again on release
+            }
+        }
+        // LONG PRESS reached while button is still pressed (only in functional mode)
+         if (gButtonsFunction && !gCO2LevelLongPressAlreadySent && (gCO2LevelButtonPressCount >= BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY)) {
+             SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
+             gCO2LevelLongPressAlreadySent = true;  // suppress later events
+         }
+
+    } else { // button not pressed
+        // If there was a press previously and the release is beyond debounce time
+        if (gCO2LevelButtonPressCount >= BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY) {
+            // If long-press wasn't already sent → it is a short press
+            if (!gCO2LevelLongPressAlreadySent) {
+                if (gButtonsFunction) {
+                    // Normal mode -> classify short vs long press
+                    if (gCO2LevelButtonPressCount < BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY) {
+                        // Short press the carbonation level toggles the level
+                        gCarbonationLevel++;
+                        if (gCarbonationLevel == eLevel_number_of_levels) {
+                            gCarbonationLevel = eLevel_off;
+                        }
+                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);
+                    } else {
+                        // if long press time passed but long press event not sent (rare case)
+                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
+                    }
+                } else {
+                    // Buttons disabled mode (e.g., carbonation)
+                    // -> If ANYKEY already sent on press: DO NOTHING.
+                    // -> If debounce passed but no ANYKEY was sent (rare case): send once here.
+                    if (!gCO2LevelAnyKeyAlreadySent) {
+                        SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
+                    }
+                }
+            }
+        }
+
+        // Reset press counter & state
+        gCO2LevelButtonPressCount = 0;
+        gCO2LevelAnyKeyAlreadySent = false;
+        gCO2LevelLongPressAlreadySent = false;
+    }
+
+    // Filter button handling in polling mode
     if (IS_FILTER_BUTTON_PRESSED()) {
         gFilterButtonPressCount++;
         if (gFilterButtonPressCount == BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY) {// 50 ms debounce passed
+            if (gLastFilterKeyPressTick == 0) {
+                gLastFilterKeyPressTick = HAL_GetTick();
+            }
             if (gButtonsFunction) {
                 // Normal operation -> send "button down"
                 SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERDOWN);
@@ -273,14 +284,15 @@ void CheckButtonsPressPeriodic()
         gFilterButtonPressCount = 0;
         gFilterAnyKeyAlreadySent = false;
         gFilterLongPressAlreadySent = false;
+        gLastFilterKeyPressTick = 0;
     }
 
-    if (IS_CARB_LEVEL_BUTTON_PRESSED() && (gIgnoreCarbonationLevelRelease == false) && (gCarbonationLevelPressTick > 0)) {
-        if (gCarbonationLevelPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
-            gIgnoreCarbonationLevelRelease = true;
-            SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
-        }
-    }
+//    if (IS_CARB_LEVEL_BUTTON_PRESSED() && (gIgnoreCarbonationLevelRelease == false) && (gCarbonationLevelPressTick > 0)) {
+//        if (gCarbonationLevelPressTick + LONG_PRESS_PERIOD_MSEC < HAL_GetTick()) { // Long press
+//            gIgnoreCarbonationLevelRelease = true;
+//            SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
+//        }
+//    }
 
     // This also take case of saving the last carbonation level to FRAM
     if (gPrevCarbonationLevel != gCarbonationLevel)
@@ -290,6 +302,11 @@ void CheckButtonsPressPeriodic()
     }
 }
 
+// This method is used by the state machine, to check if any button is currently pressed
+// in case where someone presses a button for a very long time and not releasing it
+// when time expired and going to sleep mode, the states machine is also checking
+// this to prevent from going to sleep mode (although after increasing the sleep timer
+//  from 10 sec to 10 min it is not likely to happen)
 bool IsAnyKeyPressed()
 {
     return IS_FILTER_BUTTON_PRESSED() || IS_CARB_LEVEL_BUTTON_PRESSED()|| IS_MAIN_BUTTON_PRESSED();

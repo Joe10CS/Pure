@@ -31,7 +31,7 @@
 /* enums ---------------------------------------------------------------------*/
 typedef enum {
 	eUART_ERROR = -1,
-	eUART_OK = 0, // TODO: needed ?
+	eUART_OK = 0,
 	eUART_NoMessage = 1,
     eUART_MesssagePending = 2,
 } eUartStatus;

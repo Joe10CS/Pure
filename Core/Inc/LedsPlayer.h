@@ -59,67 +59,6 @@ typedef enum {
     eLEd_LED18 = 0x20000
 }eLedMappings;
 
-//#define USE_DEBUG_LEDS_MAPPING
-#ifdef USE_DEBUG_LEDS_MAPPING
-#ifndef _MSC_VER
-#warning "Using debug LED mapping - for test hardware only"
-#endif
-#define ALL_LEDS_MASK (eLEd_Circle1B|eLEd_Circle2B|eLEd_Circle3B|eLEd_Circle4B|eLEd_Circle5B|eLEd_Circle6B|eLEd_Circle7B|eLEd_Circle8B)
-// DEBUG REMOVE
-// THIS DEFINITION IS FOR THE TEST HARDWARE WITH A CIRCLE OF 8 RGB LEDs
-typedef enum {
-	eLEd_Circle1R = 0x01,
-	eLEd_Circle1G = 0x02,
-	eLEd_Circle1B = 0x04,
-	eLEd_Circle2R = 0x08,
-	eLEd_Circle2G = 0x10,
-	eLEd_Circle2B = 0x20,
-	eLEd_Circle3R = 0x40,
-	eLEd_Circle3G = 0x80,
-	eLEd_Circle3B = 0x100,
-	eLEd_Circle4R = 0x200,
-	eLEd_Circle4G = 0x400,
-	eLEd_Circle4B = 0x800,
-	eLEd_Circle5R = 0x1000,
-	eLEd_Circle5G = 0x2000,
-	eLEd_Circle5B = 0x4000,
-	eLEd_Circle6R = 0x8000,
-	eLEd_Circle6G = 0x10000,
-	eLEd_Circle6B = 0x20000,
-	eLEd_Circle7R = 0x40000,
-	eLEd_Circle7G = 0x80000,
-	eLEd_Circle7B = 0x100000,
-	eLEd_Circle8R = 0x200000,
-	eLEd_Circle8G = 0x400000,
-	eLEd_Circle8B = 0x800000,
-}eLedIdsDebug;
-// DEBUG REMOVE
-
-
-// The values here should be bits corresponding to the actual LED hardware
-// DEBUG all the values here are temporary for test hardware - need to be updated to real hardware LED mapping
-typedef enum {
-    eLED_Circle1 = eLEd_Circle1B,
-    eLED_Circle2 = eLEd_Circle8B,
-    eLED_Circle3 = eLEd_Circle7B,
-    eLED_Circle4 = eLEd_Circle6B,
-    eLED_Circle5 = eLEd_Circle5B,
-    eLED_Circle6 = eLEd_Circle4B,
-    eLED_Circle7 = eLEd_Circle3B,
-    eLED_Circle8 = eLEd_Circle2B,
-    eLED_LevelNoneWhite = 0x800001,  // TODO Stam value - update to real
-    eLED_LevelNoneOrange = 0x800002,
-    eLED_LevelLowWhite = 0x800003,
-    eLED_LevellowOrange = 0x800004,
-    eLED_LevelMedWhite = 0x800005,
-    eLED_LevelMedOrange = 0x800006,
-    eLED_LevelHighWhite = 0x800007,
-    eLED_LevelHighOrange = 0x800008,
-    eLED_FilterWhite = 0x800009,
-    eLED_FilterOrange = 0x80000A,
-    eLED_ALL_LEDS = ALL_LEDS_MASK
-}eLedIds;
-#else
 #define ALL_RING_LEDS_MASK (0xFF)
 #define ALL_CO2_MASK (0x3f300)
 #define ALL_FILTER_MASK (0xC00)
@@ -171,7 +110,7 @@ typedef enum {
     eLEDnum_LevelMedWhite,
     eLEDnum_LevelMedOrange,
 }eLedyNums;
-#endif
+
 // U15 B - LED9 - Hw - Carbonation Level High white led - 0x00100
 // U16 R - LED10 - Ho - Carbonation Level High orange led - 0x00200
 // U16 G - LED11 - Rw - Filter Replace white led - 0x00400
