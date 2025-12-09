@@ -146,6 +146,8 @@ typedef enum {
     eAnimation_DeviceError, // For HW or Safety Fault
     eAnimation_ClearCO2Warning, // special animation to clear only the CO2 3 leds from the orange values
     eAnimation_ClearFilterWarning, // special animation to clear only the filter led from the orange value
+    eAnimation_NoWaterWarning, // when water filling times out
+
 
 	// special animation to clear leds from last value -
 	// i.e if led is not at 100% it will go down from the last value it was

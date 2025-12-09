@@ -35,13 +35,23 @@ sLedsStep clearAllLedsStep = {
 };
 
 
-// this is a for the waring blinking loop (currently for Filter when near expiry)
-#define LEDFLOW_QUICK_BLINKING_LOOP_STEPS (4)
-const sLedsStep stepsQuickBlinking[LEDFLOW_QUICK_BLINKING_LOOP_STEPS] = {
+// this is a for the filter warning blinking loop (currently for Filter when near expiry)
+#define LEDFLOW_FILTER_WARNING_QUICK_BLINKING_LOOP_STEPS (4)
+const sLedsStep stepsFilterWarningQuickBlinking[LEDFLOW_FILTER_WARNING_QUICK_BLINKING_LOOP_STEPS] = {
         {eLED_FilterOrange,   0,   0,   0, 12, 120, eLEdEase_constant},
         {eLED_FilterOrange, 120,   0, 255,  6,  60, eLedEase_OutExpo},
         {eLED_FilterOrange, 184, 255, 255, 12, 120, eLEdEase_constant},
         {eLED_FilterOrange, 304, 255,   0,  6,  60, eLedEase_OutExpo}
+};
+
+
+// this is a for the no water warning blinking loop
+#define LEDFLOW_NO_WATER_QUICK_BLINKING_LOOP_STEPS (4)
+const sLedsStep stepsNoWaterQuickBlinking[LEDFLOW_NO_WATER_QUICK_BLINKING_LOOP_STEPS] = {
+        {ALL_RING_LEDS_MASK,   0,   0,   0, 14, 140, eLEdEase_constant},
+        {ALL_RING_LEDS_MASK, 140,   0, 255,  6,  60, eLedEase_OutExpo},
+        {ALL_RING_LEDS_MASK, 200, 255, 255,  5,  50, eLEdEase_constant},
+        {ALL_RING_LEDS_MASK, 250, 255,   0,  6,  60, eLedEase_OutExpo}
 };
 
 // This is used for Device fault indication
@@ -240,7 +250,12 @@ const sLedsSequence sequenceFilterNormal[LEDFLOW_FILTER_NORMAL_STEPS] = {
 
 #define LEDFLOW_FILTER_WARNING_LOOP_STEPS (1)
 const sLedsSequence sequenceFilterWarningLoop[LEDFLOW_FILTER_WARNING_LOOP_STEPS] = {
-        { LEDFLOW_QUICK_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsQuickBlinking, 3, 0 },
+        { LEDFLOW_FILTER_WARNING_QUICK_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsFilterWarningQuickBlinking, 3, 0 },
+};
+
+#define LEDFLOW_NO_WATER_WARNING_LOOP_STEPS (1)
+const sLedsSequence sequenceNoWaterWarningLoop[LEDFLOW_NO_WATER_WARNING_LOOP_STEPS] = {
+        { LEDFLOW_NO_WATER_QUICK_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsNoWaterQuickBlinking, 3, 0 },
 };
 
 #define LEDFLOW_FILTER_EXPITED_STEPS (1)
@@ -321,6 +336,10 @@ sLedsFlowDef ledsFlowShowFilterWarning[LEDS_FLOW_SHOW_FILTER_WARNING_LEN] = {
         {(sLedsSequence *)sequenceFilterWarningLoop, LEDFLOW_FILTER_WARNING_LOOP_STEPS}
 };
 
+#define LEDS_FLOW_SHOW_NO_WATER_WARNING_LEN (1)
+sLedsFlowDef ledsFlowNoWaterWarning[LEDS_FLOW_SHOW_NO_WATER_WARNING_LEN] = {
+        {(sLedsSequence *)sequenceNoWaterWarningLoop, LEDFLOW_NO_WATER_WARNING_LOOP_STEPS}
+};
 #define LEDS_FLOW_SHOW_FILTER_EXPIRED_LEN (1)
 sLedsFlowDef ledsFlowShowFilterExpired[LEDS_FLOW_SHOW_FILTER_EXPIRED_LEN] = {
         {(sLedsSequence *)sequenceFilterExpired, LEDFLOW_FILTER_EXPITED_STEPS}
@@ -365,8 +384,8 @@ void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
 bool IsPendingAnimation(void);
 uint32_t OOTBGetCarbLevelLedStatusMask(void);
 uint32_t OOTBGetFilterStatusMask(void);
-uint32_t GetCarbLevelLedStatusMask(void);
-uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(void);
+uint32_t GetCarbLevelLedStatusMask(bool whitesOnly);
+uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(bool whitesOnly);
 uint32_t GetFilterStatusMask(void);
 bool GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
 
@@ -408,7 +427,7 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
                 ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 100;
             }
             // update the status display
-            ledsFlowStartup[STARTUP_FLOW_STATUS_SEQ_IDX].seq[0].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask() | GetFilterStatusMask() | ALL_RING_LEDS_MASK;
+            ledsFlowStartup[STARTUP_FLOW_STATUS_SEQ_IDX].seq[0].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask(false) | GetFilterStatusMask() | ALL_RING_LEDS_MASK;
         } else {
             // if in OOTB and CO2 reset is required then orange leds are on - need to turn them off first
             RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
@@ -448,7 +467,7 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
 
     case eAnimation_Status:
         // Set the required leds based on current status
-        ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask() | ALL_RING_LEDS_MASK;
+        ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask(false) | ALL_RING_LEDS_MASK;
         ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = GetFilterStatusMask();
         requestedFlow = ledsFlowDisplayStatus;
         requestedFlowTotalSteps = LEDS_FLOW_DISPLAY_STATUS_LEN;
@@ -536,7 +555,7 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         // This is a special case that suppose to happen while making a drink and the CO2 counter exceeded maximum
         // so need at the point to update ht e ring sequence to play the warning using the last two steps of the ring progress sequence
         // that by default have no effect since their masks are 0
-        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask();// turn off the white CO2 leds by their current level
+        ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask(true);// turn off the white CO2 leds by their current level
         ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].ledIdMask = ALL_CO2_ORANGE_LEDS_MASK;// turn on all the orange CO2 leds
         // Set the timings so it will will be played immediately in the current loop one after the other
         ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS = HAL_GetTick() - gAnimationStartingMS;
@@ -544,6 +563,11 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
                 ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].delayMS +
                 ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].totalMs;
         return; // do not continue to start a new animation or queue it
+
+    case eAnimation_NoWaterWarning:
+        requestedFlow = ledsFlowNoWaterWarning;
+        requestedFlowTotalSteps = LEDS_FLOW_SHOW_NO_WATER_WARNING_LEN;
+        break;
 
         // TODO - this is here to cover animations that are not yet implemented
     case eAnimation_StartUpCO2: // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
@@ -897,7 +921,7 @@ uint32_t OOTBGetCarbLevelLedStatusMask(void)
         return eLED_LevelNoneOrange | ALL_RING_LEDS_MASK;
     }
     // val used as mask now
-    val = GetCarbLevelLedStatusMaskWhiteOrOrange();
+    val = GetCarbLevelLedStatusMaskWhiteOrOrange(false);
     return val | ALL_RING_LEDS_MASK;
 }
 
@@ -908,7 +932,7 @@ uint32_t OOTBGetFilterStatusMask(void)
     return ((val == 0) ? eLED_FilterWhite : eLED_FilterOrange) | ALL_RING_LEDS_MASK;
 }
 
-uint32_t GetCarbLevelLedStatusMask(void)
+uint32_t GetCarbLevelLedStatusMask(bool whitesOnly)
 {
     uint32_t val = 0;
     RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
@@ -918,14 +942,15 @@ uint32_t GetCarbLevelLedStatusMask(void)
         val = ALL_CO2_ORANGE_LEDS_MASK;
     } else {
         // Set CO2 level leds according to current level
-        val = GetCarbLevelLedStatusMaskWhiteOrOrange();
+        val = GetCarbLevelLedStatusMaskWhiteOrOrange(whitesOnly);
     }
     return val;
 }
 
-uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(void)
+uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(bool whitesOnly)
 {
     bool isCo2Warning = RBMEM_IsCO2CounterExpired();
+    isCo2Warning = whitesOnly ? false : isCo2Warning;
     uint32_t val = 0;
     // Set CO2 level leds according to current level
     val |= eLED_LevelNoneWhite;

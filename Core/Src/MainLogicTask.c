@@ -65,7 +65,9 @@ extern uint32_t gLastPumpTimeMSecs;
 uint32_t gRTCTotalSecondsFromLastFilterReset = 0;
 bool gFirstTime = true;
 
-uint32_t gPumpTimoutMsecs = 120000;//30000;
+//#warning "PUMP TIMEOUT SHORTEN FOR DEBUGGING!!!!!!!!!!!!!"
+// uint32_t gPumpTimoutMsecs = 4000; //120000;
+uint32_t gPumpTimoutMsecs = 120000;
 uint32_t gBottleSizeThresholdmSecs = 15000;
 
 uint16_t gPeriodicStatusSendInterval = 0;

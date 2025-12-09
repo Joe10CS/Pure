@@ -109,10 +109,13 @@ bool IsOOTBState()
     }
     return false; // in case of error - assume not OOTB
 }
-bool IsLedsSequencePlaying()
+
+
+bool LedsPlayDone()
 {
-    return (IsAnimationActive() || IsPendingAnimation());
+    return (!IsAnimationActive() && !IsPendingAnimation());
 }
+
 
 void ClearFilterOOTBFlag()
 {
@@ -237,6 +240,9 @@ void LedsSequence(eLedsSequence seq)
         break;
     case LEDS_CO2Warning:
         StartAnimation(eAnimation_CO2Warning, true);
+        break;
+    case LEDS_NoWaterWarning:
+        StartAnimation(eAnimation_NoWaterWarning, true);
         break;
     case LEDS_CO2WarningWhileMakeingADrink:
         StartAnimation(eAnimation_CO2WarningWhileMakeingADrink, true);
