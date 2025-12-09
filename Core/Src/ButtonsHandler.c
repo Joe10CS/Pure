@@ -207,10 +207,16 @@ void CheckButtonsPressPeriodic()
                 if (gButtonsFunction) {
                     // Normal mode -> classify short vs long press
                     if (gCO2LevelButtonPressCount < BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY) {
-                        // Short press the carbonation level toggles the level
-                        gCarbonationLevel++;
-                        if (gCarbonationLevel == eLevel_number_of_levels) {
-                            gCarbonationLevel = eLevel_off;
+                        // Short press the carbonation level toggles the level unless we are in OOB and CO2 has not been reset yet
+                        if (ootb != 0) {
+                            // resuse ootb variable to check if CO2 has now reset yet
+                            RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &ootb);
+                        }
+                        if (ootb == 0) { // not in OOB or in OOB but CO2 already reset
+                            gCarbonationLevel++;
+                            if (gCarbonationLevel == eLevel_number_of_levels) {
+                                gCarbonationLevel = eLevel_off;
+                            }
                         }
                         SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);
                     } else {

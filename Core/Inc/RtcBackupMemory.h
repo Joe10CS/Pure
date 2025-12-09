@@ -58,6 +58,7 @@ uint32_t RBMEM_Data_Init(void);
 HAL_StatusTypeDef RBMEM_WriteElement(eRBMEM_Element elem, uint32_t value);
 HAL_StatusTypeDef RBMEM_ReadElement(eRBMEM_Element elem, uint32_t *value);
 HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void);
+HAL_StatusTypeDef RBMEM_ResetDataToDefaultsOnExitFromOOB(void);
 bool RBMEM_IsRTCMagicNunberOK(void);
 void RBMEM_WriteRTCMagicNunber(void);
 

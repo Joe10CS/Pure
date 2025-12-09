@@ -29,6 +29,11 @@ HAL_StatusTypeDef RBMEM_WriteElement(eRBMEM_Element elem, uint32_t value)
     switch (elem)
     {
     case eRBMEM_isFirstTimeSetupRequired:
+        // first check if we are moving from 1 to 0
+        if ((regVal & RBMEM_FIRST_TIME_SETUP_MASK) && (value == 0)) {
+            // This suppose to happen only once - reset data (not flags!) to defaults
+            RBMEM_ResetDataToDefaultsOnExitFromOOB();
+        }
         if (value)
             regVal |= RBMEM_FIRST_TIME_SETUP_MASK;
         else
@@ -164,6 +169,22 @@ HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void)
 
     return status;
 }
+
+HAL_StatusTypeDef RBMEM_ResetDataToDefaultsOnExitFromOOB(void)
+{
+    HAL_StatusTypeDef status = HAL_OK;
+
+    // Set default carbonation level
+    status |= RBMEM_WriteElement(eRBMEM_lastCarbonationLevel, DEFAULT_lastCarbonationLevel);
+    gCarbonationLevel = (eCarbonationLevel)DEFAULT_lastCarbonationLevel;
+
+    // Set default total CO2 used
+    status |= RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, 0);
+    status |= RBMEM_WriteElement(eRBMEM_total_CO2_msecs_max, CO2_LIFETIME_MSECS); // default max
+
+    return status;
+}
+
 
 bool RBMEM_IsRTCMagicNunberOK(void)
 {

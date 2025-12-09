@@ -366,6 +366,7 @@ bool IsPendingAnimation(void);
 uint32_t OOTBGetCarbLevelLedStatusMask(void);
 uint32_t OOTBGetFilterStatusMask(void);
 uint32_t GetCarbLevelLedStatusMask(void);
+uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(void);
 uint32_t GetFilterStatusMask(void);
 bool GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
 
@@ -890,23 +891,13 @@ uint8_t EaseLUT_PlaySegment(
 
 uint32_t OOTBGetCarbLevelLedStatusMask(void)
 {
-    // This code assumes that
     uint32_t val = 0;
     RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
-    bool isCo2Warning = (val != 0);
-
-    val = 0; // used as mask now
-    val |= eLED_LevelNoneWhite;
-    if (gCarbonationLevel >= eLevel_Low) {
-        val  = 0; // clear the "none"
-        val |= ((isCo2Warning) ? eLED_LevellowOrange : eLED_LevelLowWhite);
+    if (val != 0){ // OOB CO2 level warning required
+        return eLED_LevelNoneOrange | ALL_RING_LEDS_MASK;
     }
-    if (gCarbonationLevel >= eLevel_medium) {
-        val |= ((isCo2Warning) ? eLED_LevelMedOrange : eLED_LevelMedWhite);
-    }
-    if (gCarbonationLevel >= eLevel_high) {
-        val |= ((isCo2Warning) ? eLED_LevelHighOrange : eLED_LevelHighWhite);
-    }
+    // val used as mask now
+    val = GetCarbLevelLedStatusMaskWhiteOrOrange();
     return val | ALL_RING_LEDS_MASK;
 }
 
@@ -915,9 +906,8 @@ uint32_t OOTBGetFilterStatusMask(void)
     uint32_t val = 0;
     RBMEM_ReadElement(eRBMEM_isFilterOOTBResetRequired, &val);
     return ((val == 0) ? eLED_FilterWhite : eLED_FilterOrange) | ALL_RING_LEDS_MASK;
-
-
 }
+
 uint32_t GetCarbLevelLedStatusMask(void)
 {
     uint32_t val = 0;
@@ -928,17 +918,26 @@ uint32_t GetCarbLevelLedStatusMask(void)
         val = ALL_CO2_ORANGE_LEDS_MASK;
     } else {
         // Set CO2 level leds according to current level
-        val |= eLED_LevelNoneWhite;
-        if (gCarbonationLevel >= eLevel_Low) {
-            val  = 0; // clear the "none"
-            val |= eLED_LevelLowWhite;
-        }
-        if (gCarbonationLevel >= eLevel_medium) {
-            val |= eLED_LevelMedWhite;
-        }
-        if (gCarbonationLevel >= eLevel_high) {
-            val |= eLED_LevelHighWhite;
-        }
+        val = GetCarbLevelLedStatusMaskWhiteOrOrange();
+    }
+    return val;
+}
+
+uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(void)
+{
+    bool isCo2Warning = RBMEM_IsCO2CounterExpired();
+    uint32_t val = 0;
+    // Set CO2 level leds according to current level
+    val |= eLED_LevelNoneWhite;
+    if (gCarbonationLevel >= eLevel_Low) {
+        val  = 0; // clear the "none"
+        val |= ((isCo2Warning) ? eLED_LevellowOrange : eLED_LevelLowWhite);
+    }
+    if (gCarbonationLevel >= eLevel_medium) {
+        val |= ((isCo2Warning) ? eLED_LevelMedOrange : eLED_LevelMedWhite);
+    }
+    if (gCarbonationLevel >= eLevel_high) {
+        val |= ((isCo2Warning) ? eLED_LevelHighOrange : eLED_LevelHighWhite);
     }
     return val;
 }
