@@ -32,6 +32,8 @@ uint32_t gCO2MaxCounter = 0;
 uint32_t gReadyTimerStartTick = 0;
 uint32_t gFilterToCarbDelayStartTick = 0;
 
+uint8_t gRinsingCyclesDone = 0;
+
 extern uint32_t gPumpTimoutMsecs;
 extern volatile uint16_t gReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
 extern volatile uint16_t gReadWaterPumpCurrentADC;
@@ -329,6 +331,32 @@ void ResetToOOTB()
 	ForceFilterExpired();
 	RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, CO2_LIFETIME_MSECS + 1);
 }
+
+void ResetRinsingNumber()
+{
+	gRinsingCyclesDone = 0;
+}
+void UpdateRinsingNumber()
+{
+	gRinsingCyclesDone++;
+}
+
+bool Rinsing2Done()
+{
+	return gRinsingCyclesDone >= 2;
+}
+bool WaterPumpNoWater()
+{
+	// TODO implement
+	return false;
+}
+
+bool FilterExpired()
+{
+	return (GetFilterStatus() == eFilterStatus_Expired);
+}
+
+
 
 void StartReadyTimer()
 {

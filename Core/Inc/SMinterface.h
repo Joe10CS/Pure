@@ -40,6 +40,7 @@ typedef enum
     LEDS_FIlterWarning, // deprecated - use LEDS_CheckFilterStatus
 	LEDS_CO2Warning,
 	LEDS_NoWaterWarning,
+	LEDS_FilterWarning,
     LEDS_CO2WarningWhileMakeingADrink,
 	LEDS_allOff,
 	LEDS_CO2Level,
@@ -74,6 +75,12 @@ bool IsOOTBWindowTimeExpired();
 bool IsCO2LeveButtonPressed();
 bool IsFilterButtonPressed();
 void ResetToOOTB();
+
+void ResetRinsingNumber();
+void UpdateRinsingNumber();
+bool Rinsing2Done();
+bool WaterPumpNoWater();
+bool FilterExpired();
 
 void ResetFilterLifetimeTimer();
 bool IsFirstPowerON();
