@@ -155,10 +155,6 @@ typedef enum {
 	// and turn them off smoothly
     // it has the pattern 0x1xxxx so it can be identified fast (CLEAR_ALL_LEDS_ANIMATION_MASK)
     eAnimation_ClearLedsFromLastValue = 0x1001, // 4097
-    // These two are similar to eAnimation_ClearLedsFromLastValue it clears only
-    // the circle and the CO2 or Filter leds from their last value
-    eAnimation_OOTBCO2Down = 0x1002, // 4098
-    eAnimation_OOTBFilterDown = 0x1003, // 4099
 }eAnimations;
 
 

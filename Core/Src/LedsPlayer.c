@@ -382,10 +382,7 @@ extern uint8_t gRawMsgForEcho[MAX_RX_BUFFER_LEN];
 void ZeroGlobalAnimationParams(bool zeroCurrent, bool zeroPendingToo);
 void SetCurrentFlowLoopEntryMSValues(sLedsSequence *seq, uint8_t len);
 bool IsPendingAnimation(void);
-uint32_t OOTBGetCarbLevelLedStatusMask(void);
-uint32_t OOTBGetFilterStatusMask(void);
 uint32_t GetCarbLevelLedStatusMask(bool whitesOnly);
-uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(bool whitesOnly);
 uint32_t GetFilterStatusMask(void);
 bool GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
 
@@ -399,7 +396,6 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
 #endif
     uint16_t requestedFlowTotalSteps = 0;
     sLedsFlowDef *requestedFlow = NULL;  // A flow of sequences
-    uint32_t val;
 
     switch(animation)
     {
@@ -409,7 +405,6 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         break;
 
     case eAnimation_StartUp:
-        RBMEM_ReadElement(eRBMEM_isFirstTimeSetupRequired, &val);
         requestedFlow = ledsFlowStartup;
         requestedFlowTotalSteps = LEDS_FLOW_STARTUP_LEN;
         // by default don't include the warning leds off step
@@ -417,28 +412,15 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalSteps10ms = 1;
         ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 10;
 
-        // check if normal startup
-        if (val == 0) {
-            // if CO2 counter expired and the leds are currently on then need to turn on the orange leds
-            if (RBMEM_IsCO2CounterExpired() && (gLeds[eLEDnum_LevellowOrange] != 0)) // Check only the CO2 low orange led (they are all on together)
-            {
-                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].ledIdMask = ALL_ORANGE_CO2_AND_FILTER_MASK;
-                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalSteps10ms = 10;
-                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 100;
-            }
-            // update the status display
-            ledsFlowStartup[STARTUP_FLOW_STATUS_SEQ_IDX].seq[0].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask(false) | GetFilterStatusMask() | ALL_RING_LEDS_MASK;
-        } else {
-            // if in OOTB and CO2 reset is required then orange leds are on - need to turn them off first
-            RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
-            if (val != 0) {
-                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].ledIdMask = ALL_ORANGE_CO2_AND_FILTER_MASK;
-                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalSteps10ms = 10;
-                ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 100;
-            }
-            // ignore the last step of status (shown on other flows)
-            requestedFlowTotalSteps--;
-        }
+		// if CO2 counter expired and the leds are currently on then need to turn on the orange leds
+		if (RBMEM_IsCO2CounterExpired() && (gLeds[eLEDnum_LevellowOrange] != 0)) // Check only the CO2 low orange led (they are all on together)
+		{
+			ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].ledIdMask = ALL_ORANGE_CO2_AND_FILTER_MASK;
+			ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalSteps10ms = 10;
+			ledsFlowStartup[STARTUP_FLOW_WARN_OFF_IDX].seq[0].subSeq[0].totalMs = 100;
+		}
+		// update the status display
+		ledsFlowStartup[STARTUP_FLOW_STATUS_SEQ_IDX].seq[0].subSeq[0].ledIdMask = GetCarbLevelLedStatusMask(false) | GetFilterStatusMask() | ALL_RING_LEDS_MASK;
 
         break;
 
@@ -475,8 +457,8 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
 
     case eAnimation_OOTBStatus:
 		// Set the required leds based on current OOTB status
-        ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = OOTBGetCarbLevelLedStatusMask();
-        ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = OOTBGetFilterStatusMask();
+        //ledsFlowDisplayStatus[0].seq[STATUS_CARB_IDX].subSeq[0].ledIdMask = OOTBGetCarbLevelLedStatusMask();
+        //ledsFlowDisplayStatus[0].seq[STATUS_FILTER_IDX].subSeq[0].ledIdMask = OOTBGetFilterStatusMask();
         requestedFlow = ledsFlowDisplayStatus;
         requestedFlowTotalSteps = LEDS_FLOW_DISPLAY_STATUS_LEN;
         break;
@@ -663,12 +645,6 @@ void PlayLedsPeriodic(void)
         }
         uint32_t mask = 1;
         for (j = 0; j < NUMBER_OF_LEDS; j++) {
-            // if the current animation is OOTB CO2/Filter down , skip leds that are not in the mask
-            if (((gCurrentAnimation == eAnimation_OOTBCO2Down) && !(mask & CLEAR_OOTB_CO2_LEDS_MASK)) ||
-                ((gCurrentAnimation == eAnimation_OOTBFilterDown) && !(mask & CLEAR_OOTB_FILTER_LEDS_MASK))) {
-                mask <<= 1;
-             continue;
-            }
             // this is the "trick" - setting value only id smaller then previous (and member of the mask)
             if ((clearAllLedsStep.ledIdMask & mask) && (val < gLeds[j])){
                 gLeds[j] = val; // or blend logic
@@ -913,41 +889,7 @@ uint8_t EaseLUT_PlaySegment(
     return gLedEaseData[StepInfo->easeFunc][lutIndex];
 }
 
-uint32_t OOTBGetCarbLevelLedStatusMask(void)
-{
-    uint32_t val = 0;
-    RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
-    if (val != 0){ // OOB CO2 level warning required
-        return eLED_LevelNoneOrange | ALL_RING_LEDS_MASK;
-    }
-    // val used as mask now
-    val = GetCarbLevelLedStatusMaskWhiteOrOrange(false);
-    return val | ALL_RING_LEDS_MASK;
-}
-
-uint32_t OOTBGetFilterStatusMask(void)
-{
-    uint32_t val = 0;
-    RBMEM_ReadElement(eRBMEM_isFilterOOTBResetRequired, &val);
-    return ((val == 0) ? eLED_FilterWhite : eLED_FilterOrange) | ALL_RING_LEDS_MASK;
-}
-
 uint32_t GetCarbLevelLedStatusMask(bool whitesOnly)
-{
-    uint32_t val = 0;
-    RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
-    if ((val == 1) || RBMEM_IsCO2CounterExpired()) {
-        // OOB led was not cleared yet or CO2 is expired
-        // Set all CO2 level leds to orange
-        val = ALL_CO2_ORANGE_LEDS_MASK;
-    } else {
-        // Set CO2 level leds according to current level
-        val = GetCarbLevelLedStatusMaskWhiteOrOrange(whitesOnly);
-    }
-    return val;
-}
-
-uint32_t GetCarbLevelLedStatusMaskWhiteOrOrange(bool whitesOnly)
 {
     bool isCo2Warning = RBMEM_IsCO2CounterExpired();
     isCo2Warning = whitesOnly ? false : isCo2Warning;

@@ -12,6 +12,19 @@
 #define FILTER_TO_CARBONATION_DELAY_MSECS (1000U)
 #define MAX_NUMBER_OF_CARBONATION_STEPS (8)
 
+// Time window in mSec from power up to enter OOTB
+#define RESET_TO_OOTB_MSEC (3000)
+
+#define FILTER_LIFETIME_DAYS   (90)
+#define FILTER_WARNING_DAYS     (9)
+
+#define CO2_LIFETIME_MSECS   (170000)
+#define CO2_MAX_SINGLE_PULSE_MSECS   (15000)
+
+
+#define IS_FILTER_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin) == GPIO_PIN_RESET)
+#define IS_CARB_LEVEL_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN2_GPIO_Port, BTN2_Pin) == GPIO_PIN_RESET)
+
 
 typedef enum {
 	eLevel_off = 0,

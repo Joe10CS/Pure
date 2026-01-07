@@ -36,9 +36,6 @@ typedef enum
 
     LEDS_Status, // show ring and current status of carb level and filter
 	LEDS_StartUpCO2,
-	LEDS_OOTBCO2Down,
-	LEDS_OOTBStatus,
-	LEDS_OOTBFilterDown,
 	LEDS_CheckFilterStatus,
     LEDS_FIlterWarning, // deprecated - use LEDS_CheckFilterStatus
 	LEDS_CO2Warning,
@@ -73,8 +70,10 @@ bool CarbonationOffCycleExpired(uint16_t carbCycle);
 bool CarbonationOnCycleExpired(uint16_t carbCycle);
 bool IsCarbonationLastCycle(uint16_t carbCycle);
 
-void StartCarbonationLedSequance();
-void WaterLedOrangeToBlue();
+bool IsOOTBWindowTimeExpired();
+bool IsCO2LeveButtonPressed();
+bool IsFilterButtonPressed();
+void ResetToOOTB();
 
 void ResetFilterLifetimeTimer();
 bool IsFirstPowerON();
@@ -96,11 +95,7 @@ bool CarbonationEnabled();
 bool IsBottleFull();
 bool Tilted();
 
-
-bool IsOOTBState();
 bool LedsPlayDone();
-void ClearCO2OOTBFlag();
-void ClearFilterOOTBFlag();
 
 void ResetFilterDaysCounter();
 void StartFilterToCarbDelay();

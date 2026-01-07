@@ -13,13 +13,10 @@
 #include "stm32g0xx_hal.h"
 #endif
 
-#define RTC_BKP_RTC_STARTUP_MAGIC_NUMBER (0xC0DE32F2)
-#define RBM_DATA_MAGIC_NUMBER    (0xFEEDCAFE)
+#define RTC_BKP_RTC_STARTUP_MAGIC_NUMBER (0xDAC3FACE)
+#define RBM_DATA_MAGIC_NUMBER    (0x7CAFE2F0)
 typedef struct {
     uint32_t magicNumber;
-    uint32_t isFirstTimeSetupRequired;
-    uint32_t isCO2OOTBResetRequired;
-    uint32_t isFilterOOTBResetRequired;
     uint32_t lastCarbonationLevel;
 }sRBMEMStorageData;
 
@@ -35,19 +32,13 @@ typedef struct {
 #define RBMEM_RTC_DR_TOTAL_CO2    RTC_BKP_DR3   // Total milliseconds of CO2 used since last reset
 #define RBMEM_RTC_DR_MAX_CO2      RTC_BKP_DR4   // Maximum milliseconds of CO2
 
-#define RBMEM_FIRST_TIME_SETUP_MASK       (0x00000001)
-#define RBMEM_CO2_OOTB_RESET_MASK         (0x00000002)
-#define RBMEM_FILTER_OOTB_RESET_MASK      (0x00000004)
-#define RBMEM_LAST_CARBONATION_LEVEL_MASK (0x00000030)
-#define RBMEM_LAST_CARBONATION_LEVEL_SHIFT (4U)   // bits [5:4]
+#define RBMEM_LAST_CARBONATION_LEVEL_MASK (0x00000003)
+#define RBMEM_LAST_CARBONATION_LEVEL_SHIFT (0U)   // bits [1:0]
 
 typedef enum
 {
     eRBMEM_RTC_Time_Start_magicNumber = 0,
     eRBMEM_RTC_Memory_magicNumber,
-    eRBMEM_isFirstTimeSetupRequired, // Is first time setup required (OOTB)
-    eRBMEM_isCO2OOTBResetRequired, // Is CO2 status out-of-the-box (OOTB) reset required
-    eRBMEM_isFilterOOTBResetRequired, // Is filter status out-of-the-box (OOTB) reset required
     eRBMEM_lastCarbonationLevel,
     eRBMEM_total_CO2_msecs_used, // Total milliseconds of CO2 used since last reset
     eRBMEM_total_CO2_msecs_max, // Maximum of Total milliseconds of CO2
@@ -58,7 +49,6 @@ uint32_t RBMEM_Data_Init(void);
 HAL_StatusTypeDef RBMEM_WriteElement(eRBMEM_Element elem, uint32_t value);
 HAL_StatusTypeDef RBMEM_ReadElement(eRBMEM_Element elem, uint32_t *value);
 HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void);
-HAL_StatusTypeDef RBMEM_ResetDataToDefaultsOnExitFromOOB(void);
 bool RBMEM_IsRTCMagicNunberOK(void);
 void RBMEM_WriteRTCMagicNunber(void);
 

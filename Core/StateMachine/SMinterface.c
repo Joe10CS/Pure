@@ -102,44 +102,11 @@ bool Tilted()
 
 
 uint32_t val = 0;
-bool IsOOTBState()
-{
-    if (HAL_OK == RBMEM_ReadElement(eRBMEM_isFirstTimeSetupRequired, &val)) {
-        return (val != 0);
-    }
-    return false; // in case of error - assume not OOTB
-}
-
 
 bool LedsPlayDone()
 {
     return (!IsAnimationActive() && !IsPendingAnimation());
 }
-
-
-void ClearFilterOOTBFlag()
-{
-    RBMEM_WriteElement(eRBMEM_isFilterOOTBResetRequired, 0);
-    // check if need to clear the eRBMEM_isFirstTimeSetupRequired
-    RBMEM_ReadElement(eRBMEM_isCO2OOTBResetRequired, &val);
-    if (val == 0) // Both cleared
-    {
-        RBMEM_WriteElement(eRBMEM_isFirstTimeSetupRequired,0);
-    }
-}
-
-void ClearCO2OOTBFlag()
-{
-    RBMEM_WriteElement(eRBMEM_isCO2OOTBResetRequired, 0);
-    // check if need to clear the eRBMEM_isFirstTimeSetupRequired
-    RBMEM_ReadElement(eRBMEM_isFilterOOTBResetRequired, &val);
-    if (val == 0) // Both cleared
-    {
-        RBMEM_WriteElement(eRBMEM_isFirstTimeSetupRequired,0);
-    }
-
-}
-
 
 void StartWaterPump()
 {
@@ -225,15 +192,6 @@ void LedsSequence(eLedsSequence seq)
         break;
     case LEDS_StartUpCO2:
         StartAnimation(eAnimation_StartUpCO2, true);
-        break;
-    case LEDS_OOTBCO2Down:
-        StartAnimation(eAnimation_OOTBCO2Down, true);
-        break;
-    case LEDS_OOTBStatus:
-        StartAnimation(eAnimation_OOTBStatus, true);
-        break;
-    case LEDS_OOTBFilterDown:
-        StartAnimation(eAnimation_OOTBFilterDown, true);
         break;
     case LEDS_CheckFilterStatus:
         StartAnimation(eAnimation_CheckFilterStatus, true);
@@ -351,10 +309,26 @@ bool IsCarbonationLastCycle(uint16_t carbCycle)
 	return false;
 
 }
+bool IsCO2LeveButtonPressed()
+{
+	return IS_CARB_LEVEL_BUTTON_PRESSED();
+}
+bool IsFilterButtonPressed()
+{
+	return IS_FILTER_BUTTON_PRESSED();
+}
 
-void StartCarbonationLedSequance() {}
-void StartMalfunctionLedsSequence() {}
-void WaterLedOrangeToBlue() {}
+// Return true if OOTB window closed
+bool IsOOTBWindowTimeExpired()
+{
+	return HAL_GetTick() > RESET_TO_OOTB_MSEC;
+}
+
+void ResetToOOTB()
+{
+	ForceFilterExpired();
+	RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, CO2_LIFETIME_MSECS + 1);
+}
 
 void StartReadyTimer()
 {
@@ -387,7 +361,6 @@ void SolenoidPumpUVPower(int isOn)
 
 void ResetFilterDaysCounter()
 {
-    ClearFilterOOTBFlag();
     RestartFilterTimer();
 }
 

@@ -81,7 +81,11 @@ uint32_t ConvertDateToDays(uint16_t y, uint8_t m, uint8_t d)
     return 365UL * y + y/4 - y/100 + y/400 + (153UL * (m - 3) + 2) / 5 + d - 1;
 }
 
-// Used only by the FDAY uart command
+void ForceFilterExpired()
+{
+	SetDaysSinceLastFilterReplacement(FILTER_LIFETIME_DAYS+1);
+}
+
 void SetDaysSinceLastFilterReplacement(uint32_t daysSinceReplacement)
 {
     if (daysSinceReplacement > 200)
@@ -90,7 +94,7 @@ void SetDaysSinceLastFilterReplacement(uint32_t daysSinceReplacement)
     RTC_TimeTypeDef sTime = {0};
     RTC_DateTypeDef sDate = {0};
 
-    // Year is always 2000 for this test helper
+    // Year is always 2000
     uint16_t year = 2000;
     static const uint8_t daysInMonth[12] = {
         31, // Jan
