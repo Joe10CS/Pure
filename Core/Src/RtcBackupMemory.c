@@ -28,6 +28,12 @@ HAL_StatusTypeDef RBMEM_WriteElement(eRBMEM_Element elem, uint32_t value)
 
     switch (elem)
     {
+    case eRBMEM_Rinsing2ndWaiting:
+        if (value)
+            regVal |= RBMEM_RINSING_2ND_WAITING_MASK;
+        else
+            regVal &= ~RBMEM_RINSING_2ND_WAITING_MASK;
+        break;
     case eRBMEM_lastCarbonationLevel:
         regVal &= ~RBMEM_LAST_CARBONATION_LEVEL_MASK;
         regVal |= ((value & 0x03) << RBMEM_LAST_CARBONATION_LEVEL_SHIFT);
@@ -66,6 +72,9 @@ HAL_StatusTypeDef RBMEM_ReadElement(eRBMEM_Element elem, uint32_t *value)
 
     switch (elem)
     {
+    case eRBMEM_Rinsing2ndWaiting:
+        *value = (regVal & RBMEM_RINSING_2ND_WAITING_MASK) ? 1U : 0U;
+        break;
     case eRBMEM_lastCarbonationLevel:
         *value = (regVal & RBMEM_LAST_CARBONATION_LEVEL_MASK) >> RBMEM_LAST_CARBONATION_LEVEL_SHIFT;
         break;
@@ -117,6 +126,7 @@ HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void)
     // Write both magic numbers
     status |= RBMEM_WriteElement(eRBMEM_RTC_Memory_magicNumber, RBM_DATA_MAGIC_NUMBER);
 
+    status |= RBMEM_WriteElement(eRBMEM_Rinsing2ndWaiting, DEFAULT_Rinsing2ndWaiting);
     // Set default carbonation level
     status |= RBMEM_WriteElement(eRBMEM_lastCarbonationLevel, DEFAULT_lastCarbonationLevel);
 

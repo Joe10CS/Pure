@@ -44,6 +44,15 @@ const sLedsStep stepsFilterWarningQuickBlinking[LEDFLOW_FILTER_WARNING_QUICK_BLI
         {eLED_FilterOrange, 304, 255,   0,  6,  60, eLedEase_OutExpo}
 };
 
+// For slow blinking while waiting for 2nd rinsing
+#define LEDFLOW_FILTER_WARNING_SLOW_BLINKING_LOOP_STEPS (4)
+const sLedsStep stepsFilterWarningSlowBlinking[LEDFLOW_FILTER_WARNING_SLOW_BLINKING_LOOP_STEPS] = {
+        {eLED_FilterOrange,    0,   0,   0,  45,  450, eLEdEase_constant},
+        {eLED_FilterOrange,  450,   0, 255,  15,  150, eLedEase_OutExpo},
+        {eLED_FilterOrange,  600, 255, 255, 200, 2000, eLEdEase_constant},
+        {eLED_FilterOrange, 2600, 255,   0,  15,  150, eLedEase_OutExpo}
+};
+
 
 // this is a for the no water warning blinking loop
 #define LEDFLOW_NO_WATER_QUICK_BLINKING_LOOP_STEPS (4)
@@ -263,6 +272,11 @@ const sLedsSequence sequenceFilterExpired[LEDFLOW_FILTER_EXPITED_STEPS] = {
         { 1, 0, (sLedsStep[]){ {eLED_FilterOrange,   0,   0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0  },
 };
 
+#define LEDFLOW_2ND_RINISING_WAIT_STEPS (1)
+const sLedsSequence sequence2ndRinsingWait[LEDFLOW_2ND_RINISING_WAIT_STEPS] = {
+        { LEDFLOW_FILTER_WARNING_SLOW_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsFilterWarningSlowBlinking, ENDLESS_LOOP, 0  },
+};
+
 #define LEDFLOW_DEVICE_ERROR_STEPS (1)
 const sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
         { LEDFLOW_ERROR_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsErrorBlinckingLoop, ENDLESS_LOOP, 0 },
@@ -343,6 +357,11 @@ sLedsFlowDef ledsFlowNoWaterWarning[LEDS_FLOW_SHOW_NO_WATER_WARNING_LEN] = {
 #define LEDS_FLOW_SHOW_FILTER_EXPIRED_LEN (1)
 sLedsFlowDef ledsFlowShowFilterExpired[LEDS_FLOW_SHOW_FILTER_EXPIRED_LEN] = {
         {(sLedsSequence *)sequenceFilterExpired, LEDFLOW_FILTER_EXPITED_STEPS}
+};
+
+#define LEDS_FLOW_2ND_RINISING_WAIT_LEN (1)
+sLedsFlowDef ledsFlow2ndRinsingWait[LEDS_FLOW_2ND_RINISING_WAIT_LEN] = {
+        {(sLedsSequence *)sequence2ndRinsingWait, LEDFLOW_2ND_RINISING_WAIT_STEPS}
 };
 
 #define LEDS_FLOW_DEVICE_ERROR_LEN (1)
@@ -505,7 +524,11 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
             break;
         }
         break;
-        //eAnimation_ClearFilterWarning, // special animation to clear only the filter led from the orange value
+
+	case eAnimation_Filter2ndRinsingWarning:
+        requestedFlow = ledsFlow2ndRinsingWait;
+        requestedFlowTotalSteps = LEDS_FLOW_2ND_RINISING_WAIT_LEN;
+        break;
 
     case eAnimation_ClearFilterWarning:
         // turn it off only if it is currently on/fading

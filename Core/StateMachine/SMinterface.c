@@ -198,6 +198,9 @@ void LedsSequence(eLedsSequence seq)
     case LEDS_CheckFilterStatus:
         StartAnimation(eAnimation_CheckFilterStatus, true);
         break;
+    case LEDS_FilterWarning:
+        StartAnimation(eAnimation_Filter2ndRinsingWarning, true);
+        break;
     case LEDS_CO2Warning:
         StartAnimation(eAnimation_CO2Warning, true);
         break;

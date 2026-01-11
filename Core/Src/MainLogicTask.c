@@ -415,6 +415,14 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
         COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
         echoCommand = false;
         break;
+    case eUARTCommand_ootb: // Get/Set the OOTB state
+    	if (msg->params.onOff.isOn == 1) { // set OOTB
+    		ResetToOOTB();
+    	} else { // clear OOTB
+    		RestartFilterTimer();
+    		RestartCO2Counter();
+    	}
+    	break;
 	case eUARTCommand_rrtc: // Get Info - non state machine related command
 	{
 	    extern RTC_HandleTypeDef hrtc;

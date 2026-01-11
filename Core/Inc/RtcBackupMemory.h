@@ -21,9 +21,8 @@ typedef struct {
 }sRBMEMStorageData;
 
 #define DEFAULT_isFirstTimeSetupRequired (1)
-#define DEFAULT_isCO2OOTBResetRequired (1)
-#define DEFAULT_isFilterOOTBResetRequired (1)
-#define DEFAULT_lastCarbonationLevel   (3)
+#define DEFAULT_Rinsing2ndWaiting        (0)
+#define DEFAULT_lastCarbonationLevel     (3)
 
 /* Backup register assignments */
 #define RBMEM_RTC_DR_MAGIC_START  RTC_BKP_DR0   // Magic number of RTC Timer Need to restart (no magic = need to start)
@@ -34,12 +33,14 @@ typedef struct {
 
 #define RBMEM_LAST_CARBONATION_LEVEL_MASK (0x00000003)
 #define RBMEM_LAST_CARBONATION_LEVEL_SHIFT (0U)   // bits [1:0]
+#define RBMEM_RINSING_2ND_WAITING_MASK (0x00000004)
 
 typedef enum
 {
     eRBMEM_RTC_Time_Start_magicNumber = 0,
     eRBMEM_RTC_Memory_magicNumber,
     eRBMEM_lastCarbonationLevel,
+    eRBMEM_Rinsing2ndWaiting,  // if set, the user is expected to perform the second stage of rinsing
     eRBMEM_total_CO2_msecs_used, // Total milliseconds of CO2 used since last reset
     eRBMEM_total_CO2_msecs_max, // Maximum of Total milliseconds of CO2
     eRBMEM_MAX
@@ -54,5 +55,4 @@ void RBMEM_WriteRTCMagicNunber(void);
 
 HAL_StatusTypeDef RBMEM_AddMSecsToCO2Counter(uint32_t value);
 bool RBMEM_IsCO2CounterExpired();
-
 #endif /* INC_RTCBACKUPMEMORY_H_ */

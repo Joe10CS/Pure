@@ -138,7 +138,8 @@ typedef enum {
     eAnimation_RingLoaderEnd, // Used for rinsing/priming the filter
     eAnimation_Status,  // generic status display animation (filter warning, CO2 warning)
     eAnimation_StartUpCO2, // startup animation for CO2 only leds (part of the "StartUp (Splash)" animation)
-    eAnimation_CheckFilterStatus, // Show the currnet filter status (Noraml - white that shows and fades, warning - orange blinking, expired - solid orange)
+    eAnimation_CheckFilterStatus, // Show the current filter status (Normal - white that shows and fades, warning - orange blinking, expired - solid orange)
+	eAnimation_Filter2ndRinsingWarning, //shows the flashing warning before 2nd rinsing stage
     eAnimation_CO2Warning, // CO2 warning animation, currently implemented only on OOTB state
     eAnimation_CO2WarningWhileMakeingADrink, // CO2 warning animation while making a drink - add the CO2 white off and orange on while ring is playing
     eAnimation_OOTBStatus, // Shows the current status of CO2 and Filter on OOTB procedure

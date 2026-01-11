@@ -37,10 +37,9 @@ typedef enum
     LEDS_Status, // show ring and current status of carb level and filter
 	LEDS_StartUpCO2,
 	LEDS_CheckFilterStatus,
-    LEDS_FIlterWarning, // deprecated - use LEDS_CheckFilterStatus
+    LEDS_FilterWarning, // shows the flashing warning before 2nd rinsing stage
 	LEDS_CO2Warning,
 	LEDS_NoWaterWarning,
-	LEDS_FilterWarning,
     LEDS_CO2WarningWhileMakeingADrink,
 	LEDS_allOff,
 	LEDS_CO2Level,
