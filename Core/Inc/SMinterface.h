@@ -94,13 +94,15 @@ bool IsGuiControlMode();
 void SolenoidPump(int itOn);
 void SolenoidPumpUVPower(int itOn);
 
+
 // Added for pure 2
 bool WaterPumpTimerExpired();
 void LedsSequence(eLedsSequence seq);
 bool CarbonationEnabled();
 bool IsBottleFull();
 bool Tilted();
-
+void CheckUVError(bool isOnWakeup);
+bool IsUVLedCheckDone(bool isOnWakeup);
 bool LedsPlayDone();
 
 void ResetFilterDaysCounter();

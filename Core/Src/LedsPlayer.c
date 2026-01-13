@@ -72,6 +72,36 @@ const sLedsStep stepsErrorBlinckingLoop[LEDFLOW_ERROR_BLINKING_LOOP_STEPS] = {
         {ALL_ORANGE_CO2_AND_FILTER_MASK,  1650, 255,   0, 35, 350, eLedEase_OutExpo}
 };
 
+
+#define LEDFLOW_START_UV_ERROR_STEPS (2)
+const sLedsStep stepsStartUVError[LEDFLOW_START_UV_ERROR_STEPS] = {
+        {ALL_FILTER_MASK,     0, 0,   0, 50, 500, eLEdEase_constant}, // Turn off filter white and orange
+        {eLED_FilterOrange, 500, 0, 255, 15, 150, eLedEase_OutExpo}, // Ramp up filter orange
+};
+
+#define LEDFLOW_UV_ERROR_LOOP_STEPS (4)
+const sLedsStep stepsUVErrorLoop[LEDFLOW_UV_ERROR_LOOP_STEPS] = {
+        {eLED_FilterWhite,  0,     0,   0,  15, 150, eLEdEase_constant}, // White  off
+        {eLED_FilterOrange, 0,   255, 255,  15, 150, eLEdEase_constant}, // orange on
+        {eLED_FilterOrange, 150,   0,   0,  40, 400, eLEdEase_constant}, // orange  off
+        {eLED_FilterWhite,  150, 255, 255,  40, 400, eLEdEase_constant},  // White on
+};
+
+#define LEDFLOW_END_UV_ERROR_STEPS (2)
+const sLedsStep stepsEndUVError[LEDFLOW_END_UV_ERROR_STEPS] = {
+		{eLED_FilterWhite, 0,  255, 0, 15, 150, eLedEase_OutExpo}, // fade out white
+        {eLED_FilterOrange, 0,   0, 0, 15, 150, eLEdEase_constant}, // orange  off
+};
+
+//#define LEDFLOW_UV_ERROR_LOOP_STEPS (4)
+//const sLedsStep stepsUVErrorLoop[LEDFLOW_UV_ERROR_LOOP_STEPS] = {
+//        {eLED_FilterOrange, 0,   255, 255,  15, 150, eLEdEase_constant}, // orange on
+//        {eLED_FilterOrange, 150, 255,   0,   3,  30, eLedEase_InOutQuad}, // orange fast off
+//        {eLED_FilterWhite,  150, 255, 255,  40, 400, eLEdEase_constant},  // White on
+//        {eLED_FilterWhite,  550, 255,   0,   3,  30, eLedEase_InOutQuad}, // White fast off
+//};
+
+
 //#define LEDFLOW_RING_STARTUP_STEPS (5)
 //sLedsStep stepsRingStartup[LEDFLOW_RING_STARTUP_STEPS] = {
 //        {eLED_Circle7,   0,   0, 255, 16, 160, eLedEase_InOutQuad},
@@ -142,9 +172,10 @@ const sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
 // Modified values to make the progress according to the figma design
 // Factor: 1.8333 slower
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (4)
+#define LEDFLOW_RING_PROGRESS_WITH_UV_ERROR_SEQUENCE_LEN (6)
 #define IN_RING_CO2_WARNING_OFF_STEP_INDEX (2)
 #define IN_RING_CO2_WARNING_ON_STEP_INDEX  (3)
-sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
+sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_WITH_UV_ERROR_SEQUENCE_LEN] = { // the len by default is LEDFLOW_RING_PROGRESS_SEQUENCE_LEN
         { 1,   0, (sLedsStep[]) { { eLED_Circle3, 0, 0, 255, 40, 400, eLedEase_OutExpo } }, 0, 0 },
         { LEDFLOW_RING_PROGRESS_LOOP_STEPS, 400, (sLedsStep *)stepsRingProgress, ENDLESS_LOOP, LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING },
         // two dummy steps to enable turning off the CO2 level white leds and turning on the orange the orange leds in case CO2
@@ -152,6 +183,11 @@ sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_SEQUENCE_LEN] = {
         // note that the masks here must be 0 so they have no affect as long as the the warning is not needed
         { 1, 0, (sLedsStep[]){ {0, 0, 255, 0, 10, 100, eLedEase_OutExpo}}, 0, 0 },
         { 1, 0, (sLedsStep[]){ {0, 0, 0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
+		// These are the UV error steps, includede here and user only when needed
+        { LEDFLOW_START_UV_ERROR_STEPS,  0, (sLedsStep *)stepsStartUVError, 0, 0 },
+        { LEDFLOW_UV_ERROR_LOOP_STEPS, 650, (sLedsStep *)stepsUVErrorLoop, 10, 0 },
+//        { LEDFLOW_UV_ERROR_LOOP_STEPS, 650, (sLedsStep *)stepsUVErrorLoop, 10, 30 }, // loop 10 times with overlapping of 30ms
+
 };
 // Compilation warning note: the casting to (sLedsStep *) is needed to avoid a warning about initializing pointer to non-const from const array
 // because stepsRingProgress is defined as const to be in flash memory
@@ -282,6 +318,12 @@ const sLedsSequence sequenceDeviceError[LEDFLOW_DEVICE_ERROR_STEPS] = {
         { LEDFLOW_ERROR_BLINKING_LOOP_STEPS, 0, (sLedsStep *)stepsErrorBlinckingLoop, ENDLESS_LOOP, 0 },
 };
 
+#define LEDFLOW_UV_ERROR_STEPS (3)
+const sLedsSequence sequenceUVError[LEDFLOW_UV_ERROR_STEPS] = {
+        { LEDFLOW_START_UV_ERROR_STEPS,  0, (sLedsStep *)stepsStartUVError, 0, 0 },
+		{ LEDFLOW_UV_ERROR_LOOP_STEPS, 650, (sLedsStep*)stepsUVErrorLoop, 10, 0 }, // 650 + (10 x 550) = 650 + 5500 = 6150
+		{ LEDFLOW_END_UV_ERROR_STEPS, 6150, (sLedsStep *)stepsEndUVError, 0, 0 },
+};
 
 // Modifiable normal filter clear animation to be used when clearing warning
 // this is for normal operation not for OOB
@@ -369,6 +411,11 @@ sLedsFlowDef ledsFlowDeviceErrorStatus[LEDS_FLOW_DEVICE_ERROR_LEN] = {
         {(sLedsSequence *)sequenceDeviceError, LEDFLOW_DEVICE_ERROR_STEPS}
 };
 
+#define LEDS_FLOW_UV_ERROR_LEN (1)
+sLedsFlowDef ledsFlowUVErrorStatus[LEDS_FLOW_UV_ERROR_LEN] = {
+        {(sLedsSequence *)sequenceUVError, LEDFLOW_UV_ERROR_STEPS}
+};
+
 #define LEDS_FLOW_SIMPLE_CLEAR_LEN (1)
 sLedsFlowDef ledsFlowSimpleClear[LEDS_FLOW_SIMPLE_CLEAR_LEN] = {
         {(sLedsSequence *)sequenceSimpleClear, LEDFLOW_SIMPLE_CLEAR_STEPS}
@@ -404,6 +451,7 @@ bool IsPendingAnimation(void);
 uint32_t GetCarbLevelLedStatusMask(bool whitesOnly);
 uint32_t GetFilterStatusMask(void);
 bool GetCO2ChangedOnOffMasks(uint32_t *onMask, uint32_t *offMask);
+extern bool gUVLedTestFailed;
 
 void StartAnimation(eAnimations animation, bool forceStopPrevious)
 {
@@ -449,6 +497,12 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
         // Make sure that the CO2 warning steps are cleared (no effect) unless need to set them later
         ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_OFF_STEP_INDEX].subSeq[0].ledIdMask = 0;
         ledsFlowMakeADrinkProgrees[0].seq[IN_RING_CO2_WARNING_ON_STEP_INDEX].subSeq[0].ledIdMask = 0;
+        if (gUVLedTestFailed) {
+			// use the UV error version of the ring progress
+			ledsFlowMakeADrinkProgrees[0].length = LEDFLOW_RING_PROGRESS_WITH_UV_ERROR_SEQUENCE_LEN;
+		} else {
+			ledsFlowMakeADrinkProgrees[0].length = LEDFLOW_RING_PROGRESS_SEQUENCE_LEN;
+		}
         break;
 
     case eAnimation_MakeADrinkSuccess:
@@ -505,6 +559,11 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
     case eAnimation_DeviceError:
         requestedFlow = ledsFlowDeviceErrorStatus;
         requestedFlowTotalSteps = LEDS_FLOW_DEVICE_ERROR_LEN;
+        break;
+
+    case eAnimation_UVError:
+        requestedFlow = ledsFlowUVErrorStatus;
+        requestedFlowTotalSteps = LEDS_FLOW_UV_ERROR_LEN;
         break;
 
     case eAnimation_CheckFilterStatus:
@@ -722,7 +781,7 @@ void PlayLedsPeriodic(void)
         if (seq->loop > 0) {  // loop
             // if we are inside of it
             if (elapsed >= seq->delayMS) { // already time to play it
-                if (((seq->loop == ENDLESS_LOOP) || (elapsed <= seq->delayMS + (seq->loop) * gCurrentFlowLoopEntryMS[sq]))) { // not yet finished all loops
+                if (((seq->loop == ENDLESS_LOOP) || (elapsed <= seq->delayMS + (seq->loop) * (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop) + seq->overlappingLoop))) { // not yet finished all loops
                     currentFlowIsDone = false; // at least one sequence still active
                     /*uint16_t*/ offset_in_loop = (elapsed - seq->delayMS)
                         % (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);

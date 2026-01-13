@@ -33,6 +33,8 @@ uint32_t gReadyTimerStartTick = 0;
 uint32_t gFilterToCarbDelayStartTick = 0;
 
 uint8_t gRinsingCyclesDone = 0;
+uint32_t gUVLedTestStart = 0;
+bool gUVLedTestFailed = false;
 
 extern uint32_t gPumpTimoutMsecs;
 extern volatile uint16_t gReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
@@ -102,6 +104,52 @@ bool Tilted()
 	return gIsTilted;
 }
 
+
+
+// Check UV for error:
+// First, turn it on and on the next cycle
+// make sure the ADC current is above the threshold
+void CheckUVError(bool isOnWakeup)
+{
+	if (gUVLedTestStart == 0) // first time - just turn it on
+	{
+		// assume test will pass
+		gUVLedTestFailed = false;
+		// turn on UV led for test
+		StartUVLEd();
+		gUVLedTestStart = HAL_GetTick();
+	}
+}
+
+bool IsUVLedCheckDone(bool isOnWakeup)
+{
+	if (gUVLedTestStart > 0) // test in progress
+	{
+		if (gUVLedTestStart <= (HAL_GetTick() - 10)) // wait at least 10 msecs for ADC to stabilize
+		{
+			// turn off UV led after test
+			StopUVLed();
+			gUVLedTestStart = 0;
+			// check ADC value
+			if (gReadUVCurrentADC < UV_MIN_ADC_THRESHOLD)
+			{
+				if (isOnWakeup) {
+					StartAnimation(eAnimation_UVError, true);
+				} else {
+					// On start of a process (filtering and carbonation) this flag signals
+					// the LEDs player that an error occurred and when playing the
+					// progress animation it should switch on also the UV error animation
+					gUVLedTestFailed = true;
+				}
+
+			}
+			return true; // check is done
+		} else {
+			return false; // still waiting
+		}
+	}
+	return true; // no test in progress
+}
 
 uint32_t val = 0;
 
@@ -348,9 +396,40 @@ bool Rinsing2Done()
 {
 	return gRinsingCyclesDone >= 2;
 }
+
+uint32_t gNoWaterInPumpStartTick = 0;
+
+// This function is called periodically while the pump is running
+// it detects no water in pump condition
+// It is done automatically by the SM mechanism while in State_Rinsing or in State_Filtering
+// since it's an exit condition for both states
 bool WaterPumpNoWater()
 {
-	// TODO implement
+	if (gReadWaterPumpCurrentADC < NO_WATER_IN_PUMP_DETECTION_ADC_THRESHOLD)
+	{
+		// current is low - possible no water in pump
+		if (gNoWaterInPumpStartTick == 0)
+		{
+			// start counting time
+			gNoWaterInPumpStartTick = HAL_GetTick();
+		}
+		else
+		{
+			// check time
+			if (gNoWaterInPumpStartTick + MINIMUM_NO_WATER_IN_PUMP_DETECTION_TIME_MSEC < HAL_GetTick())
+			{
+				// reset time tracker
+				gNoWaterInPumpStartTick = 0;
+				// detected no water in pump condition
+				return true;
+			}
+		}
+	}
+	else
+	{
+		// current is ok - reset counter
+		gNoWaterInPumpStartTick = 0;
+	}
 	return false;
 }
 

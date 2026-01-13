@@ -145,6 +145,7 @@ typedef enum {
     eAnimation_OOTBStatus, // Shows the current status of CO2 and Filter on OOTB procedure
     eAnimation_CO2Level, // Update the CO2 level LEDS in normal mode
     eAnimation_DeviceError, // For HW or Safety Fault
+	eAnimation_UVError, // For UV Lamp Fault
     eAnimation_ClearCO2Warning, // special animation to clear only the CO2 3 leds from the orange values
     eAnimation_ClearFilterWarning, // special animation to clear only the filter led from the orange value
     eAnimation_NoWaterWarning, // when water filling times out
