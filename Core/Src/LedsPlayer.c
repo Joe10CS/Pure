@@ -172,7 +172,7 @@ const sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
 // Modified values to make the progress according to the figma design
 // Factor: 1.8333 slower
 #define LEDFLOW_RING_PROGRESS_SEQUENCE_LEN (4)
-#define LEDFLOW_RING_PROGRESS_WITH_UV_ERROR_SEQUENCE_LEN (6)
+#define LEDFLOW_RING_PROGRESS_WITH_UV_ERROR_SEQUENCE_LEN (7)
 #define IN_RING_CO2_WARNING_OFF_STEP_INDEX (2)
 #define IN_RING_CO2_WARNING_ON_STEP_INDEX  (3)
 sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_WITH_UV_ERROR_SEQUENCE_LEN] = { // the len by default is LEDFLOW_RING_PROGRESS_SEQUENCE_LEN
@@ -185,8 +185,8 @@ sLedsSequence sequenceRingProgress[LEDFLOW_RING_PROGRESS_WITH_UV_ERROR_SEQUENCE_
         { 1, 0, (sLedsStep[]){ {0, 0, 0, 255, 10, 100, eLedEase_OutExpo}}, 0, 0 },
 		// These are the UV error steps, includede here and user only when needed
         { LEDFLOW_START_UV_ERROR_STEPS,  0, (sLedsStep *)stepsStartUVError, 0, 0 },
-        { LEDFLOW_UV_ERROR_LOOP_STEPS, 650, (sLedsStep *)stepsUVErrorLoop, 10, 0 },
-//        { LEDFLOW_UV_ERROR_LOOP_STEPS, 650, (sLedsStep *)stepsUVErrorLoop, 10, 30 }, // loop 10 times with overlapping of 30ms
+		{ LEDFLOW_UV_ERROR_LOOP_STEPS, 650, (sLedsStep*)stepsUVErrorLoop, 10, 0 }, // 650 + (10 x 550) = 650 + 5500 = 6150
+		{ LEDFLOW_END_UV_ERROR_STEPS, 6150, (sLedsStep *)stepsEndUVError, 0, 0 },
 
 };
 // Compilation warning note: the casting to (sLedsStep *) is needed to avoid a warning about initializing pointer to non-const from const array

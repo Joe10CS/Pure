@@ -1,0 +1,89 @@
+name: 🐞 Bug Report
+description: Report a bug or unexpected behavior in Pure
+title: "[Bug]: "
+labels: ["bug"]
+assignees: []
+
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: Enter version number or short free text of it
+      placeholder: "1.2 / Test pump special version 1.2"
+    validations:
+      required: true
+
+  - type: input
+    id: reported_by
+    attributes:
+      label: Reported by
+      description: Name of the person who reported the issue (if not the reporter)
+      placeholder: "Customer name / Technician / QA"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: location_found
+    attributes:
+      label: Location found
+      description: Where was the issue found?
+      options:
+        - Local Test
+        - Ziv Av
+        - Sodastream
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location_other_details
+    attributes:
+      label: Other location details
+      description: Fill only if "Other" was selected above
+      placeholder: "Describe the location"
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: Short description of the problem and expected behavior
+      placeholder: |
+        What happened?
+        What did you expect to happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce the issue?
+      placeholder: |
+        1. Power on the device
+        2. Press the pump button
+        3. Observe the behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: captured_data
+    attributes:
+      label: Captured Data / Video / Images
+      description: Attach or paste any relevant captured data, videos, images, or measurements
+    validations:
+      required: false
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - Critical (device unusable / safety-related)
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true

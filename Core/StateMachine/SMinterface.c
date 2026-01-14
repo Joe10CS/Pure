@@ -18,7 +18,7 @@
 eCarbonationLevel gCarbonationLevel = eLevel_Low; // stam
 eCarbonationLevel gPrevCarbonationLevel = eLevel_Low; // stam
 uint32_t gCarbCycleTickStart = 0;//   tickstart = HAL_GetTick();
-uint32_t gPumpStartTimeTick = 0;
+uint32_t gPumpStartTimeTick = 0; // this is used also by HAL_GPIO_EXTI_Falling_Callback - non zero means pump is on
 uint32_t gLastPumpTimeMSecs = 0;
 eBottleSize gLastDetectedBottleSize = eBottle_1_Litter; // default
 bool gButtonsFunction = false;

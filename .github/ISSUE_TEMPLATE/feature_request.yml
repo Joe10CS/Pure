@@ -1,0 +1,55 @@
+name: ✨ Feature Request
+description: Request a new feature or enhancement for Pure
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: []
+
+body:
+  - type: input
+    id: requested_by
+    attributes:
+      label: Requested by
+      description: Who requested this feature?
+      placeholder: "Customer / Product / Management / Name"
+    validations:
+      required: true
+
+  - type: textarea
+    id: detailed_description
+    attributes:
+      label: Detailed Description
+      description: Describe the requested feature in detail
+      placeholder: |
+        What should be added or changed?
+        Include any relevant background or constraints.
+    validations:
+      required: true
+
+  - type: input
+    id: estimated_effort
+    attributes:
+      label: Estimated Effort (hours)
+      description: Rough development effort estimate in hours
+      placeholder: "e.g. 4, 12, 24"
+    validations:
+      required: false
+
+  - type: input
+    id: due_date
+    attributes:
+      label: Due Date
+      description: Optional target date (free text)
+      placeholder: "e.g. Q2 2026 / 15-03-2026"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      options:
+        - Must have
+        - Should have
+        - Nice to have
+    validations:
+      required: true

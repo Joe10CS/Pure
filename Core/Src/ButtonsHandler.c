@@ -60,6 +60,8 @@ uint16_t gKeyPressButMainMS = 0;
 uint16_t gKeyPressButCarbLevelMS = 0;
 uint16_t gKeyPressButFilterMS = 0;
 extern bool gMakeADrinkInProgress;
+
+extern uint32_t gPumpStartTimeTick; // when this is not 0 the pump is running
 //uint32_t gLastLongPressMS = 0;
 /* Private function prototypes -----------------------------------------------*/
 
@@ -70,7 +72,9 @@ void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin) {
 	case GPIO_PIN_8: // Pump_WD_FDBK - error on 1
-//		SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG); // TODO - handle watchdog event??
+		if (gPumpStartTimeTick > 0) { // refer to this as error only when pump is running
+			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG); // Handle watchdog event
+		}
 		break;
 
     case GPIO_PIN_13: // BTN1 - Main button
