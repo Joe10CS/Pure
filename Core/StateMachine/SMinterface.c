@@ -395,6 +395,7 @@ void ResetRinsingNumber()
 void UpdateRinsingNumber()
 {
 	gRinsingCyclesDone++;
+	RBMEM_WriteElement(eRBMEM_Rinsing2ndWaiting, (gRinsingCyclesDone == 1) ? 1 : 0);
 }
 
 bool Rinsing2Done()
@@ -402,7 +403,15 @@ bool Rinsing2Done()
 	return gRinsingCyclesDone >= 2;
 }
 
-
+bool IsRinsing2ndStagePending()
+{
+	uint32_t val = 0;
+	RBMEM_ReadElement(eRBMEM_Rinsing2ndWaiting, &val);
+	if (val != 0) {
+		gRinsingCyclesDone = 1;
+	}
+	return (val != 0);
+}
 uint32_t gNoWaterInPumpStartTick = 0;
 
 // This function is called periodically while the pump is running
