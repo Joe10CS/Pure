@@ -108,7 +108,6 @@ void CheckAndSentWaterFullSensorEvent();
   * @retval int
   */
 int main(void)
-
 {
 
   /* USER CODE BEGIN 1 */
@@ -787,7 +786,7 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin : Pump_WD_FDBK_Pin */
   GPIO_InitStruct.Pin = Pump_WD_FDBK_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Pump_WD_FDBK_GPIO_Port, &GPIO_InitStruct);
 

@@ -1,4 +1,4 @@
-<mxfile host="Electron" scale="1.2" border="0" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.2.9 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.2.9" pages="3">
+<mxfile host="Electron" scale="1.2" border="0" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.0 Chrome/140.0.7339.249 Electron/38.7.2 Safari/537.36" version="29.3.0" pages="3">
   <diagram name="design" id="ahwWs56YI2XBYRBzwlqw">
     <mxGraphModel dx="5360" dy="3526" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -37,7 +37,7 @@
         <mxCell id="qZF7NaJGXNpq08xq_DYa-53" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="qZF7NaJGXNpq08xq_DYa-47" style="endArrow=classic;html=1;rounded=1;strokeWidth=2;curved=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;" target="qZF7NaJGXNpq08xq_DYa-41" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <Array as="points">
-              <mxPoint x="1534" y="1577" />
+              <mxPoint x="1534" y="1584" />
             </Array>
             <mxPoint x="1333" y="1539" as="sourcePoint" />
             <mxPoint x="1467.5" y="1608" as="targetPoint" />
@@ -45,7 +45,7 @@
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-54" connectable="0" parent="qZF7NaJGXNpq08xq_DYa-53" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="Event_AnyKeyPress" vertex="1">
           <mxGeometry relative="1" x="-0.1028" y="-3" as="geometry">
-            <mxPoint x="-4" y="6" as="offset" />
+            <mxPoint x="-67" y="-15" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-64" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="Ziy2RvUZ8rSOBJYL170Z-1" style="endArrow=classic;html=1;rounded=1;entryX=0;entryY=0.25;entryDx=0;entryDy=0;strokeWidth=2;curved=0;exitX=1;exitY=0.75;exitDx=0;exitDy=0;" target="wsYN_ovT5cM9EtGV4hGU-1" value="">
@@ -195,10 +195,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-47" parent="qZF7NaJGXNpq08xq_DYa-5" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;" value="State_Filtering" vertex="1">
-          <mxGeometry height="190" width="344" x="977" y="1434" as="geometry" />
+          <mxGeometry height="200" width="344" x="977" y="1434" as="geometry" />
         </mxCell>
-        <mxCell id="qZF7NaJGXNpq08xq_DYa-48" connectable="0" parent="qZF7NaJGXNpq08xq_DYa-47" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / SetMakeADrinkInProgress(true);&#xa;enter / ButtonsFunction(false);&#xa;enter / LedsSequence(LEDS_StartMakeDring);&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / StartUVLEd();&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / StartWaterPump();&#xa;enter / StartWaterPumpingTimer();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();" vertex="1">
-          <mxGeometry height="160" width="330" y="30" as="geometry" />
+        <mxCell id="qZF7NaJGXNpq08xq_DYa-48" connectable="0" parent="qZF7NaJGXNpq08xq_DYa-47" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / SetMakeADrinkInProgress(true);&#xa;enter / ButtonsFunction(false);&#xa;enter / LedsSequence(LEDS_StartMakeDring);&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / StartUVLEd();&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / StartWaterPump();&#xa;enter / StartWaterPumpingTimer();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();&#xa;exit/ IncreaseFilteringCounter();" vertex="1">
+          <mxGeometry height="170" width="330" y="30" as="geometry" />
         </mxCell>
         <mxCell id="khHdp5hJ9GrJobth_fdo-5" parent="qZF7NaJGXNpq08xq_DYa-5" style="fontFamily=Lucida Console;align=center;verticalAlign=middle;shape=rhombus;rotatable=0;labelPosition=center;verticalLabelPosition=top;strokeWidth=1;fillColor=#FFFFFF;gradientColor=#d4d4d4cc;noLabel=1;" value="$choice" vertex="1">
           <mxGeometry height="40" width="40" x="850.5" y="1390" as="geometry" />
@@ -206,7 +206,7 @@
         <mxCell id="khHdp5hJ9GrJobth_fdo-6" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="qZF7NaJGXNpq08xq_DYa-47" style="endArrow=classic;html=1;rounded=1;strokeWidth=4;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="khHdp5hJ9GrJobth_fdo-5" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <Array as="points">
-              <mxPoint x="870" y="1529" />
+              <mxPoint x="871" y="1534" />
             </Array>
             <mxPoint x="866" y="1587" as="sourcePoint" />
             <mxPoint x="703" y="1637" as="targetPoint" />
@@ -711,7 +711,7 @@
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-52" connectable="0" parent="qZF7NaJGXNpq08xq_DYa-51" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="[WaterPumpTimerExpired()||WaterPumpNoWater()]" vertex="1">
           <mxGeometry relative="1" x="-0.0151" as="geometry">
-            <mxPoint x="-196" y="-36" as="offset" />
+            <mxPoint x="-210" y="-35" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="GZr2ozMKOYS5JRARSneP-3" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="GZr2ozMKOYS5JRARSneP-1" style="endArrow=classic;html=1;rounded=1;strokeWidth=2;curved=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;exitPerimeter=0;" target="DGJV_QJC8LC7ju2ie8hX-2" value="">

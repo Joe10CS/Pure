@@ -36,6 +36,9 @@ uint8_t gRinsingCyclesDone = 0;
 uint32_t gUVLedTestStart = 0;
 bool gUVLedTestFailed = false;
 
+uint32_t gSolenoidPumpStartTick = 0;
+extern uint16_t gSolenoidPumpWDCounter;
+
 extern uint32_t gPumpTimoutMsecs;
 extern volatile uint16_t gReadWaterLevelADC; // Hold the last read (A2D) value of the water level sensor
 extern volatile uint16_t gReadWaterPumpCurrentADC;
@@ -130,6 +133,7 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 			// turn off UV led after test
 			StopUVLed();
 			gUVLedTestStart = 0;
+#ifndef DEBUG_NO_UV_CHECK
 			// check ADC value
 			if (gReadUVCurrentADC < UV_MIN_ADC_THRESHOLD)
 			{
@@ -141,8 +145,8 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 					// progress animation it should switch on also the UV error animation
 					gUVLedTestFailed = true;
 				}
-
 			}
+#endif
 			return true; // check is done
 		} else {
 			return false; // still waiting
@@ -397,6 +401,7 @@ bool Rinsing2Done()
 	return gRinsingCyclesDone >= 2;
 }
 
+
 uint32_t gNoWaterInPumpStartTick = 0;
 
 // This function is called periodically while the pump is running
@@ -462,11 +467,18 @@ bool IsGuiControlMode()
 
 void SolenoidPump(int isOn)
 {
+	gSolenoidPumpStartTick = (isOn == 1) ? HAL_GetTick() : 0;
+	gSolenoidPumpWDCounter = 0; // reset counter always on state change
 	HAL_GPIO_WritePin(Pump_CMD_GPIO_Port, Pump_CMD_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 void SolenoidPumpUVPower(int isOn)
 {
 	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+void IncreaseFilteringCounter()
+{
+	RBMEM_IncreaseFilteringCounter();
 }
 
 void ResetFilterDaysCounter()

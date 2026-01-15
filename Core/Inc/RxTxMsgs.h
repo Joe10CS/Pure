@@ -76,6 +76,7 @@ typedef enum {
     eUARTCommand_flsc, // Get false press counters
     eUARTCommand_vbat, // Get last vbat value
     eUARTCommand_ootb, // Set/clear OOTB
+	eUARTCommand_fcnt, // Get/set filter usage counter
  	eUARTCommand_dbug, // debug messages
 
 
@@ -142,6 +143,11 @@ typedef struct {
 
 typedef struct {
     uint16_t isSet; // 1 - set, 0 - get
+    uint16_t counter; // counter value
+} sFilterCounterParams;
+
+typedef struct {
+    uint16_t isSet; // 1 - set, 0 - get
     uint16_t id; //  n - id to get or set
     uint16_t value; //  n - for set, don't care for get
 } sFRAMMemParams;
@@ -159,7 +165,7 @@ typedef union {
 	sCO2SecondsParams csec;
 	sMaxCO2SecondsParams cmax;
 	sFRAMMemParams fmem;
-
+	sFilterCounterParams fcnt;
 } uParams;
 
 typedef struct {

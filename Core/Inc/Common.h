@@ -15,8 +15,10 @@
 // Time window in mSec from power up to enter OOTB
 #define RESET_TO_OOTB_MSEC (3000)
 
-#define FILTER_LIFETIME_DAYS   (90)
-#define FILTER_WARNING_DAYS     (9)
+#define FILTER_LIFETIME_DAYS   (90) // expiration in days
+#define FILTER_WARNING_DAYS     (9) // last days before expiration
+
+#define MAX_FILTERING_COUNTER (300) // 300 filtering cycles
 
 #define CO2_LIFETIME_MSECS   (140000) // was 170000
 #define CO2_MAX_SINGLE_PULSE_MSECS   (15000)
@@ -26,6 +28,10 @@
 
 // ADC value above which the UV is considered on
 #define UV_MIN_ADC_THRESHOLD (197) // 20mA
+
+
+#define SOLENOID_PUMP_HW_FDBK_GRACE_TIME_MSECS (10)
+#define SOLENOID_PUMP_HW_FDBK_MAX_COUNT (3)
 
 
 #define IS_FILTER_BUTTON_PRESSED() (HAL_GPIO_ReadPin(BTN3_GPIO_Port, BTN3_Pin) == GPIO_PIN_RESET)

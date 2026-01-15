@@ -71,11 +71,6 @@ extern uint32_t gPumpStartTimeTick; // when this is not 0 the pump is running
 void HAL_GPIO_EXTI_Falling_Callback(uint16_t GPIO_Pin)
 {
 	switch(GPIO_Pin) {
-	case GPIO_PIN_8: // Pump_WD_FDBK - error on 1
-		if (gPumpStartTimeTick > 0) { // refer to this as error only when pump is running
-			SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG); // Handle watchdog event
-		}
-		break;
 
     case GPIO_PIN_13: // BTN1 - Main button
         if (gLastMainButtonKeyPressTick + DEBOUNCE_BUTTONS_PERIOD_MSEC < HAL_GetTick()) {

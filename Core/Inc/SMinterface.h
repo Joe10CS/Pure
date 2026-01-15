@@ -81,6 +81,7 @@ bool Rinsing2Done();
 bool WaterPumpNoWater();
 bool FilterExpired();
 
+void IncreaseFilteringCounter();
 void ResetFilterLifetimeTimer();
 bool IsFirstPowerON();
 bool FilterLifeTimeExpired();

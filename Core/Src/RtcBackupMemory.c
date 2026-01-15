@@ -39,6 +39,10 @@ HAL_StatusTypeDef RBMEM_WriteElement(eRBMEM_Element elem, uint32_t value)
         regVal |= ((value & 0x03) << RBMEM_LAST_CARBONATION_LEVEL_SHIFT);
         break;
 
+    case eRBMEM_FilteringCounter:
+		regVal &= ~RBMEM_FILTERING_COUNTER_MASK;
+		regVal |= ((value << RBMEM_FILTERING_COUNTER_SHIFT) & RBMEM_FILTERING_COUNTER_MASK);
+		break;
     case eRBMEM_RTC_Time_Start_magicNumber:
         HAL_RTCEx_BKUPWrite(&hrtc, RBMEM_RTC_DR_MAGIC_START, value);
         return HAL_OK;
@@ -78,7 +82,9 @@ HAL_StatusTypeDef RBMEM_ReadElement(eRBMEM_Element elem, uint32_t *value)
     case eRBMEM_lastCarbonationLevel:
         *value = (regVal & RBMEM_LAST_CARBONATION_LEVEL_MASK) >> RBMEM_LAST_CARBONATION_LEVEL_SHIFT;
         break;
-
+    case eRBMEM_FilteringCounter:
+    	*value = (regVal & RBMEM_FILTERING_COUNTER_MASK) >> RBMEM_FILTERING_COUNTER_SHIFT;
+		break;
     case eRBMEM_RTC_Time_Start_magicNumber:
         *value = HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_MAGIC_START);
         break;
@@ -130,6 +136,9 @@ HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void)
     // Set default carbonation level
     status |= RBMEM_WriteElement(eRBMEM_lastCarbonationLevel, DEFAULT_lastCarbonationLevel);
 
+    // Set default filtering counter
+    status |= RBMEM_WriteElement(eRBMEM_FilteringCounter, 0);
+
     // Set default total CO2 used
     status |= RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, 0);
     status |= RBMEM_WriteElement(eRBMEM_total_CO2_msecs_max, CO2_LIFETIME_MSECS); // default max
@@ -145,3 +154,22 @@ void RBMEM_WriteRTCMagicNunber(void)
 {
     HAL_RTCEx_BKUPWrite(&hrtc, RBMEM_RTC_DR_MAGIC_START, RTC_BKP_RTC_STARTUP_MAGIC_NUMBER);
 }
+
+HAL_StatusTypeDef RBMEM_IncreaseFilteringCounter()
+{
+	uint32_t currentCounter = 0;
+	RBMEM_ReadElement(eRBMEM_FilteringCounter, &currentCounter);
+	if (currentCounter < MAX_FILTERING_COUNTER)
+	{
+		currentCounter++;
+		return RBMEM_WriteElement(eRBMEM_FilteringCounter, currentCounter);
+	}
+	return HAL_OK;
+}
+bool RBMEM_IsFilteringCounterExpired()
+{
+	uint32_t currentCounter = 0;
+	RBMEM_ReadElement(eRBMEM_FilteringCounter, &currentCounter);
+	return (currentCounter >= MAX_FILTERING_COUNTER);
+}
+

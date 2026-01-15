@@ -377,6 +377,8 @@ state State_AutomaticMode {
 
         State_Filtering : exit / #123; StopUVLed()#59; #125;
 
+        State_Filtering : exit / #123; IncreaseFilteringCounter()#59; #125;
+
         state State_AutomaticMode.(ChoicePoint)() <<choice>>
 
         State_MakeDrinkDone
@@ -2774,6 +2776,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "StopUVLed();");`
             this.tracer?.log("⚡ FSM would execute action: " + "StopUVLed();");
+        } // end of behavior for State_Filtering
+        
+        // State_Filtering behavior
+        // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "IncreaseFilteringCounter();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "IncreaseFilteringCounter();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "IncreaseFilteringCounter();");
         } // end of behavior for State_Filtering
         
         // State_Filtering behavior

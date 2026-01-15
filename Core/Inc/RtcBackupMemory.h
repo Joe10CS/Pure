@@ -13,8 +13,8 @@
 #include "stm32g0xx_hal.h"
 #endif
 
-#define RTC_BKP_RTC_STARTUP_MAGIC_NUMBER (0xDAC3FACE)
-#define RBM_DATA_MAGIC_NUMBER    (0x7CAFE2F0)
+#define RTC_BKP_RTC_STARTUP_MAGIC_NUMBER (0xDABAFACE)
+#define RBM_DATA_MAGIC_NUMBER    (0xCAFE2BED)
 typedef struct {
     uint32_t magicNumber;
     uint32_t lastCarbonationLevel;
@@ -27,12 +27,14 @@ typedef struct {
 /* Backup register assignments */
 #define RBMEM_RTC_DR_MAGIC_START  RTC_BKP_DR0   // Magic number of RTC Timer Need to restart (no magic = need to start)
 #define RBMEM_RTC_DR_MAGIC_MEM    RTC_BKP_DR1   // Magic number of data stored (no magic - need to set defaults
-#define RBMEM_RTC_DR_FLAG_BITS    RTC_BKP_DR2   // all flags + carbonation level
+#define RBMEM_RTC_DR_FLAG_BITS    RTC_BKP_DR2   // all flags + carbonation level + filtering counter
 #define RBMEM_RTC_DR_TOTAL_CO2    RTC_BKP_DR3   // Total milliseconds of CO2 used since last reset
 #define RBMEM_RTC_DR_MAX_CO2      RTC_BKP_DR4   // Maximum milliseconds of CO2
 
 #define RBMEM_LAST_CARBONATION_LEVEL_MASK (0x00000003)
 #define RBMEM_LAST_CARBONATION_LEVEL_SHIFT (0U)   // bits [1:0]
+#define RBMEM_FILTERING_COUNTER_MASK (0x00007FC)  // bits [10:2]
+#define RBMEM_FILTERING_COUNTER_SHIFT (2U)   // bits [1:0]
 #define RBMEM_RINSING_2ND_WAITING_MASK (0x00000004)
 
 typedef enum
@@ -41,6 +43,7 @@ typedef enum
     eRBMEM_RTC_Memory_magicNumber,
     eRBMEM_lastCarbonationLevel,
     eRBMEM_Rinsing2ndWaiting,  // if set, the user is expected to perform the second stage of rinsing
+    eRBMEM_FilteringCounter, // number of filtering cycles done
     eRBMEM_total_CO2_msecs_used, // Total milliseconds of CO2 used since last reset
     eRBMEM_total_CO2_msecs_max, // Maximum of Total milliseconds of CO2
     eRBMEM_MAX
@@ -55,4 +58,6 @@ void RBMEM_WriteRTCMagicNunber(void);
 
 HAL_StatusTypeDef RBMEM_AddMSecsToCO2Counter(uint32_t value);
 bool RBMEM_IsCO2CounterExpired();
+HAL_StatusTypeDef RBMEM_IncreaseFilteringCounter();
+bool RBMEM_IsFilteringCounterExpired();
 #endif /* INC_RTCBACKUPMEMORY_H_ */

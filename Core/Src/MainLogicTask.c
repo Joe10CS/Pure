@@ -40,6 +40,8 @@ extern uint16_t gFalseButCarbLevelCounter;
 extern uint16_t gKeyPressButMainMS;
 extern uint16_t gKeyPressButCarbLevelMS;
 extern uint16_t gKeyPressButFilterMS;
+extern uint32_t gSolenoidPumpStartTick;
+uint16_t gSolenoidPumpWDCounter = 0;
 
 uint32_t echoParams[6];
 /* Private variables ---------------------------------------------------------*/
@@ -423,6 +425,19 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
     		RestartCO2Counter();
     	}
     	break;
+    case eUARTCommand_fcnt: // Get/set filter usage counter
+		if (msg->params.fcnt.isSet == 1) {
+			// set
+			RBMEM_WriteElement(eRBMEM_FilteringCounter, msg->params.fcnt.counter);
+		} else {
+            RBMEM_ReadElement(eRBMEM_FilteringCounter,&value32);
+
+			// get
+			msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_fcnt, (uint32_t[]){value32}, 1, false);
+			COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+			echoCommand = false;
+		}
+		break;
 	case eUARTCommand_rrtc: // Get Info - non state machine related command
 	{
 	    extern RTC_HandleTypeDef hrtc;
@@ -659,10 +674,34 @@ void CheckHWAndGenerateEventsAsNeeded()
 //		// DEBUG REMOVE
 
 	}
-	//if (gWaterLevelIsActive)
-//	{
-//
-//	}
+
+	// Check Pump_WD_FDBK:
+	// In normal operation, this signal reflects the behaviour of the water pump
+	// i.e. goes up when the solenoid pump is ON (Pump_CMD), and down when the pump is OFF
+	// However, if for some reason Pump_CMD held for more then 5 seconds, and the feedback
+	// goes to 0 (and by that stops the solenoid pump), we need to generate an event to the state machine
+	if (gSolenoidPumpStartTick > 0) // check it only when the solenoid pump is ON
+	{
+		if ((HAL_GetTick() - gSolenoidPumpStartTick) > SOLENOID_PUMP_HW_FDBK_GRACE_TIME_MSECS) //check only after grace time
+		{
+			// more then max time - check feedback
+			if (HAL_GPIO_ReadPin(Pump_WD_FDBK_GPIO_Port, Pump_WD_FDBK_Pin) == GPIO_PIN_RESET)
+			{
+				gSolenoidPumpWDCounter++;
+				if (gSolenoidPumpWDCounter >= SOLENOID_PUMP_HW_FDBK_MAX_COUNT)
+				{
+					// feedback is 0 more then max count time (this avoid noise on the line) - generate event to stop the pump
+					SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_HWWATCHDOG);
+					// reset the tick to avoid multiple events
+					gSolenoidPumpStartTick = 0;
+					gSolenoidPumpWDCounter = 0;
+				} else {
+					// feedback is OK - reset counter
+					gSolenoidPumpWDCounter = 0;
+				}
+			}
+		}
+	}
 }
 
 //void DBGSendMessage(char *msg)

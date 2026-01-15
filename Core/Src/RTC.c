@@ -2,7 +2,7 @@
  * RTC.c
  */
 #include "RTC.h"
-
+#include "RtcBackupMemory.h"
 
 extern RTC_HandleTypeDef hrtc;
 
@@ -67,7 +67,7 @@ bool IsInFilterReplacementWarningPeriod(void)
 }
 bool IsFilterExpired(void)
 {
-    return (GetFilterDaysLeft() == 0);
+    return ((GetFilterDaysLeft() == 0) || RBMEM_IsFilteringCounterExpired());
 }
 bool IsFilterTimeOK()
 {

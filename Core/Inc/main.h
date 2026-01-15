@@ -84,6 +84,11 @@ void PURE_STL_Init(void);
 #warning  DEBUG_NO_ACCELEROMETER is defined!
 #endif
 
+// Comment this in release builds
+#define DEBUG_NO_UV_CHECK
+#ifdef DEBUG_NO_UV_CHECK
+#warning  DEBUG_NO_UV_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#endif
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
@@ -144,7 +149,6 @@ extern uint32_t mPumpStartTimeTick;
 #define BTN3_GPIO_Port GPIOB
 #define Pump_WD_FDBK_Pin GPIO_PIN_8
 #define Pump_WD_FDBK_GPIO_Port GPIOA
-#define Pump_WD_FDBK_EXTI_IRQn EXTI4_15_IRQn
 #define WaterPMP_CMD_Pin GPIO_PIN_6
 #define WaterPMP_CMD_GPIO_Port GPIOC
 #define Main_SW_Pin GPIO_PIN_7
