@@ -383,6 +383,7 @@ bool IsOOTBWindowTimeExpired()
 
 void ResetToOOTB()
 {
+	RBMEM_ResetDataToDefaults();
 	ForceFilterExpired();
 	RBMEM_WriteElement(eRBMEM_total_CO2_msecs_used, CO2_LIFETIME_MSECS + 1);
 }
@@ -481,9 +482,10 @@ void IncreaseFilteringCounter()
 	RBMEM_IncreaseFilteringCounter();
 }
 
-void ResetFilterDaysCounter()
+void ResetFilterCounters()
 {
-    RestartFilterTimer();
+	RBMEM_WriteElement(eRBMEM_FilteringCounter, 0); // reset the number of filtering done
+    RestartFilterTimer(); // reset the filtering time counter
 }
 
 void StartFilterToCarbDelay()

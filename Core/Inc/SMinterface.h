@@ -106,7 +106,7 @@ void CheckUVError(bool isOnWakeup);
 bool IsUVLedCheckDone(bool isOnWakeup);
 bool LedsPlayDone();
 
-void ResetFilterDaysCounter();
+void ResetFilterCounters();
 void StartFilterToCarbDelay();
 bool FilterToCarbDelayDone();
 #endif /* INC_SMINTERFACE_H_ */

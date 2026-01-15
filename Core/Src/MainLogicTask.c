@@ -420,8 +420,9 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
     case eUARTCommand_ootb: // Get/Set the OOTB state
     	if (msg->params.onOff.isOn == 1) { // set OOTB
     		ResetToOOTB();
+    		NVIC_SystemReset();
     	} else { // clear OOTB
-    		RestartFilterTimer();
+    		ResetFilterCounters();
     		RestartCO2Counter();
     	}
     	break;

@@ -535,6 +535,8 @@ state State_AutomaticMode {
 
         State_RinsingDoneOK : enter / #123; UpdateRinsingNumber()#59; #125;
 
+        State_RinsingDoneOK : enter / #123; LedsSequence(LEDS_allOff)#59; #125;
+
         State_NextFillPending
 
         State_NextFillPending : State_NextFillPending
@@ -557,7 +559,7 @@ state State_AutomaticMode {
 
         State_ResetRinsingTimer : State_ResetRinsingTimer
 
-        State_ResetRinsingTimer : enter / #123; ResetFilterDaysCounter()#59; #125;
+        State_ResetRinsingTimer : enter / #123; ResetFilterCounters()#59; #125;
 
 }
 
@@ -735,7 +737,7 @@ State_AutomaticMode.(ChoicePoint)() --> State_RinsingEndLeds : [Rinsing2Done()]
 
 State_AutomaticMode.(ChoicePoint)() --> State_NextFillPending : else
 
-State_RinsingDoneOK --> State_AutomaticMode.(ChoicePoint)() : do
+State_RinsingDoneOK --> State_AutomaticMode.(ChoicePoint)() : do [LedsPlayDone()]
 
 State_NextFillPending --> State_ResetFilterWarning : Event_FilterButtonLongPressed
 
@@ -3457,10 +3459,10 @@ evaluateGuard = null;
         } // end of behavior for State_ResetRinsingTimer
         
         // State_ResetRinsingTimer behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterDaysCounter();"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterCounters();"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterDaysCounter();");`
-            this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterDaysCounter();");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterCounters();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ResetFilterCounters();");
         } // end of behavior for State_ResetRinsingTimer
     }
     
@@ -3748,6 +3750,13 @@ evaluateGuard = null;
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "UpdateRinsingNumber();");`
             this.tracer?.log("⚡ FSM would execute action: " + "UpdateRinsingNumber();");
         } // end of behavior for State_RinsingDoneOK
+        
+        // State_RinsingDoneOK behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_allOff);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_allOff);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_allOff);");
+        } // end of behavior for State_RinsingDoneOK
     }
     
     #STATE_RINSINGDONEOK_exit()
@@ -3767,7 +3776,8 @@ evaluateGuard = null;
         let consume_event = false;
         
         // State_RinsingDoneOK behavior
-        // uml: do / { this.tracer?.edgeTransition("edge60"); } TransitionTo(State_AutomaticMode.<ChoicePoint>())
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "LedsPlayDone()") || this.evaluateGuard("State_RinsingDoneOK","do [LedsPlayDone()] TransitionTo(State_AutomaticMode.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge60"); } TransitionTo(State_AutomaticMode.<ChoicePoint>())
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "LedsPlayDone()") || this.evaluateGuard("State_RinsingDoneOK","do [LedsPlayDone()] TransitionTo(State_AutomaticMode.<ChoicePoint>())"))
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_RINSINGDONEOK_exit();
