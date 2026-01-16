@@ -401,6 +401,8 @@ state State_AutomaticMode {
 
                 State_Ready : enter / #123; StartReadyTimer()#59; #125;
 
+                State_Ready : enter / #123; ButtonsFunction(true)#59; #125;
+
                 %% Initial state name as "." so that it fits in black circle shape.
                 %% See https://github.com/StateSmith/StateSmith/issues/404
                 state "." as State_Awake.(InitialState)
@@ -410,8 +412,6 @@ state State_AutomaticMode {
                 State_Splash : State_Splash
 
                 State_Splash : enter / #123; LedsSequence(LEDS_Splash)#59; #125;
-
-                State_Splash : enter / #123; ButtonsFunction(true)#59; #125;
 
                 state State_Awake.(ChoicePoint)() <<choice>>
 
@@ -1851,6 +1851,13 @@ evaluateGuard = null;
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "StartReadyTimer();");`
             this.tracer?.log("⚡ FSM would execute action: " + "StartReadyTimer();");
         } // end of behavior for State_Ready
+        
+        // State_Ready behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");
+        } // end of behavior for State_Ready
     }
     
     #STATE_READY_exit()
@@ -1998,13 +2005,6 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Splash);");`
             this.tracer?.log("⚡ FSM would execute action: " + "LedsSequence(LEDS_Splash);");
-        } // end of behavior for State_Splash
-        
-        // State_Splash behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);"); }
-        {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "ButtonsFunction(true);");
         } // end of behavior for State_Splash
     }
     

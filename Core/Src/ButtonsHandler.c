@@ -54,6 +54,10 @@ uint16_t gCO2LevelButtonPressCount = 0;
 bool gCO2LevelAnyKeyAlreadySent = false;
 bool gCO2LevelLongPressAlreadySent = false;
 
+// These flags mark that a press started while buttons were disabled (gButtonsFunction == false).
+bool gFilterPressStartedWhenDisabled = false;
+bool gCO2LevelPressStartedWhenDisabled = false;
+
 uint16_t gFalseButMainCounter = 0;
 uint16_t gFalseButCarbLevelCounter = 0;
 uint16_t gKeyPressButMainMS = 0;
@@ -165,10 +169,13 @@ void CheckButtonsPressPeriodic()
                 // Buttons disabled (e.g., carbonation) -> emergency ANYKEY event
                 SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
                 gCO2LevelAnyKeyAlreadySent = true; // Prevent sending again on release
+                // Mark that this press started while buttons were disabled so we don't
+                // later convert it to a short/long press when the system wakes up.
+                gCO2LevelPressStartedWhenDisabled = true;
             }
         }
         // LONG PRESS reached while button is still pressed (only in functional mode)
-         if (gButtonsFunction && !gCO2LevelLongPressAlreadySent && (gCO2LevelButtonPressCount >= BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY)) {
+         if (gButtonsFunction && !gCO2LevelLongPressAlreadySent && (gCO2LevelButtonPressCount >= BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY) && !gCO2LevelPressStartedWhenDisabled) {
              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
              gCO2LevelLongPressAlreadySent = true;  // suppress later events
          }
@@ -178,21 +185,21 @@ void CheckButtonsPressPeriodic()
         if (gCO2LevelButtonPressCount >= BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY) {
             // If long-press wasn't already sent → it is a short press
             if (!gCO2LevelLongPressAlreadySent) {
-                if (gButtonsFunction) {
+                if (gButtonsFunction && !gCO2LevelPressStartedWhenDisabled) {
                     // Normal mode -> classify short vs long press
                     if (gCO2LevelButtonPressCount < BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY) {
                         // Short press the carbonation level toggles the level unless we are in OOB and CO2 has not been reset yet
-						gCarbonationLevel++;
-						if (gCarbonationLevel == eLevel_number_of_levels) {
-							gCarbonationLevel = eLevel_off;
-						}
+					gCarbonationLevel++;
+					if (gCarbonationLevel == eLevel_number_of_levels) {
+						gCarbonationLevel = eLevel_off;
+					}
                         SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELSHORTPRESSED);
                     } else {
                         // if long press time passed but long press event not sent (rare case)
                         SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_CARBLEVELLONGPRESSED);
                     }
                 } else {
-                    // Buttons disabled mode (e.g., carbonation)
+                    // Buttons disabled mode (e.g., carbonation) or press started while disabled
                     // -> If ANYKEY already sent on press: DO NOTHING.
                     // -> If debounce passed but no ANYKEY was sent (rare case): send once here.
                     if (!gCO2LevelAnyKeyAlreadySent) {
@@ -206,6 +213,7 @@ void CheckButtonsPressPeriodic()
         gCO2LevelButtonPressCount = 0;
         gCO2LevelAnyKeyAlreadySent = false;
         gCO2LevelLongPressAlreadySent = false;
+        gCO2LevelPressStartedWhenDisabled = false;
     }
 
     // Filter button handling in polling mode
@@ -219,10 +227,13 @@ void CheckButtonsPressPeriodic()
                 // Buttons disabled (e.g., carbonation) -> emergency ANYKEY event
                 SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_ANYKEYPRESS);
                 gFilterAnyKeyAlreadySent = true; // Prevent sending again on release
+                // Mark that this press started while buttons were disabled so we don't
+                // later convert it to a short/long press when the system wakes up.
+                gFilterPressStartedWhenDisabled = true;
             }
         }
         // LONG PRESS reached while button is still pressed (only in functional mode)
-         if (gButtonsFunction && !gFilterLongPressAlreadySent && (gFilterButtonPressCount >= BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY)) {
+         if (gButtonsFunction && !gFilterLongPressAlreadySent && (gFilterButtonPressCount >= BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY) && !gFilterPressStartedWhenDisabled) {
              SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONLONGPRESSED);
              gFilterLongPressAlreadySent = true;  // suppress later events
          }
@@ -232,7 +243,7 @@ void CheckButtonsPressPeriodic()
         if (gFilterButtonPressCount >= BUTTON_PRESS_MIN_COUNT_FOR_ANYKEY) {
             // If long-press wasn't already sent → it is a short press
             if (!gFilterLongPressAlreadySent) {
-                if (gButtonsFunction) {
+                if (gButtonsFunction && !gFilterPressStartedWhenDisabled) {
                     // Normal mode -> classify short vs long press
                     if (gFilterButtonPressCount < BUTTON_LONG_PRESS_COUNT_FOR_ANYKEY) {
                         SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_FILTERBUTTONSHORTPRESSED);
@@ -256,6 +267,7 @@ void CheckButtonsPressPeriodic()
         gFilterAnyKeyAlreadySent = false;
         gFilterLongPressAlreadySent = false;
         gLastFilterKeyPressTick = 0;
+        gFilterPressStartedWhenDisabled = false;
     }
 
 //    if (IS_CARB_LEVEL_BUTTON_PRESSED() && (gIgnoreCarbonationLevelRelease == false) && (gCarbonationLevelPressTick > 0)) {
@@ -282,4 +294,3 @@ bool IsAnyKeyPressed()
 {
     return IS_FILTER_BUTTON_PRESSED() || IS_CARB_LEVEL_BUTTON_PRESSED()|| IS_MAIN_BUTTON_PRESSED();
 }
-
