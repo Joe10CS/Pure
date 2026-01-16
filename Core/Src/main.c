@@ -416,7 +416,7 @@ static void MX_RTC_Init(void)
   // Wait for register sync (safe 100ms timeout)
   uint32_t timeout = HAL_GetTick() + 100;
   while ((RTC->ICSR & RTC_ICSR_RSF) == 0 && HAL_GetTick() < timeout);
-  if (RBMEM_IsRTCMagicNunberOK())
+  if (RBMEM_IsRTCMagicNumberOK())
   {
       // RTC already started before - init done
       return;

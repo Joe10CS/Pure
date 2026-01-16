@@ -32,10 +32,10 @@ typedef struct {
 #define RBMEM_RTC_DR_MAX_CO2      RTC_BKP_DR4   // Maximum milliseconds of CO2
 
 #define RBMEM_LAST_CARBONATION_LEVEL_MASK (0x00000003)
-#define RBMEM_LAST_CARBONATION_LEVEL_SHIFT (0U)   // bits [1:0]
-#define RBMEM_FILTERING_COUNTER_MASK (0x00007FC)  // bits [10:2]
-#define RBMEM_FILTERING_COUNTER_SHIFT (2U)   // bits [1:0]
-#define RBMEM_RINSING_2ND_WAITING_MASK (0x00000004)
+#define RBMEM_LAST_CARBONATION_LEVEL_SHIFT (0U)     // bits [1:0]
+#define RBMEM_RINSING_2ND_WAITING_MASK (0x00000004) // bit  [2]
+#define RBMEM_FILTERING_COUNTER_MASK (0x0000FF8)  // bits [11:3]
+#define RBMEM_FILTERING_COUNTER_SHIFT (3U)
 
 typedef enum
 {
@@ -53,7 +53,7 @@ uint32_t RBMEM_Data_Init(void);
 HAL_StatusTypeDef RBMEM_WriteElement(eRBMEM_Element elem, uint32_t value);
 HAL_StatusTypeDef RBMEM_ReadElement(eRBMEM_Element elem, uint32_t *value);
 HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void);
-bool RBMEM_IsRTCMagicNunberOK(void);
+bool RBMEM_IsRTCMagicNumberOK(void);
 void RBMEM_WriteRTCMagicNunber(void);
 
 HAL_StatusTypeDef RBMEM_AddMSecsToCO2Counter(uint32_t value);

@@ -146,7 +146,7 @@ HAL_StatusTypeDef RBMEM_ResetDataToDefaults(void)
     return status;
 }
 
-bool RBMEM_IsRTCMagicNunberOK(void)
+bool RBMEM_IsRTCMagicNumberOK(void)
 {
     return (HAL_RTCEx_BKUPRead(&hrtc, RBMEM_RTC_DR_MAGIC_START) == RTC_BKP_RTC_STARTUP_MAGIC_NUMBER);
 }
