@@ -7,11 +7,10 @@
 #define INC_COMMON_H_
 
 
-// #define READY_STATE_TIMEOUT_MSECS (10000U) 10 sec
-//#define READY_STATE_TIMEOUT_MSECS (600000U) // 10 minutes
-#define READY_STATE_TIMEOUT_MSECS (10000U) // 10 seconds for testing
+#define READY_STATE_TIMEOUT_MSECS (600000U) // 10 minutes
+//#define READY_STATE_TIMEOUT_MSECS (10000U) // 10 seconds for testing
+//#warning "READY_STATE_TIMEOUT_MSECS is set to 10 seconds for testing purposes. Change to 10 minutes for production."
 
-#warning "READY_STATE_TIMEOUT_MSECS is set to 10 seconds for testing purposes. Change to 10 minutes for production."
 #define FILTER_TO_CARBONATION_DELAY_MSECS (1000U)
 
 

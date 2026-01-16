@@ -153,7 +153,7 @@ SECTIONS
   {
       . = ALIGN(64);
       _Check_Sum = .;
-      LONG(0x467537F0); /* <------------------------------------------ this should be updated based in the build resutls */
+      LONG(0x5173AA8C); /* <------------------------------------------ this should be updated based in the build resutls */
   } >FLASH
 
   /* Uninitialized data section into "RAM" Ram type memory */
