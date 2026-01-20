@@ -425,7 +425,17 @@ state State_AutomaticMode {
 
                 State_UVstatus : State_UVstatus
 
-                State_UVstatus : enter / #123; CheckUVError(true)#59; #125;
+                State_UVstatus : enter / #123; SolenoidPumpUVPower(1)#59; #125;
+
+                State_UVstatus : enter / #123; CheckUVError()#59; #125;
+
+                State_UVstatus : enter / #123; count = 0#59; #125;
+
+                State_UVstatus : do / #123; count++#59; #125;
+
+                State_UVstatus : do / #123; IsUVLedCheckDone(true)#59; #125;
+
+                State_UVstatus : exit / #123; SolenoidPumpUVPower(0)#59; #125;
 
                 state State_Awake.(ChoicePoint)() <<choice>>
 
@@ -485,7 +495,9 @@ state State_AutomaticMode {
 
         State_PreCheckWaterSensor : State_PreCheckWaterSensor
 
-        State_PreCheckWaterSensor : enter / #123; CheckUVError(false)#59; #125;
+        State_PreCheckWaterSensor : enter / #123; SolenoidPumpUVPower(1)#59; #125;
+
+        State_PreCheckWaterSensor : enter / #123; CheckUVError()#59; #125;
 
         State_PreCheckWaterSensor : enter / #123; WaterPumpSensor(1)#59; #125;
 
@@ -494,6 +506,8 @@ state State_AutomaticMode {
         State_PreCheckWaterSensor : do / #123; count++#59; #125;
 
         State_PreCheckWaterSensor : do / #123; IsUVLedCheckDone(false)#59; #125;
+
+        State_PreCheckWaterSensor : exit / #123; SolenoidPumpUVPower(0)#59; #125;
 
         State_RinsingPreCheckWaterSensor
 
@@ -703,7 +717,7 @@ State_Awake.(ChoicePoint)() --> State_ShowFilterStatus : else
 
 State_ShowFilterStatus --> State_Ready : do
 
-State_UVstatus --> State_Awake.(ChoicePoint)() : do [IsUVLedCheckDone(true) && LedsPlayDone()]
+State_UVstatus --> State_Awake.(ChoicePoint)() : do [count > 1]
 
 State_Awake.(ChoicePoint)() --> State_UVstatus : else
 
@@ -2094,15 +2108,36 @@ evaluateGuard = null;
         } // end of behavior for State_UVstatus
         
         // State_UVstatus behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError(true);"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError(true);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError(true);");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");
+        } // end of behavior for State_UVstatus
+        
+        // State_UVstatus behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError();");
+        } // end of behavior for State_UVstatus
+        
+        // State_UVstatus behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "count = 0;"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "count = 0;");`
+            this.tracer?.log("⚡ FSM would execute action: " + "count = 0;");
         } // end of behavior for State_UVstatus
     }
     
     #STATE_UVSTATUS_exit()
     {
+        // State_UVstatus behavior
+        // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);");
+        } // end of behavior for State_UVstatus
+        
         // State_UVstatus behavior
         // uml: exit / { this.tracer?.exitState('State_UVstatus'); }
         {
@@ -2118,8 +2153,24 @@ evaluateGuard = null;
         let consume_event = false;
         
         // State_UVstatus behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsUVLedCheckDone(true) && LedsPlayDone()") || this.evaluateGuard("State_UVstatus","do [IsUVLedCheckDone(true) && LedsPlayDone()] TransitionTo(State_Awake.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge39"); } TransitionTo(State_Awake.<ChoicePoint>())
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsUVLedCheckDone(true) && LedsPlayDone()") || this.evaluateGuard("State_UVstatus","do [IsUVLedCheckDone(true) && LedsPlayDone()] TransitionTo(State_Awake.<ChoicePoint>())"))
+        // uml: do / { this.tracer?.log("⚡ FSM would execute action: " + "count++;"); }
+        {
+            // `do` events are not normally consumed.
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "count++;");`
+            this.tracer?.log("⚡ FSM would execute action: " + "count++;");
+        } // end of behavior for State_UVstatus
+        
+        // State_UVstatus behavior
+        // uml: do / { this.tracer?.log("⚡ FSM would execute action: " + "IsUVLedCheckDone(true);"); }
+        {
+            // `do` events are not normally consumed.
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "IsUVLedCheckDone(true);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "IsUVLedCheckDone(true);");
+        } // end of behavior for State_UVstatus
+        
+        // State_UVstatus behavior
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "count > 1") || this.evaluateGuard("State_UVstatus","do [count > 1] TransitionTo(State_Awake.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge39"); } TransitionTo(State_Awake.<ChoicePoint>())
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "count > 1") || this.evaluateGuard("State_UVstatus","do [count > 1] TransitionTo(State_Awake.<ChoicePoint>())"))
         {
             // Step 1: Exit states until we reach `State_Awake` state (Least Common Ancestor for transition).
             this.#STATE_UVSTATUS_exit();
@@ -3240,10 +3291,17 @@ evaluateGuard = null;
         } // end of behavior for State_PreCheckWaterSensor
         
         // State_PreCheckWaterSensor behavior
-        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError(false);"); }
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);"); }
         {
-            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError(false);");`
-            this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError(false);");
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");
+        } // end of behavior for State_PreCheckWaterSensor
+        
+        // State_PreCheckWaterSensor behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "CheckUVError();");
         } // end of behavior for State_PreCheckWaterSensor
         
         // State_PreCheckWaterSensor behavior
@@ -3263,6 +3321,13 @@ evaluateGuard = null;
     
     #STATE_PRECHECKWATERSENSOR_exit()
     {
+        // State_PreCheckWaterSensor behavior
+        // uml: exit / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(0);");
+        } // end of behavior for State_PreCheckWaterSensor
+        
         // State_PreCheckWaterSensor behavior
         // uml: exit / { this.tracer?.exitState('State_PreCheckWaterSensor'); }
         {

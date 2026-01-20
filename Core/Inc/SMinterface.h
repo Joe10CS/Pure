@@ -102,7 +102,7 @@ void LedsSequence(eLedsSequence seq);
 bool CarbonationEnabled();
 bool IsBottleFull();
 bool Tilted();
-void CheckUVError(bool isOnWakeup);
+void CheckUVError();
 bool IsUVLedCheckDone(bool isOnWakeup);
 bool LedsPlayDone();
 

@@ -112,7 +112,7 @@ bool Tilted()
 // Check UV for error:
 // First, turn it on and on the next cycle
 // make sure the ADC current is above the threshold
-void CheckUVError(bool isOnWakeup)
+void CheckUVError()
 {
 	if (gUVLedTestStart == 0) // first time - just turn it on
 	{

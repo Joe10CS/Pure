@@ -677,9 +677,9 @@ void CheckHWAndGenerateEventsAsNeeded()
 	}
 
 	// Check Pump_WD_FDBK:
-	// In normal operation, this signal reflects the behaviour of the water pump
+	// In normal operation, this signal reflects the behaviour of the solenoid pump
 	// i.e. goes up when the solenoid pump is ON (Pump_CMD), and down when the pump is OFF
-	// However, if for some reason Pump_CMD held for more then 5 seconds, and the feedback
+	// However, if for some reason Pump_CMD held for more then 5 seconds, and the feedback (the HW watchdog)
 	// goes to 0 (and by that stops the solenoid pump), we need to generate an event to the state machine
 	if (gSolenoidPumpStartTick > 0) // check it only when the solenoid pump is ON
 	{
