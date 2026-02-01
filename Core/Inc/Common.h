@@ -30,7 +30,7 @@
 #define MINIMUM_NO_WATER_IN_PUMP_DETECTION_TIME_MSEC (10000)
 #define NO_WATER_IN_PUMP_DETECTION_ADC_THRESHOLD (755) // 200mA
 
-// ADC value above which the UV is considered on
+// ADC value above which the UV is considered OK
 #define UV_MIN_ADC_THRESHOLD (197) // 20mA
 
 

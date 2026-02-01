@@ -43,6 +43,9 @@ extern uint16_t gKeyPressButFilterMS;
 extern uint32_t gSolenoidPumpStartTick;
 uint16_t gSolenoidPumpWDCounter = 0;
 
+extern uint16_t gDebugLastFailedUVADC; // DEBUG REMOVE
+//extern uint16_t gDebugUVADCFailureDelay; // DEBUG REMOVE
+
 uint32_t echoParams[6];
 /* Private variables ---------------------------------------------------------*/
 SMSodaStreamPure gStateMachine;  // the state machine instance
@@ -584,6 +587,16 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
         case 1: // set green led on/off
             HAL_GPIO_WritePin(GPIOB, Debug_LED_Pin, msg->params.list[1] == 0 ? GPIO_PIN_RESET : GPIO_PIN_SET);
             break;
+//		case 2: // read the the last failed UV LED current ADC value
+//			if (msg->params.list[1] == 0) { // read
+//				msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_dbug, (uint32_t[]){gDebugLastFailedUVADC, gDebugUVADCFailureDelay}, 2, false);
+//				COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
+//				echoCommand = false;
+//			} else {
+//				// set the threshold
+//				gDebugUVADCFailureDelay = msg->params.list[1];
+//			}
+//			break;
         }
         break;
 

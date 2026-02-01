@@ -109,6 +109,9 @@ bool Tilted()
 
 
 
+//uint16_t gDebugLastFailedUVADC = 0; // DEBUG REMOVE
+//uint16_t gDebugUVADCFailureDelay = 20; // DEBUG REMOVE
+
 // Check UV for error:
 // First, turn it on and on the next cycle
 // make sure the ADC current is above the threshold
@@ -121,22 +124,23 @@ void CheckUVError()
 		// turn on UV led for test
 		StartUVLEd();
 		gUVLedTestStart = HAL_GetTick();
+
+		//gDebugLastFailedUVADC = 0;  // DEBUG REMOVE
 	}
 }
-
 bool IsUVLedCheckDone(bool isOnWakeup)
 {
 	if (gUVLedTestStart > 0) // test in progress
 	{
-		if (gUVLedTestStart <= (HAL_GetTick() - 10)) // wait at least 10 msecs for ADC to stabilize
+		if ((HAL_GetTick() - gUVLedTestStart) >= 200) // wait at least 200 msecs for ADC to stabilize
+    	//if ((HAL_GetTick() - gUVLedTestStart) >= gDebugUVADCFailureDelay) // DEBUG REMOVE
 		{
-			// turn off UV led after test
-			StopUVLed();
 			gUVLedTestStart = 0;
 #ifndef DEBUG_NO_UV_CHECK
 			// check ADC value
 			if (gReadUVCurrentADC < UV_MIN_ADC_THRESHOLD)
 			{
+				//gDebugLastFailedUVADC = gReadUVCurrentADC;  // DEBUG REMOVE
 				if (isOnWakeup) {
 					StartAnimation(eAnimation_UVError, true);
 				} else {
@@ -147,6 +151,8 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 				}
 			}
 #endif
+			// turn off UV led after test
+			StopUVLed();
 			return true; // check is done
 		} else {
 			return false; // still waiting
