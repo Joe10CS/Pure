@@ -674,6 +674,9 @@ void SendDoneMessage(eDoneResults result)
 void CheckHWAndGenerateEventsAsNeeded()
 {
 
+	HAL_GPIO_WritePin(TP38_OUT_GPIO_Port, TP38_OUT_Pin, (gReadUVCurrentADC > UV_MIN_ADC_THRESHOLD) ? GPIO_PIN_SET : GPIO_PIN_RESET); // DEBUG REMOVE
+
+
 	// check for tilt and set event if needed
 	if (gAccelerometerIsPresent && (HAL_GetTick() > 100)) // wait 100 msecs after powerup
 	{

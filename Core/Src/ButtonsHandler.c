@@ -67,6 +67,10 @@ extern bool gMakeADrinkInProgress;
 
 extern uint32_t gPumpStartTimeTick; // when this is not 0 the pump is running
 //uint32_t gLastLongPressMS = 0;
+
+extern uint32_t gDebugPRIMARYBUTTONPRESSED;
+extern uint32_t gDebugTimeUntilPowerUV;
+extern uint32_t gDebugTimeUntilUVOn;
 /* Private function prototypes -----------------------------------------------*/
 
 
@@ -115,6 +119,9 @@ void HAL_GPIO_EXTI_Rising_Callback(uint16_t GPIO_Pin)
             gIgnoreMainButtonRelease = true;
             // Ignore it if too Short press
             if (gLastMainButtonKeyPressTick + BUTTON_FALSE_DETECT_SUSPENSION_TIME_MSEC < HAL_GetTick()) {
+            	gDebugPRIMARYBUTTONPRESSED = HAL_GetTick(); // DEBUG REMOVE
+            	gDebugTimeUntilPowerUV	= 0; // DEBUG REMOVE
+            	gDebugTimeUntilUVOn	= 0; // DEBUG REMOVE
                 if (gButtonsFunction) {
                     SMEventQueue_Add(SMSodaStreamPure_EventId_EVENT_PRIMARYBUTTONPRESSED);
                 } else {

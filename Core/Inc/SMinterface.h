@@ -109,4 +109,6 @@ bool LedsPlayDone();
 void ResetFilterCounters();
 void StartFilterToCarbDelay();
 bool FilterToCarbDelayDone();
+
+uint16_t MinimumUVCheckCount();
 #endif /* INC_SMINTERFACE_H_ */

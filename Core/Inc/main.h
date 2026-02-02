@@ -157,6 +157,12 @@ extern uint32_t mPumpStartTimeTick;
 #define LED_PWM_GPIO_Port GPIOA
 #define ACCL_INT1_Pin GPIO_PIN_0
 #define ACCL_INT1_GPIO_Port GPIOD
+#define TP36_OUT_Pin GPIO_PIN_1
+#define TP36_OUT_GPIO_Port GPIOD
+#define TP37_OUT_Pin GPIO_PIN_2
+#define TP37_OUT_GPIO_Port GPIOD
+#define TP38_OUT_Pin GPIO_PIN_3
+#define TP38_OUT_GPIO_Port GPIOD
 #define BTN4_Pin GPIO_PIN_3
 #define BTN4_GPIO_Port GPIOB
 #define BTN4_EXTI_IRQn EXTI2_3_IRQn

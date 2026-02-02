@@ -37,6 +37,14 @@ uint32_t gUVLedTestStart = 0;
 bool gUVLedTestFailed = false;
 
 uint32_t gSolenoidPumpStartTick = 0;
+
+// DEBUG timings
+uint32_t gDebugPRIMARYBUTTONPRESSED	= 0;
+uint32_t gDebugTimeUntilPowerUV	= 0;
+uint32_t gDebugTimeUntilUVOn	= 0;
+
+
+
 extern uint16_t gSolenoidPumpWDCounter;
 
 extern uint32_t gPumpTimoutMsecs;
@@ -87,10 +95,15 @@ void StopCarbonation()
 void StartUVLEd()
 {
 	HAL_GPIO_WritePin(UV_LED_EN_GPIO_Port, UV_LED_EN_Pin, GPIO_PIN_SET);
+
+	HAL_GPIO_WritePin(TP36_OUT_GPIO_Port, TP36_OUT_Pin, GPIO_PIN_SET); // DEBUG REMOVE
+	gDebugTimeUntilUVOn = HAL_GetTick() - gDebugPRIMARYBUTTONPRESSED; // DEBUG REMOVE
 }
 void StopUVLed()
 {
 	HAL_GPIO_WritePin(UV_LED_EN_GPIO_Port, UV_LED_EN_Pin, GPIO_PIN_RESET);
+
+	HAL_GPIO_WritePin(TP36_OUT_GPIO_Port, TP36_OUT_Pin, GPIO_PIN_RESET); // DEBUG REMOVE
 }
 
 void WaterPumpSensor(int isOn)
@@ -128,6 +141,12 @@ void CheckUVError()
 		gDebugLastFailedUVADC = 0;  // DEBUG REMOVE
 	}
 }
+
+uint16_t MinimumUVCheckCount()
+{
+	return gDebugUVADCFailureDelay / 10;
+}
+
 bool IsUVLedCheckDone(bool isOnWakeup)
 {
 	if (gUVLedTestStart > 0) // test in progress
@@ -490,6 +509,10 @@ void SolenoidPump(int isOn)
 void SolenoidPumpUVPower(int isOn)
 {
 	HAL_GPIO_WritePin(GPIOC, Main_SW_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET);
+
+
+	HAL_GPIO_WritePin(TP37_OUT_GPIO_Port, TP37_OUT_Pin, (isOn == 1) ? GPIO_PIN_SET : GPIO_PIN_RESET); // DEBUG REMOVE
+	if (isOn == 1) {gDebugTimeUntilPowerUV = HAL_GetTick() - gDebugPRIMARYBUTTONPRESSED;} // DEBUG
 }
 
 void IncreaseFilteringCounter()
@@ -512,4 +535,6 @@ bool FilterToCarbDelayDone()
 {
     return (gFilterToCarbDelayStartTick + FILTER_TO_CARBONATION_DELAY_MSECS < HAL_GetTick());
 }
+
+
 

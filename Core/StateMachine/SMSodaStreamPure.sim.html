@@ -717,7 +717,7 @@ State_Awake.(ChoicePoint)() --> State_ShowFilterStatus : else
 
 State_ShowFilterStatus --> State_Ready : do
 
-State_UVstatus --> State_Awake.(ChoicePoint)() : do [count > 1]
+State_UVstatus --> State_Awake.(ChoicePoint)() : do [count > MinimumUVCheckCount()]
 
 State_Awake.(ChoicePoint)() --> State_UVstatus : else
 
@@ -743,7 +743,7 @@ State_RinsingEndLeds --> State_Awake : do [LedsPlayDone()]
 
 State_PreCheckWaterSensor --> State_AutomaticMode.(ChoicePoint)() : do [IsBottleFull()]
 
-State_PreCheckWaterSensor --> State_Filtering : do [count > 10]
+State_PreCheckWaterSensor --> State_Filtering : do [(count > 10)&&(count>MinimumUVCheckCount())]
 
 State_RinsingPreCheckWaterSensor --> State_Rinsing : do [count > 10]
 
@@ -2169,8 +2169,8 @@ evaluateGuard = null;
         } // end of behavior for State_UVstatus
         
         // State_UVstatus behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "count > 1") || this.evaluateGuard("State_UVstatus","do [count > 1] TransitionTo(State_Awake.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge39"); } TransitionTo(State_Awake.<ChoicePoint>())
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "count > 1") || this.evaluateGuard("State_UVstatus","do [count > 1] TransitionTo(State_Awake.<ChoicePoint>())"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "count > MinimumUVCheckCount()") || this.evaluateGuard("State_UVstatus","do [count > MinimumUVCheckCount()] TransitionTo(State_Awake.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge39"); } TransitionTo(State_Awake.<ChoicePoint>())
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "count > MinimumUVCheckCount()") || this.evaluateGuard("State_UVstatus","do [count > MinimumUVCheckCount()] TransitionTo(State_Awake.<ChoicePoint>())"))
         {
             // Step 1: Exit states until we reach `State_Awake` state (Least Common Ancestor for transition).
             this.#STATE_UVSTATUS_exit();
@@ -3405,8 +3405,8 @@ evaluateGuard = null;
         } // end of behavior for State_PreCheckWaterSensor
         
         // State_PreCheckWaterSensor behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "count > 10") || this.evaluateGuard("State_PreCheckWaterSensor","do [count > 10] TransitionTo(State_Filtering)")] / { this.tracer?.edgeTransition("edge52"); } TransitionTo(State_Filtering)
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "count > 10") || this.evaluateGuard("State_PreCheckWaterSensor","do [count > 10] TransitionTo(State_Filtering)"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "(count > 10)&&(count>MinimumUVCheckCount())") || this.evaluateGuard("State_PreCheckWaterSensor","do [(count > 10)&&(count>MinimumUVCheckCount())] TransitionTo(State_Filtering)")] / { this.tracer?.edgeTransition("edge52"); } TransitionTo(State_Filtering)
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "(count > 10)&&(count>MinimumUVCheckCount())") || this.evaluateGuard("State_PreCheckWaterSensor","do [(count > 10)&&(count>MinimumUVCheckCount())] TransitionTo(State_Filtering)"))
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_PRECHECKWATERSENSOR_exit();

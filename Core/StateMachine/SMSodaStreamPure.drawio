@@ -371,9 +371,9 @@
             <mxPoint x="704" y="61.5" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="gC5HU-zI6nbUnHy5Q3gA-13" connectable="0" parent="gC5HU-zI6nbUnHy5Q3gA-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="[count &amp;gt; 1]" vertex="1">
+        <mxCell id="gC5HU-zI6nbUnHy5Q3gA-13" connectable="0" parent="gC5HU-zI6nbUnHy5Q3gA-12" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="[count &amp;gt; MinimumUVCheckCount()]" vertex="1">
           <mxGeometry relative="1" x="0.1333" as="geometry">
-            <mxPoint x="-35" y="-10" as="offset" />
+            <mxPoint x="-95" y="-10" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="7z9YYdc7p5LTaOq2Kni7-3" parent="6c4m0HjgKQ5P56z9gCcW-11" style="fontFamily=Lucida Console;align=center;verticalAlign=middle;shape=rhombus;rotatable=0;labelPosition=center;verticalLabelPosition=top;strokeWidth=1;fillColor=#FFFFFF;gradientColor=#d4d4d4cc;noLabel=1;" value="$choice" vertex="1">
@@ -670,9 +670,9 @@
             <mxPoint x="1052" y="1310" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="TsjWop_f3fmC6C8fTUvM-4" connectable="0" parent="TsjWop_f3fmC6C8fTUvM-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="[count &amp;gt; 10]" vertex="1">
+        <mxCell id="TsjWop_f3fmC6C8fTUvM-4" connectable="0" parent="TsjWop_f3fmC6C8fTUvM-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="[(count &amp;gt; 10)&amp;amp;&amp;amp;(count&amp;gt;MinimumUVCheckCount())]" vertex="1">
           <mxGeometry relative="1" x="-0.3199" y="-3" as="geometry">
-            <mxPoint x="-35" y="-31" as="offset" />
+            <mxPoint x="133" y="-42" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="TsjWop_f3fmC6C8fTUvM-5" parent="qZF7NaJGXNpq08xq_DYa-5" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;" value="State_RinsingPreCheckWaterSensor" vertex="1">
