@@ -85,10 +85,17 @@ void PURE_STL_Init(void);
 #endif
 
 // Comment this in release builds
-//#define DEBUG_NO_UV_CHECK
+#define DEBUG_NO_UV_CHECK
 #ifdef DEBUG_NO_UV_CHECK
 #warning  DEBUG_NO_UV_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
+
+// Comment this in release builds
+#define DEBUG_NO_WATER_IN_PUMP_CHECK
+#ifdef DEBUG_NO_WATER_IN_PUMP_CHECK
+#warning  DEBUG_NO_WATER_IN_PUMP_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#endif
+
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);

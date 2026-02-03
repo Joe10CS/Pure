@@ -134,8 +134,10 @@ void CheckUVError()
 	{
 		// assume test will pass
 		gUVLedTestFailed = false;
+#ifndef DEBUG_NO_UV_CHECK
 		// turn on UV led for test
 		StartUVLEd();
+#endif
 		gUVLedTestStart = HAL_GetTick();
 
 		gDebugLastFailedUVADC = 0;  // DEBUG REMOVE
@@ -149,13 +151,16 @@ uint16_t MinimumUVCheckCount()
 
 bool IsUVLedCheckDone(bool isOnWakeup)
 {
+#ifdef DEBUG_NO_UV_CHECK
+	gUVLedTestFailed = false;
+	return true;
+#endif
 	if (gUVLedTestStart > 0) // test in progress
 	{
 		//if ((HAL_GetTick() - gUVLedTestStart) >= 250) // wait at least 200 msecs for ADC to stabilize
     	if ((HAL_GetTick() - gUVLedTestStart) >= gDebugUVADCFailureDelay) // DEBUG REMOVE
 		{
 			gUVLedTestStart = 0;
-#ifndef DEBUG_NO_UV_CHECK
 			// check ADC value
 			if (gReadUVCurrentADC < UV_MIN_ADC_THRESHOLD)
 			{
@@ -169,7 +174,6 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 					gUVLedTestFailed = true;
 				}
 			}
-#endif
 			// turn off UV led after test
 			StopUVLed();
 			return true; // check is done
