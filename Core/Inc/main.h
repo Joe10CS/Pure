@@ -96,6 +96,12 @@ void PURE_STL_Init(void);
 #warning  DEBUG_NO_WATER_IN_PUMP_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 
+// Comment this in release builds
+#define DEBUG_USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
+#ifdef DEBUG_USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
+#define WATER_LEVEL_SENSOR_THRESHOLD_HARDCODED_VALUE (301)
+#warning  DEBUG_USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#endif
 /* USER CODE END EM */
 
 void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);

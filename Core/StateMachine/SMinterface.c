@@ -113,7 +113,11 @@ void WaterPumpSensor(int isOn)
 
 bool IsBottleFull()
 {
+#ifdef DEBUG_USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
+	return (gReadWaterLevelADC >= WATER_LEVEL_SENSOR_THRESHOLD_HARDCODED_VALUE);
+#else
 	return (gReadWaterLevelADC >= gWaterLevelSensorThreahsold);
+#endif
 }
 bool Tilted()
 {
@@ -449,6 +453,7 @@ uint32_t gNoWaterInPumpStartTick = 0;
 // since it's an exit condition for both states
 bool WaterPumpNoWater()
 {
+#ifndef DEBUG_NO_WATER_IN_PUMP_CHECK
 	if (gReadWaterPumpCurrentADC < NO_WATER_IN_PUMP_DETECTION_ADC_THRESHOLD)
 	{
 		// current is low - possible no water in pump
@@ -474,6 +479,9 @@ bool WaterPumpNoWater()
 		// current is ok - reset counter
 		gNoWaterInPumpStartTick = 0;
 	}
+
+#endif // DEBUG_NO_WATER_IN_PUMP_CHECK
+
 	return false;
 }
 

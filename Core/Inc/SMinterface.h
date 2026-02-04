@@ -78,6 +78,7 @@ void ResetToOOTB();
 void ResetRinsingNumber();
 void UpdateRinsingNumber();
 bool Rinsing2Done();
+bool IsRinsing2ndStagePending();
 bool WaterPumpNoWater();
 bool FilterExpired();
 
