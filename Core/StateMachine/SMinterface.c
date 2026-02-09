@@ -42,7 +42,7 @@ uint32_t gSolenoidPumpStartTick = 0;
 uint32_t gDebugPRIMARYBUTTONPRESSED	= 0;
 uint32_t gDebugTimeUntilPowerUV	= 0;
 uint32_t gDebugTimeUntilUVOn	= 0;
-
+uint32_t gDebugUVOnTime	= 0;
 
 
 extern uint16_t gSolenoidPumpWDCounter;
@@ -98,12 +98,14 @@ void StartUVLEd()
 
 	HAL_GPIO_WritePin(TP36_OUT_GPIO_Port, TP36_OUT_Pin, GPIO_PIN_SET); // DEBUG REMOVE
 	gDebugTimeUntilUVOn = HAL_GetTick() - gDebugPRIMARYBUTTONPRESSED; // DEBUG REMOVE
+	gDebugUVOnTime = HAL_GetTick(); // DEBUG REMOVE
 }
 void StopUVLed()
 {
 	HAL_GPIO_WritePin(UV_LED_EN_GPIO_Port, UV_LED_EN_Pin, GPIO_PIN_RESET);
 
 	HAL_GPIO_WritePin(TP36_OUT_GPIO_Port, TP36_OUT_Pin, GPIO_PIN_RESET); // DEBUG REMOVE
+	gDebugUVOnTime = 0; // DEBUG REMOVE
 }
 
 void WaterPumpSensor(int isOn)
@@ -127,7 +129,7 @@ bool Tilted()
 
 
 uint16_t gDebugLastFailedUVADC = 0; // DEBUG REMOVE
-uint16_t gDebugUVADCFailureDelay = 300; // DEBUG REMOVE
+uint16_t gDebugUVADCFailureDelay = 1000; // DEBUG REMOVE
 
 // Check UV for error:
 // First, turn it on and on the next cycle

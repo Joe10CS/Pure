@@ -87,6 +87,13 @@ extern void PlayLedsPeriodic();
 uint8_t msg_len = 0;
 
 
+// DEBUG REMOVE!!
+extern uint32_t gDebugUVOnTime;
+#define DEBUG_UV_BUF_SIZE 300
+uint16_t dUVVals[DEBUG_UV_BUF_SIZE];
+uint16_t dUVIndex = 0;
+
+
 // Defines the state of the pin at home position, default is 1 (SET)
 /* Private function prototypes -----------------------------------------------*/
 void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t rawMessageLen);
@@ -669,13 +676,18 @@ void SendDoneMessage(eDoneResults result)
 	COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 }
 
+
+//uint32_t gDebugLastRecordedUVTime = 0;
 //extern UART_HandleTypeDef huart2;
 //bool prevTilted = false;
 void CheckHWAndGenerateEventsAsNeeded()
 {
 
 	HAL_GPIO_WritePin(TP38_OUT_GPIO_Port, TP38_OUT_Pin, (gReadUVCurrentADC > UV_MIN_ADC_THRESHOLD) ? GPIO_PIN_SET : GPIO_PIN_RESET); // DEBUG REMOVE
-
+	if ((gDebugUVOnTime > 0) && (dUVIndex < DEBUG_UV_BUF_SIZE))
+	{
+		dUVVals[dUVIndex++] = gReadUVCurrentADC;
+	}
 
 	// check for tilt and set event if needed
 	if (gAccelerometerIsPresent && (HAL_GetTick() > 100)) // wait 100 msecs after powerup
