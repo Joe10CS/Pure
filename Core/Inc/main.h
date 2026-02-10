@@ -73,7 +73,7 @@ void PURE_STL_Init(void);
 #endif
 
 // Comment this in release builds
-#define DEBUG_NO_SAFETY
+//#define DEBUG_NO_SAFETY
 #ifdef DEBUG_NO_SAFETY
 #warning  DEBUG_NO_SAFETY is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
@@ -91,7 +91,7 @@ void PURE_STL_Init(void);
 #endif
 
 // Comment this in release builds
-#define DEBUG_NO_WATER_IN_PUMP_CHECK
+//#define DEBUG_NO_WATER_IN_PUMP_CHECK
 #ifdef DEBUG_NO_WATER_IN_PUMP_CHECK
 #warning  DEBUG_NO_WATER_IN_PUMP_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif

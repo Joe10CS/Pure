@@ -130,6 +130,7 @@ bool Tilted()
 
 uint16_t gDebugLastFailedUVADC = 0; // DEBUG REMOVE
 uint16_t gDebugUVADCFailureDelay = 1000; // DEBUG REMOVE
+uint16_t dddCountDown = 0; // DEBUG REMOVE
 
 // Check UV for error:
 // First, turn it on and on the next cycle
@@ -142,7 +143,8 @@ void CheckUVError()
 		gUVLedTestFailed = false;
 #ifndef DEBUG_NO_UV_CHECK
 		// turn on UV led for test
-		StartUVLEd();
+		//StartUVLEd(); // UNCOMMMENT
+		dddCountDown = 15; // DEBUG REMOVE - to allow checking the ADC value for few cycles before turning on the UV led
 #endif
 		gUVLedTestStart = HAL_GetTick();
 
@@ -161,6 +163,14 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 	gUVLedTestFailed = false;
 	return true;
 #endif
+	if (dddCountDown > 0) // DEBUG REMOVE
+	{
+		dddCountDown--;
+		if (dddCountDown == 0)
+		{
+			StartUVLEd();
+		}
+	}
 	if (gUVLedTestStart > 0) // test in progress
 	{
 		//if ((HAL_GetTick() - gUVLedTestStart) >= 250) // wait at least 200 msecs for ADC to stabilize
