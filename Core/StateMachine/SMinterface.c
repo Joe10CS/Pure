@@ -42,7 +42,7 @@ uint32_t gSolenoidPumpStartTick = 0;
 uint32_t gDebugPRIMARYBUTTONPRESSED	= 0;
 uint32_t gDebugTimeUntilPowerUV	= 0;
 uint32_t gDebugTimeUntilUVOn	= 0;
-uint32_t gDebugUVOnTime	= 0;
+//uint32_t gDebugUVOnTime	= 0;
 
 
 extern uint16_t gSolenoidPumpWDCounter;
@@ -98,14 +98,14 @@ void StartUVLEd()
 
 	HAL_GPIO_WritePin(TP36_OUT_GPIO_Port, TP36_OUT_Pin, GPIO_PIN_SET); // DEBUG REMOVE
 	gDebugTimeUntilUVOn = HAL_GetTick() - gDebugPRIMARYBUTTONPRESSED; // DEBUG REMOVE
-	gDebugUVOnTime = HAL_GetTick(); // DEBUG REMOVE
+//	gDebugUVOnTime = HAL_GetTick(); // DEBUG REMOVE
 }
 void StopUVLed()
 {
 	HAL_GPIO_WritePin(UV_LED_EN_GPIO_Port, UV_LED_EN_Pin, GPIO_PIN_RESET);
 
 	HAL_GPIO_WritePin(TP36_OUT_GPIO_Port, TP36_OUT_Pin, GPIO_PIN_RESET); // DEBUG REMOVE
-	gDebugUVOnTime = 0; // DEBUG REMOVE
+//	gDebugUVOnTime = 0; // DEBUG REMOVE
 }
 
 void WaterPumpSensor(int isOn)
@@ -128,9 +128,9 @@ bool Tilted()
 
 
 
-uint16_t gDebugLastFailedUVADC = 0; // DEBUG REMOVE
-uint16_t gDebugUVADCFailureDelay = 1000; // DEBUG REMOVE
-uint16_t dddCountDown = 0; // DEBUG REMOVE
+// uint16_t gDebugLastFailedUVADC = 0; // DEBUG REMOVE
+//uint16_t gDebugUVADCFailureDelay = 1000; // DEBUG REMOVE
+//uint16_t dddCountDown = 0; // DEBUG REMOVE
 
 // Check UV for error:
 // First, turn it on and on the next cycle
@@ -143,18 +143,19 @@ void CheckUVError()
 		gUVLedTestFailed = false;
 #ifndef DEBUG_NO_UV_CHECK
 		// turn on UV led for test
-		//StartUVLEd(); // UNCOMMMENT
-		dddCountDown = 15; // DEBUG REMOVE - to allow checking the ADC value for few cycles before turning on the UV led
+		StartUVLEd();
+//		dddCountDown = 15; // DEBUG REMOVE - to allow checking the ADC value for few cycles before turning on the UV led
 #endif
 		gUVLedTestStart = HAL_GetTick();
 
-		gDebugLastFailedUVADC = 0;  // DEBUG REMOVE
+//		gDebugLastFailedUVADC = 0;  // DEBUG REMOVE
 	}
 }
 
 uint16_t MinimumUVCheckCount()
 {
-	return gDebugUVADCFailureDelay / 10;
+	return MINIMUM_UV_CHECK_TIME_MSEC/10;
+//	return gDebugUVADCFailureDelay / 10;
 }
 
 bool IsUVLedCheckDone(bool isOnWakeup)
@@ -163,24 +164,24 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 	gUVLedTestFailed = false;
 	return true;
 #endif
-	if (dddCountDown > 0) // DEBUG REMOVE
-	{
-		dddCountDown--;
-		if (dddCountDown == 0)
-		{
-			StartUVLEd();
-		}
-	}
+//	if (dddCountDown > 0) // DEBUG REMOVE
+//	{
+//		dddCountDown--;
+//		if (dddCountDown == 0)
+//		{
+//			StartUVLEd();
+//		}
+//	}
 	if (gUVLedTestStart > 0) // test in progress
 	{
-		//if ((HAL_GetTick() - gUVLedTestStart) >= 250) // wait at least 200 msecs for ADC to stabilize
-    	if ((HAL_GetTick() - gUVLedTestStart) >= gDebugUVADCFailureDelay) // DEBUG REMOVE
+		if ((HAL_GetTick() - gUVLedTestStart) >= MINIMUM_UV_CHECK_TIME_MSEC)
+//    	if ((HAL_GetTick() - gUVLedTestStart) >= gDebugUVADCFailureDelay) // DEBUG REMOVE
 		{
 			gUVLedTestStart = 0;
 			// check ADC value
 			if (gReadUVCurrentADC < UV_MIN_ADC_THRESHOLD)
 			{
-				gDebugLastFailedUVADC = gReadUVCurrentADC;  // DEBUG REMOVE
+//				gDebugLastFailedUVADC = gReadUVCurrentADC;  // DEBUG REMOVE
 				if (isOnWakeup) {
 					StartAnimation(eAnimation_UVError, true);
 				} else {

@@ -88,6 +88,8 @@ void PURE_STL_Init(void);
 //#define DEBUG_NO_UV_CHECK
 #ifdef DEBUG_NO_UV_CHECK
 #warning  DEBUG_NO_UV_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#else
+#define MINIMUM_UV_CHECK_TIME_MSEC (1000) // the UV Module consumes current only 800ms after on, + 100ms detection time + 100ms extra
 #endif
 
 // Comment this in release builds
