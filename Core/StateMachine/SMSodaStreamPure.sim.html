@@ -741,7 +741,7 @@ State_Solenoid_Off --> State_Exit_Carbonating : do
 
 State_RinsingEndLeds --> State_Awake : do [LedsPlayDone()]
 
-State_PreCheckWaterSensor --> State_AutomaticMode.(ChoicePoint)() : do [IsBottleFull()]
+State_PreCheckWaterSensor --> State_AutomaticMode.(ChoicePoint)() : do [(IsBottleFull())&&(count>MinimumUVCheckCount())]
 
 State_PreCheckWaterSensor --> State_Filtering : do [(count > 10)&&(count>MinimumUVCheckCount())]
 
@@ -3359,8 +3359,8 @@ evaluateGuard = null;
         } // end of behavior for State_PreCheckWaterSensor
         
         // State_PreCheckWaterSensor behavior
-        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_PreCheckWaterSensor","do [IsBottleFull()] TransitionTo(State_AutomaticMode.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge51"); } TransitionTo(State_AutomaticMode.<ChoicePoint>())
-        if (this.tracer?.log("🛡️ User evaluating guard: " + "IsBottleFull()") || this.evaluateGuard("State_PreCheckWaterSensor","do [IsBottleFull()] TransitionTo(State_AutomaticMode.<ChoicePoint>())"))
+        // uml: do [this.tracer?.log("🛡️ User evaluating guard: " + "(IsBottleFull())&&(count>MinimumUVCheckCount())") || this.evaluateGuard("State_PreCheckWaterSensor","do [(IsBottleFull())&&(count>MinimumUVCheckCount())] TransitionTo(State_AutomaticMode.<ChoicePoint>())")] / { this.tracer?.edgeTransition("edge51"); } TransitionTo(State_AutomaticMode.<ChoicePoint>())
+        if (this.tracer?.log("🛡️ User evaluating guard: " + "(IsBottleFull())&&(count>MinimumUVCheckCount())") || this.evaluateGuard("State_PreCheckWaterSensor","do [(IsBottleFull())&&(count>MinimumUVCheckCount())] TransitionTo(State_AutomaticMode.<ChoicePoint>())"))
         {
             // Step 1: Exit states until we reach `State_AutomaticMode` state (Least Common Ancestor for transition).
             this.#STATE_PRECHECKWATERSENSOR_exit();

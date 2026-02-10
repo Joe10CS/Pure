@@ -137,19 +137,16 @@ bool Tilted()
 // make sure the ADC current is above the threshold
 void CheckUVError()
 {
-	if (gUVLedTestStart == 0) // first time - just turn it on
-	{
-		// assume test will pass
-		gUVLedTestFailed = false;
+	// assume test will pass
+	gUVLedTestFailed = false;
 #ifndef DEBUG_NO_UV_CHECK
-		// turn on UV led for test
-		StartUVLEd();
-//		dddCountDown = 15; // DEBUG REMOVE - to allow checking the ADC value for few cycles before turning on the UV led
+	// turn on UV led for test
+	StartUVLEd();
+//  dddCountDown = 15; // DEBUG REMOVE - to allow checking the ADC value for few cycles before turning on the UV led
 #endif
-		gUVLedTestStart = HAL_GetTick();
+	gUVLedTestStart = HAL_GetTick();
 
-//		gDebugLastFailedUVADC = 0;  // DEBUG REMOVE
-	}
+//	gDebugLastFailedUVADC = 0;  // DEBUG REMOVE
 }
 
 uint16_t MinimumUVCheckCount()
@@ -177,7 +174,6 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 		if ((HAL_GetTick() - gUVLedTestStart) >= MINIMUM_UV_CHECK_TIME_MSEC)
 //    	if ((HAL_GetTick() - gUVLedTestStart) >= gDebugUVADCFailureDelay) // DEBUG REMOVE
 		{
-			gUVLedTestStart = 0;
 			// check ADC value
 			if (gReadUVCurrentADC < UV_MIN_ADC_THRESHOLD)
 			{
@@ -191,6 +187,7 @@ bool IsUVLedCheckDone(bool isOnWakeup)
 					gUVLedTestFailed = true;
 				}
 			}
+			gUVLedTestStart = 0;
 			// turn off UV led after test
 			StopUVLed();
 			return true; // check is done
