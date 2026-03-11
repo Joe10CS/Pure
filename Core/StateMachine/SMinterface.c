@@ -455,7 +455,9 @@ bool IsRinsing2ndStagePending()
 	}
 	return (val != 0);
 }
+#ifndef DEBUG_NO_WATER_IN_PUMP_CHECK
 uint32_t gNoWaterInPumpStartTick = 0;
+#endif
 
 // This function is called periodically while the pump is running
 // it detects no water in pump condition
