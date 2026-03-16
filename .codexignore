@@ -1,0 +1,38 @@
+# STM32CubeIDE generated/build artifacts
+.git/
+.github/
+.settings/
+Debug/
+Release/
+build/
+generated/
+
+# Eclipse / CubeIDE launch and workspace metadata
+*.launch
+*.log
+
+# Firmware build outputs
+*.o
+*.d
+*.su
+*.map
+*.list
+*.elf
+*.bin
+*.hex
+*.a
+*.obj
+*.exe
+
+# STM32 vendor libraries: keep them out of Codex context
+Drivers/STM32G0xx_HAL_Driver/
+Drivers/CMSIS/
+Drivers/CLASSB_LIB/
+
+# Auxiliary tools and reference documents
+Tools/
+Docs/
+
+# Generated subtrees that appear inside build output
+Debug/Core/
+Debug/Drivers/
