@@ -391,6 +391,8 @@ state State_AutomaticMode {
 
         State_SetLevel : State_SetLevel
 
+        State_SetLevel : enter / #123; SetCarbonationLevel()#59; #125;
+
         State_SetLevel : enter / #123; LedsSequence(LEDS_CO2Level)#59; #125;
 
         state State_Awake {
@@ -494,6 +496,8 @@ state State_AutomaticMode {
         State_PreCheckWaterSensor
 
         State_PreCheckWaterSensor : State_PreCheckWaterSensor
+
+        State_PreCheckWaterSensor : enter / #123; PurgeEventsQueue()#59; #125;
 
         State_PreCheckWaterSensor : enter / #123; SolenoidPumpUVPower(1)#59; #125;
 
@@ -3291,6 +3295,13 @@ evaluateGuard = null;
         } // end of behavior for State_PreCheckWaterSensor
         
         // State_PreCheckWaterSensor behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "PurgeEventsQueue();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "PurgeEventsQueue();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "PurgeEventsQueue();");
+        } // end of behavior for State_PreCheckWaterSensor
+        
+        // State_PreCheckWaterSensor behavior
         // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);"); }
         {
             // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SolenoidPumpUVPower(1);");`
@@ -4344,6 +4355,13 @@ evaluateGuard = null;
         {
             // Step 1: execute action `this.tracer?.enterState('State_SetLevel');`
             this.tracer?.enterState('State_SetLevel');
+        } // end of behavior for State_SetLevel
+        
+        // State_SetLevel behavior
+        // uml: enter / { this.tracer?.log("⚡ FSM would execute action: " + "SetCarbonationLevel();"); }
+        {
+            // Step 1: execute action `this.tracer?.log("⚡ FSM would execute action: " + "SetCarbonationLevel();");`
+            this.tracer?.log("⚡ FSM would execute action: " + "SetCarbonationLevel();");
         } // end of behavior for State_SetLevel
         
         // State_SetLevel behavior

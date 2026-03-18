@@ -11,6 +11,7 @@
 #include "RtcBackupMemory.h"
 #include "LedsPlayer.h"
 #include "RTC.h"
+#include "EventQueue.h"
 #ifdef DEBUG_STATE_MACHINE
 #include "RxTxMsgs.h"
 #endif
@@ -560,5 +561,22 @@ bool FilterToCarbDelayDone()
     return (gFilterToCarbDelayStartTick + FILTER_TO_CARBONATION_DELAY_MSECS < HAL_GetTick());
 }
 
+void SetCarbonationLevel()
+{
+	gCarbonationLevel++;
+	if (gCarbonationLevel == eLevel_number_of_levels) {
+		gCarbonationLevel = eLevel_off;
+	}
+    // This also take care of saving the last carbonation level to FRAM
+    if (gPrevCarbonationLevel != gCarbonationLevel)
+    {
+        gPrevCarbonationLevel = gCarbonationLevel;
+        RBMEM_WriteElement(eRBMEM_lastCarbonationLevel, gCarbonationLevel);
+    }
 
+}
 
+void PurgeEventsQueue()
+{
+	SMEventQueue_PurgeStaleSetupEvents();
+}

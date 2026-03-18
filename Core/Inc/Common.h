@@ -6,7 +6,7 @@
 #ifndef INC_COMMON_H_
 #define INC_COMMON_H_
 
-//#define DEBUG_SHORT_SLEEP_TIME_TIMOUTS
+#define DEBUG_SHORT_SLEEP_TIME_TIMOUTS
 #ifdef DEBUG_SHORT_SLEEP_TIME_TIMOUTS
 #warning "DEBUG_SHORT_SLEEP_TIME_TIMOUTS is defined - !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!."
 #define READY_STATE_TIMEOUT_MSECS (10000U) // 10 seconds for testing

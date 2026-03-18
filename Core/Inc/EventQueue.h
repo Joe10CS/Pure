@@ -24,5 +24,5 @@ bool SMEventQueue_IsFull(void);
 bool SMEventQueue_Add(SMSodaStreamPure_EventId event);
 bool SMEventQueue_Take(SMSodaStreamPure_EventId* outEvent);
 bool IsInInterruptContext(void);
-
+void SMEventQueue_PurgeStaleSetupEvents(void);
 #endif /* INC_EVENTQUEUE_H_ */

@@ -168,6 +168,8 @@ const sLedsStep stepsRingProgress[LEDFLOW_RING_PROGRESS_LOOP_STEPS] = {
         {eLED_Circle3, 770,   0, 255, 11, 110, eLedEase_InOutQuad}
 };
 #define LEDFLOW_RING_PROGRESS_INNER_LOOP_OVERLAPPING (110)
+// this assumes that the loop takes less then a seconds so this is a safety timeout
+#define MAX_WAIT_TIME_TO_MAKE_DRINK_LOOP_END (1000)
 
 // Modified values to make the progress according to the figma design
 // Factor: 1.8333 slower
@@ -438,7 +440,7 @@ eAnimations gCurrentAnimation = eAnimation_none;
 uint16_t gPendingFlowTotalSteps = 0;
 sLedsFlowDef *pPendingFlow = NULL;  // A flow of sequences
 eAnimations gPendingAnimation = eAnimation_none;
-
+uint32_t gPendingAnimationStartTick = 0;
 
 
 #ifdef DEBUG_STATE_MACHINE
@@ -651,6 +653,7 @@ void StartAnimation(eAnimations animation, bool forceStopPrevious)
     if (IsAnimationActive() && !forceStopPrevious) {
         // queue as pending
         gPendingAnimation = animation;
+        gPendingAnimationStartTick = HAL_GetTick();
         pPendingFlow = requestedFlow;
         gPendingFlowTotalSteps = requestedFlowTotalSteps;
 
@@ -704,9 +707,9 @@ bool IsPendingAnimation(void)
 //
 //uint32_t ddsq = 0;
 
-uint16_t offset_in_loop = 0;
-uint16_t offset_in_prev_loop = 0;
-uint16_t offset_in_inner_step = 0;
+uint32_t offset_in_loop = 0;
+uint32_t offset_in_prev_loop = 0;
+uint32_t offset_in_inner_step = 0;
 uint16_t sqlen = 0;
 
 uint32_t ddd = 0;
@@ -741,6 +744,8 @@ void PlayLedsPeriodic(void)
                 pCurrentFlow = pPendingFlow;
                 gCurrentFlowTotalSteps = gPendingFlowTotalSteps;
                 gCurrentAnimation = gPendingAnimation;
+                gAnimationStartingMS = now;
+                gCurrentFlowStep = 0;
                 // this must be done after copying the pending to current
                 ZeroGlobalAnimationParams(false, true);
                 SetCurrentFlowLoopEntryMSValues(pCurrentFlow[0].seq, pCurrentFlow[0].length);
@@ -783,8 +788,7 @@ void PlayLedsPeriodic(void)
             if (elapsed >= seq->delayMS) { // already time to play it
                 if (((seq->loop == ENDLESS_LOOP) || (elapsed <= seq->delayMS + (seq->loop) * (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop) + seq->overlappingLoop))) { // not yet finished all loops
                     currentFlowIsDone = false; // at least one sequence still active
-                    /*uint16_t*/ offset_in_loop = (elapsed - seq->delayMS)
-                        % (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
+                    offset_in_loop = (elapsed - seq->delayMS) % (gCurrentFlowLoopEntryMS[sq] - seq->overlappingLoop);
                     // Go over the loop elements
                     for (ssi = 0; ssi < seq->sequenceLen; ssi++) {
                         stp = &seq->subSeq[ssi];
@@ -820,11 +824,16 @@ void PlayLedsPeriodic(void)
                                 }
                                 // need to move from the endless make to success
                                 // i.e. success is pending and last updated led is 4 to around 100%
-                                if ((gPendingAnimation == eAnimation_MakeADrinkSuccess) && (gLeds[2] >= 250)) {
-//                                    // i.e. success is pending and last updated led is 4 to around 100%
-//                                    if ((gPendingAnimation == eAnimation_MakeADrinkSuccess) && (gLeds[3] >= 250)) {
-                                    currentFlowIsDone = true;
-                                    break;
+                                // also added a safety timer to cap the waiting time for completion
+                                if (gPendingAnimation == eAnimation_MakeADrinkSuccess) {
+                                    bool reached_visual_handoff = (gLeds[2] >= 250);
+                                    bool reached_timeout = (HAL_GetTick() - gPendingAnimationStartTick) >= MAX_WAIT_TIME_TO_MAKE_DRINK_LOOP_END;
+
+                                    if (reached_visual_handoff || reached_timeout) {
+                                    	gPendingAnimationStartTick = 0;
+                                        currentFlowIsDone = true;
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -880,6 +889,8 @@ void PlayLedsPeriodic(void)
             pCurrentFlow = pPendingFlow;
             gCurrentFlowTotalSteps = gPendingFlowTotalSteps;
             gCurrentAnimation = gPendingAnimation;
+            gAnimationStartingMS = now;
+            gCurrentFlowStep = 0;
             // this must be done after copying the pending to current
             ZeroGlobalAnimationParams(false, true);
             SetCurrentFlowLoopEntryMSValues(pCurrentFlow[0].seq, pCurrentFlow[0].length);
@@ -919,6 +930,7 @@ void ZeroGlobalAnimationParams(bool zeroCurrent, bool zeroPendingToo)
         gPendingAnimation = eAnimation_none;
         pPendingFlow = NULL;
         gPendingFlowTotalSteps = 0;
+        gPendingAnimationStartTick = 0;
     }
 }
 

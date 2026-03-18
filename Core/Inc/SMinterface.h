@@ -111,5 +111,8 @@ void ResetFilterCounters();
 void StartFilterToCarbDelay();
 bool FilterToCarbDelayDone();
 
+void SetCarbonationLevel();
+void PurgeEventsQueue();;
+
 uint16_t MinimumUVCheckCount();
 #endif /* INC_SMINTERFACE_H_ */
