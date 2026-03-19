@@ -93,16 +93,16 @@ void PURE_STL_Init(void);
 #endif
 
 // Comment this in release builds
-#define DEBUG_NO_WATER_IN_PUMP_CHECK
-#ifdef DEBUG_NO_WATER_IN_PUMP_CHECK
-#warning  DEBUG_NO_WATER_IN_PUMP_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#define NO_WATER_IN_PUMP_CHECK
+#ifdef NO_WATER_IN_PUMP_CHECK
+#warning  NO_WATER_IN_PUMP_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 
 // Comment this in release builds
-#define DEBUG_USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
-#ifdef DEBUG_USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
+#define USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
+#ifdef USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
 #define WATER_LEVEL_SENSOR_THRESHOLD_HARDCODED_VALUE (301)
-#warning  DEBUG_USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#warning  USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 /* USER CODE END EM */
 

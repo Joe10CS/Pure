@@ -169,7 +169,7 @@ eUartStatus COMM_UART_CheckNewMessage(sUartMessage *newMsg, uint8_t* rawMsgPtr, 
         // at this point start marker found. process the message
         if (tmpRxRawMsg[g_tmpRxRawMsgIdx] == COMMAND_END_MARKER) {
             // found the end of the message
-            if (tmpRxRawMsg[g_tmpRxRawMsgIdx - 1] != COMMAND_PRE_END_MARKER) {
+            if (g_tmpRxRawMsgIdx == 0 || (tmpRxRawMsg[g_tmpRxRawMsgIdx - 1] != COMMAND_PRE_END_MARKER)) {
                 // TODO: invalid message
                 error = true;
                 continue;
@@ -189,6 +189,10 @@ eUartStatus COMM_UART_CheckNewMessage(sUartMessage *newMsg, uint8_t* rawMsgPtr, 
             }
         }
 		g_tmpRxRawMsgIdx++;
+		// in case the the buffer has garbage near the end
+		if (g_tmpRxRawMsgIdx >= MAX_TMP_MSG_BUFFER_LEN) {
+		    error = true;
+		}
     }
     // TODO: if we got to here, handle noisy input on UART
     return eUART_NoMessage;

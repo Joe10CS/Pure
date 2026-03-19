@@ -43,6 +43,9 @@ extern uint16_t gKeyPressButFilterMS;
 extern uint32_t gSolenoidPumpStartTick;
 uint16_t gSolenoidPumpWDCounter = 0;
 
+extern RTC_TimeTypeDef gLast_sTime;
+
+
 //extern uint16_t gDebugLastFailedUVADC; // DEBUG REMOVE
 //extern uint16_t gDebugUVADCFailureDelay; // DEBUG REMOVE
 
@@ -357,6 +360,7 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 			COMM_UART_QueueTxMessage(gRawMsgForEcho, rawMessageLen);
 
 			if (msg->params.pump.isOn == 1) {
+				gWaterLevelSensorThreahsold = msg->params.pump.sensorThreashold;
 				gStateMachine.vars.pumpStopsOnSensor = (msg->params.pump.sensorThreashold != 0);
 				StartWaterPump();
 			} else {
@@ -451,11 +455,9 @@ void ProcessNewRxMessage(sUartMessage* msg, uint8_t *gRawMsgForEcho, uint32_t ra
 		break;
 	case eUARTCommand_rrtc: // Get Info - non state machine related command
 	{
-	    extern RTC_HandleTypeDef hrtc;
-	    RTC_TimeTypeDef sTime;
-	    HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_rrtc, (uint32_t[]){GetDaysSinceFilterReplacement(),
-		sTime.Hours*3600+sTime.Minutes*60+sTime.Seconds}, 2, false);
+		value32 = GetDaysSinceFilterReplacement(); // this also sets gLast_sTime
+		msg_len = (uint8_t)BuildReply((char*)gRawMsgForEcho, eUARTCommand_rrtc, (uint32_t[]){value32,
+			gLast_sTime.Hours*3600+gLast_sTime.Minutes*60+gLast_sTime.Seconds}, 2, false);
 		COMM_UART_QueueTxMessage(gRawMsgForEcho, msg_len);
 		echoCommand = false;
 		break;
@@ -724,10 +726,10 @@ void CheckHWAndGenerateEventsAsNeeded()
 					// reset the tick to avoid multiple events
 					gSolenoidPumpStartTick = 0;
 					gSolenoidPumpWDCounter = 0;
-				} else {
-					// feedback is OK - reset counter
-					gSolenoidPumpWDCounter = 0;
 				}
+			} else {
+				// feedback is OK - reset counter
+				gSolenoidPumpWDCounter = 0;
 			}
 		}
 	}

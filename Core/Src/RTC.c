@@ -6,6 +6,9 @@
 
 extern RTC_HandleTypeDef hrtc;
 
+RTC_TimeTypeDef gLast_sTime;
+RTC_DateTypeDef gLast_sDate;
+
 void RestartFilterTimer(void)
 {
     RTC_TimeTypeDef sTime = {0};
@@ -25,15 +28,13 @@ void RestartFilterTimer(void)
 }
 uint16_t GetDaysSinceFilterReplacement(void)
 {
-    RTC_TimeTypeDef sTime;
-    RTC_DateTypeDef sDate;
 
-    HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
-    HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
+    HAL_RTC_GetTime(&hrtc, &gLast_sTime, RTC_FORMAT_BIN);
+    HAL_RTC_GetDate(&hrtc, &gLast_sDate, RTC_FORMAT_BIN);
 
-    uint16_t year  = 2000 + sDate.Year;
-    uint16_t month = sDate.Month;
-    uint16_t day   = sDate.Date;
+    uint16_t year  = 2000 + gLast_sDate.Year;
+    uint16_t month = gLast_sDate.Month;
+    uint16_t day   = gLast_sDate.Date;
 
     // Compute number of days since base date (1-Jan-2000)
     uint32_t days = ConvertDateToDays(year, month, day) - ConvertDateToDays(2000, 1, 1);

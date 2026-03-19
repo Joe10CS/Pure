@@ -19,9 +19,13 @@ bool SMEventQueue_IsFull(void)
 }
 bool SMEventQueue_Add(SMSodaStreamPure_EventId event)
 {
-    bool inInterrupt = IsInInterruptContext();
-    if (inInterrupt)
-        __disable_irq();
+//    bool inInterrupt = IsInInterruptContext();
+//    if (inInterrupt)
+//        __disable_irq();
+
+	// block interrupt both from SM and IRQ
+	uint32_t primask = __get_PRIMASK();
+	__disable_irq();
 
     bool success = false;
     if (!SMEventQueue_IsFull())
@@ -31,9 +35,11 @@ bool SMEventQueue_Add(SMSodaStreamPure_EventId event)
         success = true;
     }
 
-    if (inInterrupt)
+//    if (inInterrupt)
+//        __enable_irq();
+    if (primask == 0) {
         __enable_irq();
-
+    }
     return success;
 }
 
@@ -47,10 +53,10 @@ bool SMEventQueue_Take(SMSodaStreamPure_EventId* outEvent)
     return true;
 }
 
-bool IsInInterruptContext(void)
-{
-    return (__get_IPSR() != 0);
-}
+//bool IsInInterruptContext(void)
+//{
+//    return (__get_IPSR() != 0);
+//}
 
 
 /*
