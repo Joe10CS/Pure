@@ -7,7 +7,7 @@
         <mxCell id="qZF7NaJGXNpq08xq_DYa-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1ba1e2;fontColor=#ffffff;strokeColor=#006EAF;connectable=0;allowArrows=0;" value="&lt;span style=&quot;color: rgb(250, 250, 250); font-family: &amp;quot;Lucida Console&amp;quot;; font-size: 14px; font-weight: 700; text-wrap: nowrap;&quot;&gt;$STATEMACHINE : SMSodaStreamPure&lt;/span&gt;" vertex="1">
           <mxGeometry height="35" width="470" x="-1370" y="-2297.5" as="geometry" />
         </mxCell>
-        <mxCell id="qZF7NaJGXNpq08xq_DYa-2" parent="1" style="shape=rectangle;rounded=1;arcSize=15;absoluteArcSize=1;align=left;verticalAlign=top;whiteSpace=wrap;html=1;spacingLeft=4;strokeWidth=1;strokeColor=default;fillColor=#fff2cc;fontColor=#000000;gradientColor=#ffd966;" value="&lt;b&gt;$NOTES&lt;/b&gt;&lt;br&gt;File: SMSodaStreamPure.drawio&lt;div&gt;Version: Pure VDL 5.1&lt;/div&gt;&lt;div&gt;Updated: 21/1/2026&lt;/div&gt;" vertex="1">
+        <mxCell id="qZF7NaJGXNpq08xq_DYa-2" parent="1" style="shape=rectangle;rounded=1;arcSize=15;absoluteArcSize=1;align=left;verticalAlign=top;whiteSpace=wrap;html=1;spacingLeft=4;strokeWidth=1;strokeColor=default;fillColor=#fff2cc;fontColor=#000000;gradientColor=#ffd966;" value="&lt;b&gt;$NOTES&lt;/b&gt;&lt;br&gt;File: SMSodaStreamPure.drawio&lt;div&gt;Version: Pure VDL 5.21.0&lt;/div&gt;&lt;div&gt;Updated: 19/3/2026&lt;/div&gt;" vertex="1">
           <mxGeometry height="80" width="300" x="-1736" y="-2297.5" as="geometry" />
         </mxCell>
         <mxCell id="qZF7NaJGXNpq08xq_DYa-3" parent="1" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fillColor=#ffff88;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#36393d;" value="State_Tilted" vertex="1">
@@ -144,8 +144,8 @@
         <mxCell id="B7CyAzqIffveCYYn-Fcc-6" parent="Ziy2RvUZ8rSOBJYL170Z-1" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#FAFAFA;fillColor=#545454;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;" value="State_CarbLeds" vertex="1">
           <mxGeometry height="70" width="330" x="196" y="48" as="geometry" />
         </mxCell>
-        <mxCell id="B7CyAzqIffveCYYn-Fcc-7" connectable="0" parent="B7CyAzqIffveCYYn-Fcc-6" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / SetMakeADrinkInProgress(true);&#xa;enter / LedsSequence(LEDS_StartMakeDring);" vertex="1">
-          <mxGeometry height="40" width="330" y="30" as="geometry" />
+        <mxCell id="B7CyAzqIffveCYYn-Fcc-7" connectable="0" parent="B7CyAzqIffveCYYn-Fcc-6" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / SetMakeADrinkInProgress(true);" vertex="1">
+          <mxGeometry height="30" width="300" y="30" as="geometry" />
         </mxCell>
         <mxCell id="B7CyAzqIffveCYYn-Fcc-8" edge="1" parent="Ziy2RvUZ8rSOBJYL170Z-1" source="B7CyAzqIffveCYYn-Fcc-6" style="endArrow=classic;html=1;rounded=1;strokeWidth=2;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" target="Ziy2RvUZ8rSOBJYL170Z-3" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
@@ -197,8 +197,8 @@
         <mxCell id="qZF7NaJGXNpq08xq_DYa-47" parent="qZF7NaJGXNpq08xq_DYa-5" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;" value="State_Filtering" vertex="1">
           <mxGeometry height="200" width="344" x="977" y="1434" as="geometry" />
         </mxCell>
-        <mxCell id="qZF7NaJGXNpq08xq_DYa-48" connectable="0" parent="qZF7NaJGXNpq08xq_DYa-47" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / SetMakeADrinkInProgress(true);&#xa;enter / ButtonsFunction(false);&#xa;enter / LedsSequence(LEDS_StartMakeDring);&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / StartUVLEd();&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / StartWaterPump();&#xa;enter / StartWaterPumpingTimer();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();&#xa;exit/ IncreaseFilteringCounter();" vertex="1">
-          <mxGeometry height="170" width="330" y="30" as="geometry" />
+        <mxCell id="qZF7NaJGXNpq08xq_DYa-48" connectable="0" parent="qZF7NaJGXNpq08xq_DYa-47" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / SetMakeADrinkInProgress(true);&#xa;enter / ButtonsFunction(false);&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / StartUVLEd();&#xa;enter / pumpStopsOnSensor = true;&#xa;enter / StartWaterPump();&#xa;enter / StartWaterPumpingTimer();&#xa;exit / StopWaterPump();&#xa;exit / StopUVLed();&#xa;exit/ IncreaseFilteringCounter();" vertex="1">
+          <mxGeometry height="160" width="300" y="30" as="geometry" />
         </mxCell>
         <mxCell id="khHdp5hJ9GrJobth_fdo-5" parent="qZF7NaJGXNpq08xq_DYa-5" style="fontFamily=Lucida Console;align=center;verticalAlign=middle;shape=rhombus;rotatable=0;labelPosition=center;verticalLabelPosition=top;strokeWidth=1;fillColor=#FFFFFF;gradientColor=#d4d4d4cc;noLabel=1;" value="$choice" vertex="1">
           <mxGeometry height="40" width="40" x="850.5" y="1390" as="geometry" />
@@ -536,7 +536,7 @@
         <mxCell id="2IGWBoECEHxJKRUWdZCC-4" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="TsjWop_f3fmC6C8fTUvM-1" style="endArrow=classic;html=1;rounded=1;strokeWidth=2;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="B7CyAzqIffveCYYn-Fcc-1" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
             <Array as="points">
-              <mxPoint x="896" y="1192" />
+              <mxPoint x="896" y="1199" />
             </Array>
             <mxPoint x="1245.5" y="1478" as="sourcePoint" />
             <mxPoint x="1496" y="1397" as="targetPoint" />
@@ -544,7 +544,7 @@
         </mxCell>
         <mxCell id="2IGWBoECEHxJKRUWdZCC-5" connectable="0" parent="2IGWBoECEHxJKRUWdZCC-4" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="[(IsBottleFull())&amp;amp;&amp;amp;(count&amp;gt;MinimumUVCheckCount())]" vertex="1">
           <mxGeometry relative="1" x="-0.0151" as="geometry">
-            <mxPoint x="-28" y="-18" as="offset" />
+            <mxPoint x="-73" y="-28" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="B7CyAzqIffveCYYn-Fcc-4" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="B7CyAzqIffveCYYn-Fcc-1" style="endArrow=classic;html=1;rounded=1;strokeWidth=2;curved=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" target="B7CyAzqIffveCYYn-Fcc-6" value="">
@@ -658,10 +658,10 @@
           </mxGeometry>
         </mxCell>
         <mxCell id="TsjWop_f3fmC6C8fTUvM-1" parent="qZF7NaJGXNpq08xq_DYa-5" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;" value="State_PreCheckWaterSensor" vertex="1">
-          <mxGeometry height="160" width="286" x="1004" y="1111" as="geometry" />
+          <mxGeometry height="170" width="330" x="983" y="1114" as="geometry" />
         </mxCell>
-        <mxCell id="TsjWop_f3fmC6C8fTUvM-2" connectable="0" parent="TsjWop_f3fmC6C8fTUvM-1" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / PurgeEventsQueue();&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / CheckUVError();&#xa;enter / WaterPumpSensor(1);&#xa;enter / count = 0;&#xa;do / count++;&#xa;do / IsUVLedCheckDone(false);&#xa;exit / SolenoidPumpUVPower(0);" vertex="1">
-          <mxGeometry height="130" width="250" y="30" as="geometry" />
+        <mxCell id="TsjWop_f3fmC6C8fTUvM-2" connectable="0" parent="TsjWop_f3fmC6C8fTUvM-1" style="fontFamily=Lucida Console;align=left;verticalAlign=top;fillColor=none;gradientColor=none;strokeColor=none;rounded=0;spacingLeft=4;resizable=0;movable=0;deletable=0;rotatable=0;autosize=1;" value="enter / PurgeEventsQueue();&#xa;enter / LedsSequence(LEDS_StartMakeDring);&#xa;enter / SolenoidPumpUVPower(1);&#xa;enter / CheckUVError();&#xa;enter / WaterPumpSensor(1);&#xa;enter / count = 0;&#xa;do / count++;&#xa;do / IsUVLedCheckDone(false);&#xa;exit / SolenoidPumpUVPower(0);" vertex="1">
+          <mxGeometry height="140" width="330" y="30" as="geometry" />
         </mxCell>
         <mxCell id="TsjWop_f3fmC6C8fTUvM-3" edge="1" parent="qZF7NaJGXNpq08xq_DYa-5" source="TsjWop_f3fmC6C8fTUvM-1" style="endArrow=classic;html=1;rounded=1;strokeWidth=4;curved=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" target="qZF7NaJGXNpq08xq_DYa-47" value="">
           <mxGeometry height="50" relative="1" width="50" as="geometry">
@@ -672,7 +672,7 @@
         </mxCell>
         <mxCell id="TsjWop_f3fmC6C8fTUvM-4" connectable="0" parent="TsjWop_f3fmC6C8fTUvM-3" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" value="[(count &amp;gt; 10)&amp;amp;&amp;amp;(count&amp;gt;MinimumUVCheckCount())]" vertex="1">
           <mxGeometry relative="1" x="-0.3199" y="-3" as="geometry">
-            <mxPoint x="133" y="-42" as="offset" />
+            <mxPoint x="53" y="-36" as="offset" />
           </mxGeometry>
         </mxCell>
         <mxCell id="TsjWop_f3fmC6C8fTUvM-5" parent="qZF7NaJGXNpq08xq_DYa-5" style="shape=swimlane;rotatable=0;align=center;verticalAlign=top;fontFamily=Lucida Console;startSize=30;fontSize=14;fontStyle=1;fontColor=#ffffff;fillColor=#1ba1e2;swimlaneFillColor=default;rounded=1;arcSize=15;absoluteArcSize=1;strokeColor=#006EAF;" value="State_RinsingPreCheckWaterSensor" vertex="1">
