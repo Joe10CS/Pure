@@ -26,6 +26,9 @@
 // Actual time is threshold x 10mSecs  (max value 256)
 #define SLANTED_THRESHOLD_TIME_COUNT (50)
 
+#define ACCEL_WARMUP_SAMPLES (20)   // 20 * 10 ms ~= 200 ms at current polling rate (these 200ms are from the point where AccelerometerInit() called. currently 100ms after power up so total is ~300ms)
+
+
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
@@ -48,6 +51,8 @@ uint8_t count_slanted_minus_x_plus_y = 0;
 uint8_t count_slanted_plux_x_minus_y = 0;
 uint8_t count_slanted_minus_x_minus_y = 0;
 
+static uint8_t gAccelWarmupSamples = 0;
+
 //#define NUM_RECORD (330)
 //uint32_t rec_cnt = 0;
 //int8_t rec_gx[NUM_RECORD];
@@ -66,6 +71,13 @@ bool gIsSlanted = false;
 void AccelerometerInit(void)
 {
 	lis2de12_reg_t reg;
+
+	gAccelWarmupSamples = 0;
+	gIsSlanted = false;
+    filtered_x = 0;
+    filtered_y = 0;
+    filtered_z = 0;
+
 
 	// start the sensor
 	reg.byte = 0;
@@ -105,8 +117,18 @@ bool IsSlanted() {
     int8_t gy = TWOS_COMPLEMENT_UINT8_TO_DEC(raw_g);
     filtered_y = ACCEL_FILTER_DATA(filtered_y, gy);
 
+
     // ----------------------------------------------------------
-    // 4. Upside-down / free-fall detection (must come before tilt)
+    // 4. if Still in warm up - don't call for slanted
+    // ----------------------------------------------------------
+    if (gAccelWarmupSamples < ACCEL_WARMUP_SAMPLES) {
+        gAccelWarmupSamples++;
+        gIsSlanted = false;
+        return false;
+    }
+
+    // ----------------------------------------------------------
+    // 5. Upside-down / free-fall detection (must come before tilt)
     // ----------------------------------------------------------
     if (filtered_z >= 0) {
         gIsSlanted = true;
@@ -114,7 +136,7 @@ bool IsSlanted() {
     }
 
     // ----------------------------------------------------------
-    // 5. Compute squares (integer-only, no overflow)
+    // 6. Compute squares (integer-only, no overflow)
     // ----------------------------------------------------------
     int32_t x2 = filtered_x * filtered_x;
     int32_t y2 = filtered_y * filtered_y;
@@ -123,7 +145,7 @@ bool IsSlanted() {
     int32_t mag2 = x2 + y2 + z2;
 
     // ----------------------------------------------------------
-    // 6. Angle thresholds (45° enter, 35° exit)
+    // 7. Angle thresholds (45° enter, 35° exit)
     //     thresholds scaled by 1000
     // ----------------------------------------------------------
     const int32_t COS45_SQ = 500;   // 0.5 * 1000
