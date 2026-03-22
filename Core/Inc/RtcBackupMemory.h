@@ -13,8 +13,8 @@
 #include "stm32g0xx_hal.h"
 #endif
 
-#define RTC_BKP_RTC_STARTUP_MAGIC_NUMBER (0xBAFACEBA)
-#define RBM_DATA_MAGIC_NUMBER    (0x2BADCAFE)
+#define RTC_BKP_RTC_STARTUP_MAGIC_NUMBER (0xFEBABAAC)
+#define RBM_DATA_MAGIC_NUMBER    (0xCA2BADFE)
 typedef struct {
     uint32_t magicNumber;
     uint32_t lastCarbonationLevel;

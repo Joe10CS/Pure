@@ -61,7 +61,7 @@ extern "C" {
 void PURE_STL_Init(void);
 
 // Comment this in release builds
-#define DEBUG_STATE_MACHINE
+//#define DEBUG_STATE_MACHINE
 #ifdef DEBUG_STATE_MACHINE
 #warning  DEBUG_STATE_MACHINE is defined xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 #endif
@@ -95,14 +95,14 @@ void PURE_STL_Init(void);
 // Comment this in release builds
 #define NO_WATER_IN_PUMP_CHECK
 #ifdef NO_WATER_IN_PUMP_CHECK
-#warning  NO_WATER_IN_PUMP_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#warning  NO_WATER_IN_PUMP_CHECK is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 
 // Comment this in release builds
 #define USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
 #ifdef USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD
 #define WATER_LEVEL_SENSOR_THRESHOLD_HARDCODED_VALUE (301)
-#warning  USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//#warning  USE_HARDCODED_WATER_LEVEL_SENSOR_THRESHOLD is defined !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 /* USER CODE END EM */
 
